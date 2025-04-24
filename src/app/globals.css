@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+body {
+  font-family: 'Inria Sans', sans-serif;
+}
+
+@font-face {
+  font-family: Inria Sans;
+  src: url('../../public/fonts/inria-bold.ttf') format('ttf'),
+   url('../../public/fonts/inria-bold.ttf') format('ttf');
+  font-weight:700;
+  font-style: normal;
+}
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    background: #fdfcfc;
+  }
+}
+
+.shadow-3d {
+  /* box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px; */
+  box-shadow: white 0px 50px 100px -20px, white 0px 30px 60px -30px,
+    rgba(10, 37, 64, 0.1) 0px -2px 6px 0px inset;
+}
+.custom-shadow {
+  box-shadow: -2px 0px 2px rgba(255, 255, 255), 0px -2px 2px rgba(255, 255, 255),
+    2px 0px 4px rgba(0, 0, 0, 0.1), 0px 4px 4px rgba(0, 0, 0, 0.1);
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.5));
+  border-radius: inherit;
+  pointer-events: none;
+}
+.scroll-hidden {
+  scrollbar-width: none;
+}
+
+.scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+::-webkit-scrollbar {
+  width: 2px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #a6a6a6;
+  border-radius: 10px;
+}
+
+.neo-effect {
+  background: #fdfcfc;
+  box-shadow: 5px 5px 10px #cacaca33, -7px -7px 10px #ffffff;
+}
+.neo-btn {
+  box-shadow: 2px 2px 2px #cacaca33, -2px -2px 0px #ffffff;
+}
+
+/* CSS for slide-in and slide-out animations */
+.slide-in {
+  transform: translateX(0);
+  transition: transform 0.3s ease-in-out;
+}
+
+.slide-in-active {
+  transform: translateX(0);
+}
+
+.slide-out-active {
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+task-text {
+  font-family: "Red Hat Text";
+}

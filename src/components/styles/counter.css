@@ -1,0 +1,36 @@
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .animate-spin {
+    animation: spin 2s linear infinite;
+  }
+  
+  /* Custom border styling to round the edges */
+  .custom-border {
+    position: relative;
+  }
+  
+  .custom-border::before,
+  .custom-border::after {
+    content: '';
+    position: absolute;
+    width: 25px; /* Match the border width */
+    height: 25px; /* Match the border width */
+    background-color: #1f2937; /* Equivalent to border-t-gray-950 in Tailwind */
+    border-radius: 50%;
+  }
+  
+  .custom-border::before {
+    top: -12.5px; /* Half of the border width */
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .custom-border::after {
+    bottom: -12.5px; /* Half of the border width */
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
