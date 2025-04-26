@@ -42,7 +42,7 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onTa
             taskName: "",
             taskCategory: "",
             taskDuration: "",
-            taskTools: "",
+            taskTools: [],
         },
     });
 
@@ -55,7 +55,7 @@ const CreateTaskSheet: React.FC<CreateTaskSheetProps> = ({ isOpen, onClose, onTa
         }
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/api/v1/tasks/", {
+            const response = await fetch("https://hudddle-backend.onrender.com/api/v1/tasks", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
