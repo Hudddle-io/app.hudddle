@@ -19,11 +19,6 @@ export const sideLinks = [
     icon: "/assets/friends.svg",
   },
   {
-    url: "/leaderboards",
-    text: "Leaderboards",
-    icon: "/assets/leaderboards.svg",
-  },
-  {
     url: "/your-tasks",
     text: "Your tasks",
     icon: "/assets/your-task.svg",

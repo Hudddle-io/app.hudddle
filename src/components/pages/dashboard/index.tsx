@@ -66,7 +66,7 @@ const PageDashboard: React.FC = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/users/${currentUser.id}`,
+        `https://hudddle-backend.onrender.com/api/v1/users/${currentUser.id}`,
         {
           method: "PATCH",
           headers: {
@@ -99,14 +99,12 @@ const PageDashboard: React.FC = () => {
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (!storedToken) return;
-
     const fetchDashboardData = async () => {
       setIsLoadingStreak(true);
       setIsLoadingLevels(true);
-
       try {
         const tasksResponse = await fetch(
-          "http://127.0.0.1:8000/api/v1/tasks",
+          "https://hudddle-backend.onrender.com/api/v1/tasks",
           {
             method: "GET",
             headers: {
@@ -143,7 +141,7 @@ const PageDashboard: React.FC = () => {
 
       try {
         const streakResponse = await fetch(
-          "http://127.0.0.1:8000/api/v1/achievements/users/me/streak",
+          "https://hudddle-backend.onrender.com/api/v1/achievements/users/me/streak",
           {
             method: "GET",
             headers: {
@@ -172,7 +170,7 @@ const PageDashboard: React.FC = () => {
 
       try {
         const levelsResponse = await fetch(
-          "http://127.0.0.1:8000/api/v1/achievements/users/me/levels",
+          "https://hudddle-backend.onrender.com/api/v1/achievements/users/me/levels",
           {
             method: "GET",
             headers: {
@@ -203,8 +201,8 @@ const PageDashboard: React.FC = () => {
     fetchDashboardData();
   }, []);
 
-  if (loading || isLoadingLevels || isLoadingStreak) return <div>Loading...</div>;
-  if (error) return <div>Error:{error}</div>;
+  // if (loading || isLoadingLevels || isLoadingStreak) return <div>Loading...</div>;
+  // if (error) return <div>Error:{error}</div>;
 
   const levelImageMap: Record<UserLevelData["category"], string | undefined> = {
     Leader: statsCardsData.find(stat => stat.title === "Leader")?.image,
@@ -263,7 +261,8 @@ const PageDashboard: React.FC = () => {
         </div>
 
         <div className="mt-10 flex justify-between items-center">
-          <h1 className="font-bold text-slate-600 text-xl">Today's task</h1>
+          <h1 className="font-bold text-slate-600 text-xl">Today's task for {currentUser?.email}
+          </h1>
           <SlidersHorizontal
             size={18}
             color="#D9D9D9"
