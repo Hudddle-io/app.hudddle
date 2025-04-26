@@ -10,6 +10,8 @@ import { Dribbble, Figma, Home, LogOut } from "lucide-react";
 import { sideLinks } from "@/data/data";
 import { useUserSession } from "@/contexts/useUserSession";
 import { useRouter } from "next/navigation";
+import pinterest from "../../../public/assets/pinterest.svg";
+import dribble from "../../../public/assets/dribble.svg";
 
 
 interface UserOnlineStatusProps extends HTMLAttributes<HTMLDivElement> {
@@ -44,19 +46,16 @@ export const UserOnlineStatus: FC<UserOnlineStatusProps> = ({
 
 const Sidebar = () => {
   const router = useRouter();
-  const {loading, error, currentUser, logout: logoutContext } = useUserSession();
-
+  const {loading, error, currentUser, logout: logoutContext } = useUserSession();   
   const handleLogout = async () => {
     const storedToken = localStorage.getItem('token');
-
     if (!storedToken) {
       logoutContext();
       router.push("/auth/Sign-in");
       return;
     }
-
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/v1/auth/logout", {
+      const response = await fetch("https://hudddle-backend.onrender.com/api/v1/auth/logout", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${storedToken}`,
@@ -93,7 +92,7 @@ const Sidebar = () => {
         </Link>
 
         {/* huddle user bar */}
-        <div className="relative shadow-xl mt-[50px] w-full h-fit rounded-md bg-[#956FD6] px-[14px] py-[4px]">
+        <div className="relative shadow-xl mt-[50px] w-full h-fit rounded-lg bg-[#211451] px-[14px] py-[4px]">
           <div className="-translate-y-[60%] w-full h-fit flex justify-center ">
             <Image
               className="rounded-full shadow-xl"
@@ -104,9 +103,8 @@ const Sidebar = () => {
               loading="lazy"
             />
           </div>
-          <header className="w-full -translate-y-[40%] flex flex-col items-center gap-[4px] px-8">
+          <header className="w-full -translate-y-[40%] flex flex-col -mt-9 items-center gap-[4px] px-8">
             <UserOnlineStatus isOnline statusText />
-
             <h1 className="text-[#FFFFFF] font-semibold text-center" style={{ fontSize: 'clamp(16px, 2.5vw, 21px)' }}>
               {currentUser?.first_name} {currentUser?.last_name}
             </h1>
@@ -149,13 +147,15 @@ const Sidebar = () => {
         </div>
 
         {/* bar footer */}
-        <footer className="w-full p-[14px] flex flex-col gap-2">
+        <footer className="w-full p-[14px] mx-5 flex flex-col gap-2">
           <p className="font-normal text-[14px] leading-[20px] text-[#707070]">
             Frequently used tools
           </p>
-          <div className="flex items-center gap-2">
-            <Figma />
-            <Dribbble className="text-[#E94B88]" />
+          <div className="flex flex-row items-center space-x-2">
+            <Image src={pinterest} width={20} height={20} alt="pintrest"/>
+            <Image src={dribble} width={20} height={20} alt="dribble"/>
+            {/* <Figma />
+            <Dribbble className="text-[#E94B88]" /> */}
           </div>
         </footer>
       </div>

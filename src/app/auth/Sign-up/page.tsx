@@ -11,9 +11,10 @@ import { auth, googleProvider } from '../../../../config/firebase';
 import Link from 'next/link';
 import { toast } from '../../../components/ui/use-toast';
 
+import { useUserSession } from '@/contexts/useUserSession';
 
 const SignUp = () => {
-
+  const {currentUser} = useUserSession();
   const router = useRouter();
     const [emailAddress, setEmailAddress] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -40,7 +41,7 @@ const SignUp = () => {
       setError(null);
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/v1/auth/signup",{
+        const response = await fetch("https://hudddle-backend.onrender.com/api/v1/auth/signup",{
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -58,8 +59,7 @@ const SignUp = () => {
       toast({
         description: "Account Created, Please check your email to verify your account", 
       });
-      router.push('/auth/Sign-in');
-      
+      router.push('/auth/Sign-in'); 
       setLoading(true);
   } 
   catch (err: any) {

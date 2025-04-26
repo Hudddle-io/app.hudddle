@@ -20,7 +20,6 @@ const SignIn = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-
     const SignInWithGoogle = async () => {
               try{
                   await signInWithPopup(auth,googleProvider);
@@ -36,7 +35,7 @@ const handleSubmit = async (e:React.FormEvent) => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/v1/auth/login",{
+        const response = await fetch("https://hudddle-backend.onrender.com/api/v1/auth/login",{
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -64,7 +63,7 @@ const handleSubmit = async (e:React.FormEvent) => {
       setLoading(false);
   }
 }
-  return (
+  return ( 
     <div className='w-full flex text-black max-h-screen overflow-hidden relative'>
      <div className='flex w-full justify-between items-center flex-row'>
         <div className='w-2/3 bg-white justify-center items-center flex flex-col space-y-4 h-full'>

@@ -68,7 +68,7 @@ const Page = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/v1/tasks?page=1&page_size=1000`,
+        `https://hudddle-backend.onrender.com/api/v1/tasks?page=1&page_size=1000`,
         {
           method: "GET",
           headers: {

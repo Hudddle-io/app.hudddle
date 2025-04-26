@@ -94,7 +94,7 @@ const OnBoarding = () => {
 
           console.log(data);
 
-          const onBoardingData = await fetch("http://127.0.0.1:8000/api/v1/auth/update-profile", { 
+          const onBoardingData = await fetch("https://hudddle-backend.onrender.com/api/v1/auth/update-profile", { 
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -266,7 +266,7 @@ const OnBoarding = () => {
         />
         <FormField
           control={form.control}
-          name="softwareUsed"
+          name="software"
           render={({ field }) => (
             <FormField
               control={form.control}
