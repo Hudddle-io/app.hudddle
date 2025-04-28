@@ -12,7 +12,7 @@ import localFont from "next/font/local";
 
 
 const inriasans = localFont({
-  src: "../../public/fonts/inriaSans-Regular.ttf",
+  src: "../../public/fonts/InriaSans-Regular.ttf",
 });
 
 export const metadata: Metadata = {
