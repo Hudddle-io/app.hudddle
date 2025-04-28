@@ -98,7 +98,7 @@ const handleSubmit = async (e:React.FormEvent) => {
                 required
                 />
                 </div>
-                <p className='text-center pt-9'>Don't have an account?{" "}<span className='text-violet-500 hover:text-violet-800 hover:underline'><Link href="/auth/Sign-up">Sign up</Link></span></p>
+                <p className='text-center pt-9'>Don&#39;t have an account?{" "}<span className='text-violet-500 hover:text-violet-800 hover:underline'><Link href="/auth/Sign-up">Sign up</Link></span></p>
                 <Button type="submit" size={"sm"}  disabled={loading}  className='bg-[#5C5CE9] my-32 rounded-[8px]'>
                     { loading ? ( <h1>Logging In....</h1>) :
                      (<h1>Sign In</h1>)

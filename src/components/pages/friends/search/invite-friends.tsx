@@ -97,7 +97,7 @@ const InviteFriends: React.FC<Props> = ({ title, initialValue }) => {
             ) : (
                 <div>
                     <p className="font-normal py-10 text-[16px] text-center leading-[16px] text-[#55606a]">
-                        We couldn't find that person. Want to invite them over?
+                        We couldn&#39;t find that person. Want to invite them over?
                     </p>
                     <InviteButton notificationType="success" disabled={!inputValue && true}>Invite Friend</InviteButton>
                 </div>

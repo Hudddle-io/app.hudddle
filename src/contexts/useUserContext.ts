@@ -1,7 +1,7 @@
 import React, { createContext, useContext } from 'react';
 import { useUserSession } from './useUserSession';
 
-const UserSessionContext = createContext<ReturnType<typeof useUserSession> | null>(null);
+const UserSessionContext = createContext<(ReturnType<typeof useUserSession> | null)>(null);
 
 export const UserSessionProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const userSession = useUserSession();

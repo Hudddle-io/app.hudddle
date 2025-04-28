@@ -35,7 +35,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({ message, btnMessage, o
                 <h1 className='font-bold text-xl text-green-600 text-center'>ICON HERE</h1>
                 {/* <Image src="/success.png" alt='success' className='py-0' width={140} height={140} /> */}
                 <CardDescription className='text-center text-black pb-5'>
-                    {message || <>You're about to cancel your invite <br />  You're sure about this?</>}
+                    {message || <>You&#39;re about to cancel your invite <br />  You&#39;re sure about this?</>}
                 </CardDescription>
                 <Button className='bg-red-400 w-full'>{btnMessage || <>Yes Delete</>}</Button>
             </div>
@@ -73,7 +73,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({ message, btnMessage,
                 <CardDescription className='text-center text-black pb-5'>
                     {message || (
                         <>
-                            Invite sent successfully <br /> you'll get notified once your <br /> friends accept your request
+                            Invite sent successfully <br /> you&#39;ll get notified once your <br /> friends accept your request
                         </>
                     )}
                 </CardDescription>
