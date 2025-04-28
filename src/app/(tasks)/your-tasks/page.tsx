@@ -43,7 +43,7 @@ const Page = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [errorTasks, setErrorTasks] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date } | undefined>();
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
@@ -112,10 +112,10 @@ const Page = () => {
 
     // Filter by date range
     if (dateRange?.from) {
-      filteredTasks = filteredTasks.filter(task => new Date(task.deadline) >= dateRange.from);
+      filteredTasks = filteredTasks.filter(task => new Date(task.deadline) >= new Date(dateRange.from!));
     }
     if (dateRange?.to) {
-      filteredTasks = filteredTasks.filter(task => new Date(task.deadline) <= dateRange.to);
+      filteredTasks = filteredTasks.filter(task => new Date(task.deadline) <= new Date(dateRange.to!));
     }
 
     // Filter by category
