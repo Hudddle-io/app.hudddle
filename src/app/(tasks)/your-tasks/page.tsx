@@ -129,7 +129,7 @@ const Page = () => {
 
   const resetFilters = useCallback(() => {
     setSelectedStatuses([]);
-    setDateRange(undefined);
+    setDateRange({});
     setSelectedCategories([]);
     setTasks([...allTasks]);
   }, [allTasks]);
