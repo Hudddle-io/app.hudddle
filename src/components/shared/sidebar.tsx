@@ -85,14 +85,14 @@ const Sidebar = () => {
     }
   };
   return (
-    <section className="col-span-1 ring-1 ring-[#999999] flex items-start justify-center py-10 px-6">
+    <section className="col-span-1 ring-[0.6px] ring-[#999999] ring-opacity-[25%] flex items-start justify-center py-10 px-6">
       <div className="w-full h-full flex flex-col gap-[40px] items-center">
         <Link href={"/"}>
           <Image src={"/assets/logo.svg"} alt="logo" width={100} height={50} />
         </Link>
 
         {/* huddle user bar */}
-        <div className="relative shadow-xl mt-[50px] w-full h-fit rounded-lg bg-[#211451] px-[14px] py-[4px]">
+        <div className="relative shadow-xl mt-[50px] w-full h-fit rounded-[16px] bg-[#211451] px-[14px] py-[4px]">
           <div className="-translate-y-[60%] w-full h-fit flex justify-center ">
             <Image
               className="rounded-full shadow-xl"

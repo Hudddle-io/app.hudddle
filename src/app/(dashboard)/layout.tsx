@@ -16,11 +16,11 @@ export default function DashBoardLayout({
   return (
     <main className="w-full h-screen grid grid-cols-6  ">
       <Sidebar />
-      <div className="col-span-4 overflow-scroll scroll-hidden h-screen">
+      <div className="col-span-5 overflow-scroll scroll-hidden h-screen">
         <GoLiveCounter />
         {children}
       </div>
-      <Notificationbar />
+      {/* <Notificationbar /> */}
     </main>
   );
 }

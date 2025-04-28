@@ -7,10 +7,13 @@ import "@fontsource/red-hat-text/400.css";
 import "@fontsource/red-hat-text/400-italic.css"; 
 import StoreProvider from "@/store/StoreProvider";
 import { Toaster } from "@/components/ui/toaster"
+import localFont from "next/font/local";
 // import { AuthContext } from "@/contexts/AuthContext";
 
 
-const inter = Inter({ subsets: ["latin"] });
+const inriasans = localFont({
+  src: "../../public/fonts/inriaSans-Regular.ttf",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,7 +24,7 @@ export default function RootLayout({children}: Readonly<{children: React.ReactNo
   return (
     <StoreProvider>
       <html lang="en">
-        <body className={inter.className}>
+        <body className={inriasans.className}>
           {children}
           <Toaster />
           </body>

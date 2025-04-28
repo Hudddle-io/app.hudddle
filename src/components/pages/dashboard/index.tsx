@@ -48,6 +48,11 @@ const levelDescriptions: Record<UserLevelData["category"], string> = {
 };
 
 const PageDashboard: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const tasksPerPage = 5;
+
   const { currentUser, loading, error } = useUserSession();
   const [isLoadingStreak, setIsLoadingStreak] = useState(true);
   const [isLoadingLevels, setIsLoadingLevels] = useState(true);
@@ -55,6 +60,23 @@ const PageDashboard: React.FC = () => {
   const [todaysTasks, setTodaysTasks] = useState<TaskTodayProps[]>([]);
   const [userStreak, setUserStreak] = useState<UserStreakData | null>(null);
   const [userLevels, setUserLevels] = useState<UserLevelData[]>([]);
+
+
+  const filteredTasks = todaysTasks.filter(task => 
+    task.title.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
+  const indexOfLastTask = currentPage * tasksPerPage;
+  const indexOfFirstTask = indexOfLastTask - tasksPerPage;
+  const currentTasks = filteredTasks.slice(indexOfFirstTask, indexOfLastTask);
+  const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
 
   const updateDailyActiveMinutes = async (minutes: number) => {
     if (!currentUser?.id || isUpdatingActiveMinutes) {
@@ -261,15 +283,27 @@ const PageDashboard: React.FC = () => {
         </div>
 
         <div className="mt-10 flex justify-between items-center">
-          <h1 className="font-bold text-slate-600 text-xl">Today's task for {currentUser?.email}
+          <h1 className="font-bold text-slate-600 text-xl">Today's task for {currentUser?.first_name}
           </h1>
-          <SlidersHorizontal
-            size={18}
-            color="#D9D9D9"
-            className="cursor-pointer"
-          />
+        <div className="mt-4">
+        <input
+          type="text"
+          placeholder="Search tasks..."
+          className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
         </div>
         <Card className="mt-5 p-4 border-none max-h-60 overflow-y-auto neo-effect">
+        {/* {filteredTasks.map((task, index) => (
+          <TodaysTask key={index} task={task} />
+        ))}
+        {filteredTasks.length === 0 && (
+          <p className="text-slate-500">
+            {todaysTasks.length === 0 ? 'No tasks for today.' : 'No tasks match your search.'}
+          </p>
+        )} */}
           {todaysTasks.map((task, index) => (
             <TodaysTask key={index} task={task} />
           ))}
@@ -277,6 +311,37 @@ const PageDashboard: React.FC = () => {
             <p className="text-slate-500">No tasks for today.</p>
           )}
         </Card>
+        {filteredTasks.length > tasksPerPage && (
+        <div className="flex justify-center mt-4">
+          <nav className="inline-flex rounded-md shadow">
+            <button
+              onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
+              <button
+                key={number}
+                onClick={() => paginate(number)}
+                className={`px-3 py-1 border-t border-b border-gray-300 bg-white text-sm font-medium ${currentPage === number ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}`}
+              >
+                {number}
+              </button>
+            ))}
+            
+            <button
+              onClick={() => paginate(currentPage < totalPages ? currentPage + 1 : totalPages)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </nav>
+        </div>
+      )}
       </div>
     </section>
   );

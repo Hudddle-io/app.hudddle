@@ -22,7 +22,7 @@ const todaysTask: React.FC<TodaysTaskProps> = ({ task }) => {
                 <div className='flex gap-1 items-center p-0 text-custom-yellow'>+{task.points} <Zap size={18} /></div>
             </CardContent>
             <div className='col-span-2 flex items-center justify-end p-0'>
-                <Button className='bg-custom-purple'><Plus size={18} className='mr-2' /> Add to workroom</Button>
+                <Button className='bg-[#5C5CE9]'><Plus size={18} className='mr-2' /> Add to workroom</Button>
                 </div>
         </Card>
     )
