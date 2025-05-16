@@ -17,13 +17,9 @@ const Page = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [errorTasks, setErrorTasks] = useState<string | null>(null);
-<<<<<<< HEAD
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
-=======
   const [dateRange, setDateRange] = useState<
     { from?: Date | null; to?: Date | null } | undefined
   >();
->>>>>>> ecc7aad (updaated parts of the db)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
@@ -66,12 +62,6 @@ const Page = () => {
 
     // Filter by date range
     if (dateRange?.from) {
-<<<<<<< HEAD
-      filteredTasks = filteredTasks.filter(task => new Date(task.deadline) >= new Date(dateRange.from!));
-    }
-    if (dateRange?.to) {
-      filteredTasks = filteredTasks.filter(task => new Date(task.deadline) <= new Date(dateRange.to!));
-=======
       filteredTasks = filteredTasks.filter(
         (task) => dateRange.from && new Date(task.deadline) >= dateRange.from
       );
@@ -80,7 +70,6 @@ const Page = () => {
       filteredTasks = filteredTasks.filter(
         (task) => dateRange.to && new Date(task.deadline) <= dateRange.to
       );
->>>>>>> ecc7aad (updaated parts of the db)
     }
 
     // Filter by category
@@ -96,7 +85,7 @@ const Page = () => {
 
   const resetFilters = useCallback(() => {
     setSelectedStatuses([]);
-    setDateRange({});
+    setDateRange(undefined);
     setSelectedCategories([]);
     setTasks([...allTasks]);
   }, [allTasks]);
