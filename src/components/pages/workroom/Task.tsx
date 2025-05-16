@@ -8,7 +8,7 @@ const Task: FC<TaskProps> = ({ className, children, ...props }) => {
     <div
       {...props}
       className={
-        "w-full py-[10px] border-b-[1px] border-[#999999] flex items-center justify-between  " +
+        "w-full py-[6px] h-[clamp(2.8125rem,_1.2821vw,_3.75rem)] border-b-[1px] border-[#999999] flex items-center justify-between  " +
         className
       }
     >
@@ -23,7 +23,10 @@ function TaskDescription({
   ...props
 }: HtmlHTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={"flex flex-col gap-2 " + className} {...props}>
+    <div
+      className={"flex flex-col justify-between py-[2px]" + className}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -36,7 +39,8 @@ function TaskTitle({
   return (
     <h3
       className={
-        "text-[18px] font-bold leading-[22px] text-[#999999] " + className
+        "font-bold text-[clamp(0.875rem,_0.8066rem+0.3419vw,_1.125rem)] " +
+        className
       }
       {...props}
     >
@@ -51,8 +55,8 @@ function TaskDueTime({
 }: HtmlHTMLAttributes<HTMLDivElement>) {
   return (
     <div className={"flex items-center gap-[16px]  " + className} {...props}>
-      <Clock5 className="text-[#999999] font-thin " />
-      <span className="text-[#999999] font-normal text-[14px] ">
+      <Clock5 className="text-[#999999] font-thin text-[clamp(0.9375rem,_0.852rem+0.4274vw,_1.25rem)]" />
+      <span className="text-[#999999] font-normal text-[clamp(0.625rem,_0.5566rem+0.3419vw,_0.875rem)] ">
         Due by {children}
       </span>
     </div>

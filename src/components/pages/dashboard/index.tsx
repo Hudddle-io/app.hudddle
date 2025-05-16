@@ -41,14 +41,18 @@ interface UserData {
 }
 
 const levelDescriptions: Record<UserLevelData["category"], string> = {
-  Leader: "Create more tasks and delegate effectively to boost your leadership score.",
-  Workaholic: "Complete tasks on time and consistently to increase your workaholic level.",
-  "Team Player": "Collaborate on tasks and accept invites to enhance your team player status.",
-  Slacker: "Improve your task completion rate and stay active daily to avoid being a slacker.",
+  Leader:
+    "Create more tasks and delegate effectively to boost your leadership score.",
+  Workaholic:
+    "Complete tasks on time and consistently to increase your workaholic level.",
+  "Team Player":
+    "Collaborate on tasks and accept invites to enhance your team player status.",
+  Slacker:
+    "Improve your task completion rate and stay active daily to avoid being a slacker.",
 };
 
 const PageDashboard: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
   const tasksPerPage = 5;
@@ -61,9 +65,8 @@ const PageDashboard: React.FC = () => {
   const [userStreak, setUserStreak] = useState<UserStreakData | null>(null);
   const [userLevels, setUserLevels] = useState<UserLevelData[]>([]);
 
-
-  const filteredTasks = todaysTasks.filter(task => 
-    task.title.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredTasks = todaysTasks.filter((task) =>
+    task.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const indexOfLastTask = currentPage * tasksPerPage;
@@ -76,7 +79,6 @@ const PageDashboard: React.FC = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
-
 
   const updateDailyActiveMinutes = async (minutes: number) => {
     if (!currentUser?.id || isUpdatingActiveMinutes) {
@@ -227,10 +229,12 @@ const PageDashboard: React.FC = () => {
   // if (error) return <div>Error:{error}</div>;
 
   const levelImageMap: Record<UserLevelData["category"], string | undefined> = {
-    Leader: statsCardsData.find(stat => stat.title === "Leader")?.image,
-    Workaholic: statsCardsData.find(stat => stat.title === "Workaholic")?.image,
-    "Team Player": statsCardsData.find(stat => stat.title === "Team Player")?.image,
-    Slacker: statsCardsData.find(stat => stat.title === "Slacker")?.image,
+    Leader: statsCardsData.find((stat) => stat.title === "Leader")?.image,
+    Workaholic: statsCardsData.find((stat) => stat.title === "Workaholic")
+      ?.image,
+    "Team Player": statsCardsData.find((stat) => stat.title === "Team Player")
+      ?.image,
+    Slacker: statsCardsData.find((stat) => stat.title === "Slacker")?.image,
   };
 
   return (
@@ -243,14 +247,20 @@ const PageDashboard: React.FC = () => {
       />
       <div className="mt-10">
         <p className="text-custom-semiBlack font-semibold text-right">
-          Streaks: <span className="text-custom-yellow">{userStreak?.current_streak || 0}</span>
+          Streaks:{" "}
+          <span className="text-custom-yellow">
+            {userStreak?.current_streak || 0}
+          </span>
           {/* {userStreak?.highest_streak && (
             <span className="text-sm text-gray-500 ml-2">
               (Highest: {userStreak.highest_streak})
             </span>
           )} */}
         </p>
-        <ProductivitySection currentUser={currentUser} updateDailyActiveMinutes={updateDailyActiveMinutes} />
+        <ProductivitySection
+          currentUser={currentUser}
+          updateDailyActiveMinutes={updateDailyActiveMinutes}
+        />
         {currentUser && (
           <h1 className="mt-10 font-bold text-slate-600 text-xl">
             Weekly Stats
@@ -283,20 +293,21 @@ const PageDashboard: React.FC = () => {
         </div>
 
         <div className="mt-10 flex justify-between items-center">
-          <h1 className="font-bold text-slate-600 text-xl">Today&#39;s task for {currentUser?.first_name}
+          <h1 className="font-bold text-slate-600 text-xl">
+            Today's task for {currentUser?.first_name}
           </h1>
-        <div className="mt-4">
-        <input
-          type="text"
-          placeholder="Search tasks..."
-          className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+          <div className="mt-4">
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
         <Card className="mt-5 p-4 border-none max-h-60 overflow-y-auto neo-effect">
-        {/* {filteredTasks.map((task, index) => (
+          {/* {filteredTasks.map((task, index) => (
           <TodaysTask key={index} task={task} />
         ))}
         {filteredTasks.length === 0 && (
@@ -312,36 +323,46 @@ const PageDashboard: React.FC = () => {
           )}
         </Card>
         {filteredTasks.length > tasksPerPage && (
-        <div className="flex justify-center mt-4">
-          <nav className="inline-flex rounded-md shadow">
-            <button
-              onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
+          <div className="flex justify-center mt-4">
+            <nav className="inline-flex rounded-md shadow">
               <button
-                key={number}
-                onClick={() => paginate(number)}
-                className={`px-3 py-1 border-t border-b border-gray-300 bg-white text-sm font-medium ${currentPage === number ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}`}
+                onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {number}
+                Previous
               </button>
-            ))}
-            
-            <button
-              onClick={() => paginate(currentPage < totalPages ? currentPage + 1 : totalPages)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </nav>
-        </div>
-      )}
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (number) => (
+                  <button
+                    key={number}
+                    onClick={() => paginate(number)}
+                    className={`px-3 py-1 border-t border-b border-gray-300 bg-white text-sm font-medium ${
+                      currentPage === number
+                        ? "text-blue-600 bg-blue-50"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {number}
+                  </button>
+                )
+              )}
+
+              <button
+                onClick={() =>
+                  paginate(
+                    currentPage < totalPages ? currentPage + 1 : totalPages
+                  )
+                }
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </nav>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -395,7 +416,7 @@ export default PageDashboard;
 //         setCurrentUser(userData);
 //         console.log(userData);
 //         return userData;
-       
+
 //       } catch (error) {
 //         console.error("Failed to fetch user data:", error);
 //         setError(error);
@@ -405,7 +426,6 @@ export default PageDashboard;
 //     };
 //     getCurrentUser();
 //   }, []);
-
 
 //   if (loading) {
 //     return <div>Loading...</div>;
@@ -431,7 +451,7 @@ export default PageDashboard;
 //         {currentUser && (
 //           <h1 className="mt-10 font-bold text-slate-600 text-xl">
 //             Welcome, {currentUser.name}
-            
+
 //           </h1>
 //         )}
 //         <div className="grid grid-cols-2 mt-2 gap-x-10 gap-y-5">
@@ -492,7 +512,7 @@ export default PageDashboard;
 // //           "Authorization": `Bearer ${token}`,
 // //         }
 // //       });
-  
+
 // //       if (!response.ok) {
 // //         throw new Error(`Error: ${response.status} ${response.statusText}`);
 // //       }
@@ -505,7 +525,7 @@ export default PageDashboard;
 // //   };
 
 // //  const currentUser = getCurrentUser();
-  
+
 // //  console.log(currentUser);
 // //   return (
 // //     <section className="pt-8 pb-10 px-12">

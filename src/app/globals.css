@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -68,14 +67,14 @@
 }
 
 body {
-  font-family: 'Inria Sans', sans-serif;
+  font-family: "Inria Sans", sans-serif;
 }
 
 @font-face {
   font-family: Inria Sans;
-  src: url('../../public/fonts/inria-bold.ttf') format('ttf'),
-   url('../../public/fonts/inria-bold.ttf') format('ttf');
-  font-weight:700;
+  src: url("../../public/fonts/inria-bold.ttf") format("ttf"),
+    url("../../public/fonts/inria-bold.ttf") format("ttf");
+  font-weight: 700;
   font-style: normal;
 }
 @layer base {
@@ -84,6 +83,28 @@ body {
   }
   body {
     background: #fdfcfc;
+  }
+}
+
+@layer utilities {
+  .input-morph {
+    background: #fdfcfc;
+    @apply border border-[#091e4213];
+    box-shadow: 5px 5px 10px #cacaca31, -7px -7px 10px #ffffff;
+  }
+  .select-morph {
+    background: #fdfcfc;
+    @apply border border-[#091e4213];
+    box-shadow: 5px 5px 10px #cacaca31, -7px -7px 10px #ffffff;
+  }
+  .task-morph {
+    background: #fdfcfc;
+    @apply border border-[rgba(149,111,214,0.6)];
+    box-shadow: 5px 5px 10px #cacaca31, -7px -7px 10px #ffffff;
+  }
+  .card-morph {
+    background: #fdfcfc;
+    box-shadow: 5px 5px 10px #cacaca31, -7px -7px 10px #ffffff;
   }
 }
 

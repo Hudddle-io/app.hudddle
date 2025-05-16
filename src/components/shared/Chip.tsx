@@ -7,7 +7,7 @@ const Chip: FC<ChipProps> = ({ children, className, ...props }) => {
   return (
     <div
       className={
-        "flex items-center gap-4 p-2 bg-[#956FD666] rounded-[8px] cursor-default " +
+        "flex items-center h-[clamp(1.875rem,_0.6838vh,_2.375rem)] gap-2 p-1 bg-[#956fd649] rounded-[8px] cursor-default text-[clamp(0.75rem,_0.5128vw,_1.125rem)] " +
         className
       }
       {...props}
@@ -23,13 +23,9 @@ interface ChipImageProps {
 
 function ChipImage({ src }: ChipImageProps) {
   return (
-    <Image
-      src={src}
-      alt={"img"}
-      width={30}
-      height={30}
-      className={"rounded-full "}
-    />
+    <div className="relative w-[clamp(1.375rem,_0.6838vw,_1.875rem)] h-[clamp(1.375rem,_0.6838vw,_1.875rem)]">
+      <Image src={src} alt={"img"} fill className={"rounded-full "} />
+    </div>
   );
 }
 function ChipTitle({
@@ -41,8 +37,7 @@ function ChipTitle({
     <h2
       {...props}
       className={
-        "font-normal text-[18px] leading-[20px]  capitalize" +
-        className
+        "font-normal text-[18px] leading-[20px]  capitalize" + className
       }
     >
       {children}

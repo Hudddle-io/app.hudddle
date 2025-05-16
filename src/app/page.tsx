@@ -8,24 +8,23 @@ import Dashboard from "./(dashboard)/dashboard/page";
 import { useUserSession } from "@/contexts/useUserSession";
 import { redirect } from "next/navigation";
 
-
 export default function Home() {
-  const {currentUser} = useUserSession();
+  const { currentUser } = useUserSession();
 
-  if(currentUser) {
-    redirect('/dashboard');
+  if (currentUser) {
+    redirect("/dashboard");
   }
 
-//  const auth = getAuth();
+  //  const auth = getAuth();
 
-//  const user = auth.currentUser;
+  //  const user = auth.currentUser;
 
-//  if(user){
-//   return <Dashboard/>
-//  }
+  //  if(user){
+  //   return <Dashboard/>
+  //  }
   return (
     <div className="">
-      <SignUp/>
+      <SignUp />
       {/* <Link href={'/dashboard'}>
         <Button>Dashboard</Button>
       </Link> */}

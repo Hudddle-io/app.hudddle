@@ -21,39 +21,47 @@ const WorkroomFooter: FC<WorkroomFooterProps> = ({
           set_current_step((prev: number) => prev - 1);
         }}
         disabled={current_step > 1 ? false : true}
-        className={`h-[47px] flex-col font-normal text-[#956FD6] disabled:text-[#C4C4C4] hover:bg-transparent`}
+        className={`h-[clamp(2.25rem,_1.3675vh,_3.25rem)] w-[clamp(6.25rem,_2.906vw,_8.375rem)] flex-col font-normal text-[#956FD6] disabled:text-[#C4C4C4] hover:bg-transparent`}
         variant={"ghost"}
       >
-        <span className="self-end text-[12px] leading-[16px]">previous</span>
-        <span className="flex items-center gap-2 text-[18px] leading-[22px]">
+        <span className="self-end text-[clamp(0.5rem,_0.3419vw,_0.75rem)] leading-[16px]">
+          previous
+        </span>
+        <span className="flex items-center gap-2 text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[22px]">
           <SkipBack />{" "}
-          {current_step === 1
-            ? "Create Workrrom"
+          {current_step == 1
+            ? ""
             : current_step === 2
-            ? "Invite Members"
+            ? "Create Workroom"
             : current_step === 3
+            ? "Invite Members"
+            : current_step === 4
             ? "Add Task"
             : ""}
         </span>
       </Button>
-      {current_step === 3 ? (
+      {current_step === 4 ? (
         ""
       ) : (
         <Button
-          disabled={current_step === 3 ? true : false}
+          disabled={current_step === 4 ? true : false}
           onClick={() => {
             set_current_step((prev: number) => prev + 1);
           }}
-          className="h-[47px] flex-col font-normal text-[#956FD6] disabled:text-[#C4C4C4] hover:bg-transparent"
+          className="h-[clamp(2.25rem,_1.3675vh,_3.25rem)] w-[clamp(6.25rem,_2.906vw,_8.375rem)] flex-col font-normal text-[#956FD6] disabled:text-[#C4C4C4] hover:bg-transparent"
           variant={"ghost"}
         >
-          <span className="self-start text-[12px] leading-[16px]">next:</span>
-          <span className="flex items-center gap-2 text-[18px] leading-[22px]">
+          <span className="self-start text-[clamp(0.5rem,_0.3419vw,_0.75rem)] leading-[16px]">
+            next:
+          </span>
+          <span className="flex items-center gap-2 text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[22px]">
             <SkipForward />
             {current_step === 1
-              ? "Add Task"
+              ? "Select Friends"
               : current_step === 2
-              ? "Go live"
+              ? "Add or Create Task"
+              : current_step === 3
+              ? "Go Live"
               : ""}
           </span>
         </Button>

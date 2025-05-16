@@ -1,59 +1,63 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Chip, ChipImage, ChipTitle } from "@/components/shared/Chip";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-type Props = {};
+interface Props {
+  stepsData: any;
+  setStepsData: React.Dispatch<any>;
+}
 
-const InviteMembers = (props: Props) => {
+const InviteMembers = ({ stepsData, setStepsData }: Props) => {
+  const [members, setMembers] = useState<string[]>([]);
+  const [email, setEmail] = useState<string>("");
+
+  const handleAddMember = () => {
+    if (email.trim() !== "") {
+      setMembers((prev) => [...prev, email.trim()]);
+      setEmail("");
+    }
+  };
+
   return (
-    <main className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
+    <main className="flex flex-col gap-[clamp(1.5rem,_0.6838vw,_2rem)]">
+      <div className="flex flex-col items-center gap-2">
         <label
           htmlFor="addTeamMembers"
-          className="font-normal text-[16px] leading-[16px] text-[#44546F]"
+          className="font-normal text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[16px] text-[#44546F]"
         >
-          Add team members
+          Add your friends to <span className="font-bold">Work room name</span>
         </label>
-        <span className="flex gap-8 items-center">
+        <span className="flex gap-[clamp(1.5rem,_0.6838vw,_2rem)] items-center">
           <Input
-            className="w-[336px] h-[60px] neo-effect ring-1 ring-[#091E4224] text-[#626F86] text-[18px] leading-[20px] font-normal outline-none"
+            className="w-[clamp(18rem,_4.1026vw,_21rem)] h-[clamp(2.25rem,_2.0513vw,_3.75rem)] neo-effect ring-1 ring-[#091E4224] text-[#626F86] text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[20px] font-normal outline-none"
             placeholder="Email address"
             name="addTeamMembers"
             id="addTeamMembers"
             type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
-          <Button variant={"ghost"}>
-            <Plus className="text-[#956FD666] w-[14px] h-[14px] text-[14px]" />
+          <Button id="add" variant="ghost" onClick={handleAddMember}>
+            <Plus className="text-[#956FD666] w-[clamp(0.7rem,_0.5128vw,_0.875rem)] h-[clamp(0.7rem,_0.5128vh,_0.875rem)] text-[clamp(0.5rem,_0.5128vw,_0.875rem)]" />
           </Button>
         </span>
       </div>
-      <div className="w-[350px] flex flex-wrap h-fit gap-2">
-        <Chip>
-          <ChipImage src="/assets/images/member1.png" />
-          <ChipTitle>amaka ezeocha</ChipTitle>
-        </Chip>
-        <Chip>
-          <ChipImage src="/assets/images/member1.png" />
-          <ChipTitle>latemin</ChipTitle>
-        </Chip>
-        <Chip>
-          <ChipImage src="/assets/images/member1.png" />
-          <ChipTitle>onyema ihuoma joe</ChipTitle>
-        </Chip>
-        <Chip>
-          <ChipImage src="/assets/images/member1.png" />
-          <ChipTitle>dave</ChipTitle>
-        </Chip>
-        <Chip>
-          <ChipImage src="/assets/images/member1.png" />
-          <ChipTitle>latema chidinma ofestus</ChipTitle>
-        </Chip>
+      <div className="w-[clamp(20.5rem,_5.9829vw,_21.875rem)] flex flex-wrap h-fit gap-2">
+        {members.length === 0 ? (
+          <p className="text-[#999999]">No members yet</p>
+        ) : (
+          members.map((member, index) => (
+            <Chip key={index}>
+              <ChipImage src="/assets/images/member1.png" />
+              <ChipTitle>{member}</ChipTitle>
+            </Chip>
+          ))
+        )}
       </div>
-
-      <Button className="w-[330px] bg-[#956FD699] mt-10">
+      <Button className="w-[clamp(17.5rem,_4.2735vw,_20.625rem)] bg-[#956FD699] mt-[clamp(1.875rem,_0.8547vw,_2.5rem)]">
         Invite team members
       </Button>
     </main>

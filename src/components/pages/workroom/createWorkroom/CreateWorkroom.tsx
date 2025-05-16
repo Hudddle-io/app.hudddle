@@ -1,31 +1,73 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import InviteMembers from "../inviteMembers";
 import AddTask from "../AddTask";
 import Golive from "../Golive";
 import WorkroomHeader from "../workroomHeader";
 import WorkroomFooter from "../WorkroomFooter";
+import CreateRoom from "../create-room";
 
 const CreateWorkroom = () => {
-  const [currentstep, setCurrentstep] = useState<number>(1);
-  const create_steps = ["Select team members", "add task", "Go live !"];
+  const router = useRouter();
+  const pathname = usePathname();
+  const [currentstep, setCurrentstep] = useState<number>(
+    parseInt(localStorage.getItem("currentStep") || "1")
+  );
+  const [stepsData, setStepsData] = useState<any>(
+    JSON.parse(localStorage.getItem("stepsData") || "{}")
+  );
+  const [workroomId, setWorkroomId] = useState<string | null>(null);
+
+  const handleWorkroomCreated = (id: string) => {
+    setWorkroomId(id);
+  };
+
+  const create_steps = [
+    "Create Workroom",
+    "Select team members",
+    "Add task",
+    "Go live !",
+  ];
+
+  useEffect(() => {
+    localStorage.setItem("currentStep", currentstep.toString());
+    localStorage.setItem("stepsData", JSON.stringify(stepsData));
+  }, [currentstep, stepsData]);
+
+  useEffect(() => {
+    if (!pathname.includes("/workroom/create")) {
+      localStorage.removeItem("currentStep");
+      localStorage.removeItem("stepsData");
+    }
+  }, [pathname]);
 
   return (
-    <div className="py-12 px-10 flex flex-col gap-8">
+    <div className="p-[clamp(1.75rem,_1.0256vw,_2.5rem)] flex flex-col gap-[clamp(1.25rem,_1.0256vw,_2rem)]">
       <WorkroomHeader
         current_step={currentstep}
         header_steps={create_steps}
         headerTitle="create workrooms"
       />
 
-      <div className="flex flex-col neo-effect px-4 py-10 items-center w-full h-fit mt-8 gap-8">
+      <div className="flex flex-col neo-effect px-4 py-[clamp(1.375rem,_1.3675vw,_2.375rem)] items-center w-full h-fit mt-[clamp(1.25rem,_1.0256vw,_2rem)] gap-8">
         {/* main content */}
         {currentstep === 1 ? (
-          <InviteMembers />
+          <CreateRoom
+            stepsData={stepsData}
+            setStepsData={setStepsData}
+            onWorkroomCreated={handleWorkroomCreated}
+          />
         ) : currentstep === 2 ? (
-          <AddTask />
+          <InviteMembers stepsData={stepsData} setStepsData={setStepsData} />
         ) : currentstep === 3 ? (
-          <Golive />
+          <AddTask
+            stepsData={stepsData}
+            setStepsData={setStepsData}
+            workroomId={workroomId || ""}
+          />
+        ) : currentstep === 4 ? (
+          <Golive stepsData={stepsData} setStepsData={setStepsData} />
         ) : (
           ""
         )}

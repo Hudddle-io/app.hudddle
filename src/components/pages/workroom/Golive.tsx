@@ -16,11 +16,14 @@ import { Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import GoliveButton from "@/components/shared/golive-components/golive-button";
 
-type Props = {};
+interface Props {
+  stepsData: any;
+  setStepsData: React.Dispatch<any>;
+}
 
-const Golive = (props: Props) => {
+const Golive = ({ stepsData, setStepsData }: Props) => {
   return (
-    <motion.div className="relative w-3/4 h-3/4 rounded-[6px] neo-effect border-[1px] border-[#091E4224] p-6 flex flex-col gap-8">
+    <motion.div className="relative w-3/4 h-3/4 rounded-[6px] p-6 flex flex-col gap-8">
       <Header>
         <HeaderTexts>
           <h2 className="font-bold text-[18px] leading-[22px] text-[#262626]">
@@ -48,7 +51,7 @@ const Golive = (props: Props) => {
       </Header>
 
       <div className="flex flex-col gap-4 mt-8">
-        <h2 className="font-bold text-[18px] leading-[22px] text-[#262626]">
+        <h2 className="font-bold text-[clamp(0.9375rem,_0.4274vw,_1.25rem)] leading-[22px] text-[#956FD6]">
           Workroom Tasks
         </h2>
         {workroomtasks.map((task) => {
@@ -57,14 +60,23 @@ const Golive = (props: Props) => {
           return (
             <Task key={_id}>
               <TaskDescription>
-                <TaskTitle>{task.title}</TaskTitle>
+                <TaskTitle className="text-[#211451] text-[clamp(0.9375rem,_0.4274vw,_1.25rem)]">
+                  {task.title}
+                </TaskTitle>
                 <TaskDueTime>{task.Due}</TaskDueTime>
               </TaskDescription>
               <TaskActions>
-                <span className="text-[#EEAE05] flex items-center">
-                  +<Zap width={12} height={12} />
+                <span className="text-[#EEAE05] flex items-center text-[clamp(0.5rem, _0.2564vw, _0.6875rem)]">
+                  +<Zap width={10} height={10} />
                   {task.points}
                 </span>
+
+                <Button
+                  variant={"ghost"}
+                  className="text-[#EF5A63] text-[clamp(0.625rem,_0.1709vw,_0.75rem)] hover:bg-transparent ml-[clamp(1.375rem,_1.2821vw,_2.3125rem)]"
+                >
+                  Remove
+                </Button>
               </TaskActions>
             </Task>
           );

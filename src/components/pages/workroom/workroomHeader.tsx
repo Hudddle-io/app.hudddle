@@ -29,8 +29,9 @@ const WorkroomHeader: FC<WorkroomHeader> = ({
               <MoveLeft className="stroke-[1px] text-[#4D4D4D]" />
             </Link>
           </Button>
-          <h3 className="font-semibold text-[18px] leading-[22px] text-[#4D4D4D]">
-            {headerTitle}
+          <h3 className="font-semibold text-[clamp(0.5rem,_0.6838vw,_1rem)] leading-[22px] text-[#4D4D4D]">
+            {headerTitle} :{" "}
+            <span className="font-light">Select your friends</span>
           </h3>
         </div>
 
@@ -39,16 +40,19 @@ const WorkroomHeader: FC<WorkroomHeader> = ({
             const { _id } = generateUniqueKey(step);
 
             return (
-              <div key={_id} className="flex flex-col justify-between h-16">
+              <div
+                key={_id}
+                className="flex flex-col justify-between h-[clamp(1.375rem,_1.3675vh,_2.375rem)]"
+              >
                 <Progress
                   color="#956FD666 "
-                  className="h-[11px] w-[189px] bg-[#D9D9D9]"
+                  className="w-[clamp(11.8125rem,_3.3906vw,_14.2919rem)] bg-[#D9D9D9]"
                   value={
                     current_step === i + 1 || i + 1 < current_step ? 100 : 0
                   }
                 />
                 <span
-                  className={`font-normal text-[18px] leading-[22px] text-[#956FD6] ${
+                  className={`font-normal text-[clamp(0.75rem,_0.5128vw,_1.125rem)] translate-y-2 text-[#956FD6] ${
                     current_step === i + 1 || i + 1 < current_step
                       ? "block"
                       : "hidden"
