@@ -39,24 +39,24 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function Component() {
+function WeeklyChart() {
   return (
-    <Card>
-      <CardHeader>
+    <Card className="bg-transparent shadow-none ring-0 border-0">
+      {/* <CardHeader>
         <CardTitle>Area Chart - Legend</CardTitle>
         <CardDescription>
           Showing total visitors for the last 6 months
         </CardDescription>
-      </CardHeader>
+      </CardHeader> */}
       <CardContent>
-        <ChartContainer config={chartConfig}>
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[160px] w-[600px]"
+        >
           <AreaChart
             accessibilityLayer
             data={chartData}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
+            margin={{ left: 12, right: 12 }}
           >
             <CartesianGrid vertical={false} />
             <XAxis
@@ -73,24 +73,24 @@ export function Component() {
             <Area
               dataKey="mobile"
               type="natural"
-              fill="var(--color-mobile)"
+              fill="#956fd670"
               fillOpacity={0.4}
-              stroke="var(--color-mobile)"
+              stroke="#956FD6"
               stackId="a"
             />
             <Area
               dataKey="desktop"
               type="natural"
-              fill="var(--color-desktop)"
+              fill="#956fd670"
               fillOpacity={0.4}
-              stroke="var(--color-desktop)"
+              stroke="#956FD6"
               stackId="a"
             />
             <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter>
+      {/* <CardFooter>
         <div className="flex w-full items-start gap-2 text-sm">
           <div className="grid gap-2">
             <div className="flex items-center gap-2 font-medium leading-none">
@@ -101,7 +101,9 @@ export function Component() {
             </div>
           </div>
         </div>
-      </CardFooter>
+      </CardFooter> */}
     </Card>
   );
 }
+
+export default WeeklyChart;

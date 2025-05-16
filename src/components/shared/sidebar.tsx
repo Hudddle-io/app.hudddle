@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { cva } from "class-variance-authority";
 import Image from "next/image";
 import Link from "next/link";
-import React, { FC, HTMLAttributes, useState } from "react";
+import React, { FC, HTMLAttributes, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dribbble, Figma, Home, ImageIcon, LogOut, Pencil } from "lucide-react";
 import { sideLinks } from "@/data/data";
@@ -12,6 +12,7 @@ import { useUserSession } from "@/contexts/useUserSession";
 import { useRouter, usePathname } from "next/navigation";
 import pinterest from "../../../public/assets/pinterest.svg";
 import dribble from "../../../public/assets/dribble.svg";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 interface UserOnlineStatusProps extends HTMLAttributes<HTMLDivElement> {
   isOnline: boolean;
@@ -56,6 +57,21 @@ const Sidebar = () => {
     currentUser,
     logout: logoutContext,
   } = useUserSession();
+
+  useEffect(() => {
+    if (currentUser) {
+      setPreviewImage(currentUser.avatar_url || null);
+    } else {
+      setPreviewImage(null);
+    }
+  }, [currentUser]);
+
+  const getInitials = (
+    firstName: string | undefined,
+    lastName: string | undefined
+  ) => {
+    return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`;
+  };
 
   const handleLogout = async () => {
     const storedToken = localStorage.getItem("token");
@@ -139,14 +155,23 @@ const Sidebar = () => {
         >
           <div className="-translate-y-[60%] w-full h-fit flex justify-center relative">
             <div className="w-[100px] h-[100px] relative">
-              <Image
+              <Avatar>
+                <AvatarImage
+                  src={`${previewImage}`}
+                  alt={`@${currentUser?.first_name}`}
+                />
+                <AvatarFallback>
+                  {getInitials(currentUser?.first_name, currentUser?.last_name)}
+                </AvatarFallback>
+              </Avatar>
+              {/* <Image
                 className="rounded-full shadow-xl ring-1 ring-[#956FD6] object-cover"
                 fill
                 id="user-img"
                 src={previewImage || "/assets/profileImage.svg"}
                 alt="user image"
                 loading="lazy"
-              />
+              /> */}
             </div>
             {isHovered && (
               <div className="absolute inset-0 flex items-end justify-end gap-2">
@@ -228,7 +253,7 @@ const Sidebar = () => {
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
             <div className="relative">
               <Image
-                src={previewImage || "/assets/profileImage.svg"}
+                src={previewImage || ""}
                 alt="Preview"
                 width={300}
                 height={300}

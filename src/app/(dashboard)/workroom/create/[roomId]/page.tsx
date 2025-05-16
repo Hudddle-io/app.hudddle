@@ -1,9 +1,15 @@
+"use client";
+
 import CreateWorkroom from "@/components/pages/workroom/createWorkroom/CreateWorkroom";
 import React from "react";
+import { useParams } from "next/navigation";
 
 type Props = {};
 
-const page = (props: Props) => {
+const Page = (props: Props) => {
+  const params = useParams();
+  const roomId = params.roomId as string;
+
   return (
     <div>
       <CreateWorkroom></CreateWorkroom>
@@ -11,4 +17,4 @@ const page = (props: Props) => {
   );
 };
 
-export default page;
+export default Page;

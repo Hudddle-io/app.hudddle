@@ -103,7 +103,7 @@ const Header: React.FC<HeaderProps> = ({
                 <p className="text-xs">Your team mates are waiting for you</p>
               </div>
               <Button className="bg-[#956FD6] text-xl shadow-md">
-                <Link href={`workroom/join`} className="flex items-center">
+                <Link href={`/workroom`} className="flex items-center">
                   <span className="mr-2.5">
                     <Globe size={10} />
                   </span>

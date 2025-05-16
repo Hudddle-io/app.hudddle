@@ -1,4 +1,5 @@
 import { Task } from "@/app/(tasks)/your-tasks/my-task";
+import { backendUri } from "./config";
 
 type FetchTaskProps = {
   setLoadingTasks: React.Dispatch<React.SetStateAction<boolean>>;
@@ -24,7 +25,7 @@ const fetchTasks = async ({
 
   try {
     const response = await fetch(
-      `https://hudddle-backend.onrender.com/api/v1/tasks?page=1&page_size=1000`,
+      `${backendUri}/api/v1/tasks?page=1&page_size=1000`,
       {
         method: "GET",
         headers: {

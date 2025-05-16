@@ -34,6 +34,7 @@ import Image from "next/image";
 import FilterCategory from "@/app/(tasks)/your-tasks/filter-category";
 import { cn } from "@/lib/utils";
 import filter from "../../../../public/assets/filter.png";
+import { backendUri } from "@/lib/config";
 
 interface Props {
   stepsData: any;
@@ -67,7 +68,7 @@ const AddTask = ({ stepsData, setStepsData, workroomId }: Props) => {
         }
 
         const response = await axios.get(
-          `https://hudddle-backend.onrender.com/api/v1/workrooms/${workroomId}/tasks`,
+          `${backendUri}/api/v1/workrooms/tasks`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -76,6 +77,7 @@ const AddTask = ({ stepsData, setStepsData, workroomId }: Props) => {
         );
 
         setTasks(response.data);
+        console.log(tasks);
       } catch (error) {
         toast({
           description: "Failed to fetch tasks. Please try again.",
@@ -87,7 +89,7 @@ const AddTask = ({ stepsData, setStepsData, workroomId }: Props) => {
     if (workroomId) {
       fetchTasks();
     }
-  }, [workroomId]);
+  }, [workroomId, tasks]);
 
   const handleAddTask = async () => {
     try {

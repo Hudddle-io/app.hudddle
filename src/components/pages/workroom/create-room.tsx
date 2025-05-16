@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
+import { backendUri } from "@/lib/config";
 import axios from "axios";
 import React from "react";
 
@@ -12,8 +13,8 @@ interface Props {
 }
 
 const CreateRoom = ({ stepsData, setStepsData, onWorkroomCreated }: Props) => {
-  const handleCreateWorkroom = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
     const token = localStorage.getItem("token");
     if (!token) {
@@ -24,14 +25,22 @@ const CreateRoom = ({ stepsData, setStepsData, onWorkroomCreated }: Props) => {
       return;
     }
 
+    const workroomId = localStorage.getItem("roomId");
+    if (!workroomId) {
+      toast({
+        description: "Workroom ID not found. Please create a workroom first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const workroomData = {
-      name: stepsData.name || "Default Workroom Name",
-      description: stepsData.description || "Default Description",
+      name: stepsData.name || "Untitled Room",
     };
 
     try {
-      const response = await axios.post(
-        "https://hudddle-backend.onrender.com/api/v1/workrooms",
+      const response = await axios.patch(
+        `${backendUri}/api/v1/workrooms/${workroomId}`,
         workroomData,
         {
           headers: {
@@ -40,20 +49,14 @@ const CreateRoom = ({ stepsData, setStepsData, onWorkroomCreated }: Props) => {
         }
       );
 
-      if (response.status === 201) {
+      if (response.status === 200) {
         toast({
-          description: "Workroom created successfully!",
+          description: "Workroom updated successfully!",
         });
-
-        // Notify parent component about the created workroom ID
-        if (onWorkroomCreated) {
-          onWorkroomCreated(response.data.id);
-          console.log(response.data.id);
-        }
       }
     } catch (error) {
       toast({
-        description: "Failed to create workroom. Please try again.",
+        description: "Failed to update workroom. Please try again.",
         variant: "destructive",
       });
     }
@@ -62,7 +65,7 @@ const CreateRoom = ({ stepsData, setStepsData, onWorkroomCreated }: Props) => {
   return (
     <div className="w-full h-[clamp(22.25rem,_19.0598vh,_36.1875rem)] rounded-[16px] flex items-center justify-center">
       <form
-        onSubmit={handleCreateWorkroom}
+        onSubmit={(e) => handleSubmit(e)}
         className="w-full flex flex-col gap-[clamp(1.25rem,_1.0256vw,_2rem)] items-center"
       >
         <Label

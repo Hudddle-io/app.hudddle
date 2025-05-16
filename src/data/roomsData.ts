@@ -4,6 +4,10 @@ export const rooms = [
     "peopleInRoom": true,
     "isActive": false,
     "createdByYou": true,
+    "kpi": { // Added room KPI
+      "kpiName": "Overall Design Quality",
+      "kpiMetric": "85%"
+    },
     "members": [
       {
         "name": "Michael Mcintyre",
@@ -16,7 +20,11 @@ export const rooms = [
           "Boost deployment frequency",
           "Streamline design process"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Design Task Completion",
+          "kpiMetric": "75%"
+        }
       },
       {
         "name": "Dawn Gonzalez",
@@ -29,30 +37,73 @@ export const rooms = [
           "Enhance customer satisfaction",
           "Improve test coverage"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Design Task Completion",
+          "kpiMetric": "92%"
+        }
       }
     ],
     "tasks": [
       {
-        "taskName": "Read exactly note",
-        "dueBy": "2025-06-03",
-        "assignedTo": [
+        id: "task-1",
+        created_at: "2024-07-24T10:00:00Z",
+        updated_at: "2024-07-24T12:30:00Z",
+        title: "Read exactly note",
+        duration: "2.5 hours",
+        is_recurring: false,
+        status: "in progress",
+        category: "Documentation",
+        task_tools: ["Notion", "Google Docs"],
+        deadline: "2025-06-03",
+        due_by: "2025-06-03",
+        task_point: 10,
+        completed_at: null,
+        created_by_id: "user-1",
+        workroom_id: "room-1",
+        assignedTo: [
           "Michael Mcintyre",
           "Dawn Gonzalez"
         ]
       },
       {
-        "taskName": "Focus know two cut",
-        "dueBy": "2025-05-25",
-        "assignedTo": [
+        id: "task-2",
+        created_at: "2024-07-24T14:00:00Z",
+        updated_at: "2024-07-24T16:00:00Z",
+        title: "Focus know two cut",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "completed",
+        category: "Design",
+        task_tools: ["Figma"],
+        deadline: "2025-05-25",
+        due_by: "2025-05-25",
+        task_point: 15,
+        completed_at: "2024-07-24T16:00:00Z",
+        created_by_id: "user-2",
+        workroom_id: "room-1",
+        assignedTo: [
           "Michael Mcintyre",
           "Dawn Gonzalez"
         ]
       },
       {
-        "taskName": "Environment him available fall character",
-        "dueBy": "2025-05-30",
-        "assignedTo": [
+        id: "task-3",
+        created_at: "2024-07-25T09:00:00Z",
+        updated_at: "2024-07-25T11:00:00Z",
+        title: "Environment him available fall character",
+        duration: "2 hours",
+        is_recurring: true,
+        status: "in progress",
+        category: "Research",
+        task_tools: ["Miro", "Google Docs"],
+        deadline: "2025-05-30",
+        due_by: "2025-05-30",
+        task_point: 8,
+        completed_at: null,
+        created_by_id: "user-1",
+        workroom_id: "room-1",
+        assignedTo: [
           "Michael Mcintyre"
         ]
       }
@@ -63,6 +114,10 @@ export const rooms = [
     "peopleInRoom": true,
     "isActive": false,
     "createdByYou": false,
+    "kpi": {  // Added room KPI
+      "kpiName": "Code Quality",
+      "kpiMetric": "90%"
+    },
     "members": [
       {
         "name": "Sarah Moore",
@@ -75,7 +130,11 @@ export const rooms = [
           "Reduce bug count",
           "Increase feature delivery"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": {  // Added member KPI
+          "kpiName": "Code Review Turnaround",
+          "kpiMetric": "80%"
+        }
       },
       {
         "name": "Richard Hernandez",
@@ -88,7 +147,11 @@ export const rooms = [
           "Boost deployment frequency",
           "Improve test coverage"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": {  // Added member KPI
+          "kpiName": "Bug Fix Rate",
+          "kpiMetric": "65%"
+        }
       },
       {
         "name": "Alan Aguilar",
@@ -101,7 +164,11 @@ export const rooms = [
           "Reduce bug count",
           "Streamline design process"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Feature Implementation",
+          "kpiMetric": "70%"
+        }
       },
       {
         "name": "Elizabeth Smith",
@@ -114,23 +181,53 @@ export const rooms = [
           "Improve UI consistency",
           "Streamline design process"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": {  // Added member KPI
+          "kpiName": "Code Contribution",
+          "kpiMetric": "95%"
+        }
       }
     ],
     "tasks": [
       {
-        "taskName": "Within energy involve kind another",
-        "dueBy": "2025-06-09",
-        "assignedTo": [
+        id: "task-4",
+        created_at: "2024-07-25T10:00:00Z",
+        updated_at: "2024-07-25T14:30:00Z",
+        title: "Within energy involve kind another",
+        duration: "4.5 hours",
+        is_recurring: false,
+        status: "in progress",
+        category: "Development",
+        task_tools: ["Jira", "Git"],
+        deadline: "2025-06-09",
+        due_by: "2025-06-09",
+        task_point: 20,
+        completed_at: null,
+        created_by_id: "user-3",
+        workroom_id: "room-2",
+        assignedTo: [
           "Sarah Moore",
           "Elizabeth Smith",
           "Richard Hernandez"
         ]
       },
       {
-        "taskName": "Tough protect agent character detail",
-        "dueBy": "2025-05-26",
-        "assignedTo": [
+        id: "task-5",
+        created_at: "2024-07-26T08:00:00Z",
+        updated_at: "2024-07-26T10:00:00Z",
+        title: "Tough protect agent character detail",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "completed",
+        category: "Testing",
+        task_tools: ["Selenium", "Jira"],
+        deadline: "2025-05-26",
+        due_by: "2025-05-26",
+        task_point: 12,
+        completed_at: "2024-07-26T10:00:00Z",
+        created_by_id: "user-4",
+        workroom_id: "room-2",
+        assignedTo: [
           "Elizabeth Smith"
         ]
       }
@@ -141,6 +238,10 @@ export const rooms = [
     "peopleInRoom": true,
     "isActive": false,
     "createdByYou": false,
+    "kpi": { // Added room KPI
+      "kpiName": "Campaign Effectiveness",
+      "kpiMetric": "78%"
+    },
     "members": [
       {
         "name": "Laura Miller",
@@ -153,7 +254,11 @@ export const rooms = [
           "Improve UI consistency",
           "Improve test coverage"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Content Creation",
+          "kpiMetric": "88%"
+        }
       },
       {
         "name": "Beth Lyons",
@@ -166,21 +271,51 @@ export const rooms = [
           "Enhance customer satisfaction",
           "Reduce time to resolve issues"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Social Media Engagement",
+          "kpiMetric": "60%"
+        }
       }
     ],
     "tasks": [
       {
-        "taskName": "People fill result outside moment",
-        "dueBy": "2025-06-09",
-        "assignedTo": [
+        id: "task-6",
+        created_at: "2024-07-26T09:00:00Z",
+        updated_at: "2024-07-26T11:45:00Z",
+        title: "People fill result outside moment",
+        duration: "2.75 hours",
+        is_recurring: false,
+        status: "in progress",
+        category: "Content Creation",
+        task_tools: ["Contentful", "Google Docs"],
+        deadline: "2025-06-09",
+        due_by: "2025-06-09",
+        task_point: 18,
+        completed_at: null,
+        created_by_id: "user-5",
+        workroom_id: "room-3",
+        assignedTo: [
           "Laura Miller"
         ]
       },
       {
-        "taskName": "Oil size significant",
-        "dueBy": "2025-05-28",
-        "assignedTo": [
+        id: "task-7",
+        created_at: "2024-07-27T10:00:00Z",
+        updated_at: "2024-07-27T12:00:00Z",
+        title: "Oil size significant",
+        duration: "2 hours",
+        is_recurring: true,
+        status: "completed",
+        category: "Social Media",
+        task_tools: ["Buffer", "Hootsuite"],
+        deadline: "2025-05-28",
+        due_by: "2025-05-28",
+        task_point: 14,
+        completed_at: "2024-07-27T12:00:00Z",
+        created_by_id: "user-6",
+        workroom_id: "room-3",
+        assignedTo: [
           "Laura Miller",
           "Beth Lyons"
         ]
@@ -192,6 +327,10 @@ export const rooms = [
     "peopleInRoom": true,
     "isActive": false,
     "createdByYou": true,
+    "kpi": { // Added room KPI
+      "kpiName": "Idea Implementation Rate",
+      "kpiMetric": "62%"
+    },
     "members": [
       {
         "name": "James Allen",
@@ -204,7 +343,11 @@ export const rooms = [
           "Reduce bug count",
           "Reduce time to resolve issues"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Idea Generation",
+          "kpiMetric": "70%"
+        }
       },
       {
         "name": "Miguel Gomez",
@@ -217,7 +360,11 @@ export const rooms = [
           "Improve UI consistency",
           "Increase feature delivery"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Idea Contribution",
+          "kpiMetric": "85%"
+        }
       },
       {
         "name": "Lindsey Reed",
@@ -230,7 +377,11 @@ export const rooms = [
           "Improve UI consistency",
           "Reduce time to resolve issues"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": {  // Added member KPI
+          "kpiName": "Feedback Quality",
+          "kpiMetric": "65%"
+        }
       },
       {
         "name": "Terry Palmer",
@@ -243,7 +394,11 @@ export const rooms = [
           "Improve UI consistency",
           "Streamline design process"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Idea Evaluation",
+          "kpiMetric": "75%"
+        }
       },
       {
         "name": "Brandon Tucker",
@@ -256,38 +411,94 @@ export const rooms = [
           "Reduce bug count",
           "Streamline design process"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Idea Implementation",
+          "kpiMetric": "90%"
+        }
       }
     ],
     "tasks": [
       {
-        "taskName": "Third later feel way east",
-        "dueBy": "2025-06-09",
-        "assignedTo": [
+        id: "task-8",
+        created_at: "2024-07-27T11:00:00Z",
+        updated_at: "2024-07-27T13:15:00Z",
+        title: "Third later feel way east",
+        duration: "2.25 hours",
+        is_recurring: false,
+        status: "in progress",
+        category: "Brainstorming",
+        task_tools: ["Miro", "Zoom"],
+        deadline: "2025-06-09",
+        due_by: "2025-06-09",
+        task_point: 16,
+        completed_at: null,
+        created_by_id: "user-7",
+        workroom_id: "room-4",
+        assignedTo: [
           "Terry Palmer",
           "James Allen"
         ]
       },
       {
-        "taskName": "Compare boy sure kind",
-        "dueBy": "2025-05-26",
-        "assignedTo": [
+        id: "task-9",
+        created_at: "2024-07-28T09:30:00Z",
+        updated_at: "2024-07-28T11:30:00Z",
+        title: "Compare boy sure kind",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "completed",
+        category: "Documentation",
+        task_tools: ["Google Docs"],
+        deadline: "2025-05-26",
+        due_by: "2025-05-26",
+        task_point: 12,
+        completed_at: "2024-07-28T11:30:00Z",
+        created_by_id: "user-8",
+        workroom_id: "room-4",
+        assignedTo: [
           "James Allen",
           "Miguel Gomez",
           "Lindsey Reed"
         ]
       },
       {
-        "taskName": "Interest he north",
-        "dueBy": "2025-05-27",
-        "assignedTo": [
+        id: "task-10",
+        created_at: "2024-07-28T14:00:00Z",
+        updated_at: "2024-07-28T16:00:00Z",
+        title: "Interest he north",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "in progress",
+        category: "Research",
+        task_tools: ["Jira", "Confluence"],
+        deadline: "2025-05-27",
+        due_by: "2025-05-27",
+        task_point: 10,
+        completed_at: null,
+        created_by_id: "user-7",
+        workroom_id: "room-4",
+        assignedTo: [
           "Lindsey Reed"
         ]
       },
       {
-        "taskName": "Fish along watch",
-        "dueBy": "2025-05-28",
-        "assignedTo": [
+        id: "task-11",
+        created_at: "2024-07-29T10:00:00Z",
+        updated_at: "2024-07-29T12:45:00Z",
+        title: "Fish along watch",
+        duration: "2.75 hours",
+        is_recurring: true,
+        status: "in progress",
+        category: "Development",
+        task_tools: ["Git", "Jenkins"],
+        deadline: "2025-05-28",
+        due_by: "2025-05-28",
+        task_point: 18,
+        completed_at: null,
+        created_by_id: "user-8",
+        workroom_id: "room-4",
+        assignedTo: [
           "James Allen",
           "Brandon Tucker",
           "Lindsey Reed",
@@ -302,6 +513,10 @@ export const rooms = [
     "peopleInRoom": true,
     "isActive": false,
     "createdByYou": true,
+    "kpi": { // Added room KPI
+      "kpiName": "Test Coverage",
+      "kpiMetric": "92%"
+    },
     "members": [
       {
         "name": "Casey Howard",
@@ -314,7 +529,11 @@ export const rooms = [
           "Enhance customer satisfaction",
           "Increase feature delivery"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Test Case Creation",
+          "kpiMetric": "78%"
+        }
       },
       {
         "name": "Luis Tran",
@@ -327,28 +546,71 @@ export const rooms = [
           "Reduce bug count",
           "Increase feature delivery"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Bug Detection Rate",
+          "kpiMetric": "95%"
+        }
       }
     ],
     "tasks": [
       {
-        "taskName": "Foreign place really study",
-        "dueBy": "2025-06-01",
-        "assignedTo": [
+        id: "task-12",
+        created_at: "2024-07-29T13:00:00Z",
+        updated_at: "2024-07-29T15:00:00Z",
+        title: "Foreign place really study",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "in progress",
+        category: "Testing",
+        task_tools: ["Jira", "TestRail"],
+        deadline: "2025-06-01",
+        due_by: "2025-06-01",
+        task_point: 14,
+        completed_at: null,
+        created_by_id: "user-9",
+        workroom_id: "room-5",
+        assignedTo: [
           "Luis Tran"
         ]
       },
       {
-        "taskName": "Above avoid say",
-        "dueBy": "2025-05-23",
-        "assignedTo": [
+        id: "task-13",
+        created_at: "2024-07-30T08:00:00Z",
+        updated_at: "2024-07-30T10:00:00Z",
+        title: "Above avoid say",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "completed",
+        category: "Documentation",
+        task_tools: ["Confluence", "Google Docs"],
+        deadline: "2025-05-23",
+        due_by: "2025-05-23",
+        task_point: 10,
+        completed_at: "2024-07-30T10:00:00Z",
+        created_by_id: "user-10",
+        workroom_id: "room-5",
+        assignedTo: [
           "Luis Tran"
         ]
       },
       {
-        "taskName": "Play hospital answer down",
-        "dueBy": "2025-05-14",
-        "assignedTo": [
+        id: "task-14",
+        created_at: "2024-07-30T11:00:00Z",
+        updated_at: "2024-07-30T13:30:00Z",
+        title: "Play hospital answer down",
+        duration: "2.5 hours",
+        is_recurring: true,
+        status: "in progress",
+        category: "Design",
+        task_tools: ["Figma", "Miro"],
+        deadline: "2025-05-14",
+        due_by: "2025-05-14",
+        task_point: 16,
+        completed_at: null,
+        created_by_id: "user-9",
+        workroom_id: "room-5",
+        assignedTo: [
           "Casey Howard"
         ]
       }
@@ -359,6 +621,10 @@ export const rooms = [
     "peopleInRoom": true,
     "isActive": false,
     "createdByYou": true,
+     "kpi": { // Added room KPI
+      "kpiName": "Feedback Implementation",
+      "kpiMetric": "70%"
+    },
     "members": [
       {
         "name": "Hannah Boyd",
@@ -371,7 +637,11 @@ export const rooms = [
           "Reduce bug count",
           "Reduce time to resolve issues"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Feedback Quality",
+          "kpiMetric": "82%"
+        }
       },
       {
         "name": "Angela Underwood",
@@ -384,21 +654,51 @@ export const rooms = [
           "Boost deployment frequency",
           "Streamline design process"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Feedback Contribution",
+          "kpiMetric": "70%"
+        }
       }
     ],
     "tasks": [
       {
-        "taskName": "Their seven share past us",
-        "dueBy": "2025-05-12",
-        "assignedTo": [
+        id: "task-15",
+        created_at: "2024-07-30T14:00:00Z",
+        updated_at: "2024-07-30T16:00:00Z",
+        title: "Their seven share past us",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "completed",
+        category: "Feedback",
+        task_tools: ["Figma", "UserTesting"],
+        deadline: "2025-05-12",
+        due_by: "2025-05-12",
+        task_point: 12,
+        completed_at: "2024-07-30T16:00:00Z",
+        created_by_id: "user-11",
+        workroom_id: "room-6",
+        assignedTo: [
           "Hannah Boyd"
         ]
       },
       {
-        "taskName": "How most nice",
-        "dueBy": "2025-06-08",
-        "assignedTo": [
+        id: "task-16",
+        created_at: "2024-07-31T09:00:00Z",
+        updated_at: "2024-07-31T11:30:00Z",
+        title: "How most nice",
+        duration: "2.5 hours",
+        is_recurring: false,
+        status: "in progress",
+        category: "Design",
+        task_tools: ["Sketch", "InVision"],
+        deadline: "2025-06-08",
+        due_by: "2025-06-08",
+        task_point: 18,
+        completed_at: null,
+        created_by_id: "user-12",
+        workroom_id: "room-6",
+        assignedTo: [
           "Angela Underwood"
         ]
       }
@@ -409,6 +709,10 @@ export const rooms = [
     "peopleInRoom": true,
     "isActive": false,
     "createdByYou": true,
+    "kpi": { // Added room KPI
+      "kpiName": "Sprint Goal Achievement",
+      "kpiMetric": "88%"
+    },
     "members": [
       {
         "name": "Angela Bowman",
@@ -421,7 +725,11 @@ export const rooms = [
           "Improve UI consistency",
           "Improve test coverage"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Sprint Planning Participation",
+          "kpiMetric": "92%"
+        }
       },
       {
         "name": "Sheri Pierce",
@@ -434,7 +742,11 @@ export const rooms = [
           "Reduce bug count",
           "Reduce time to resolve issues"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Task Estimation Accuracy",
+          "kpiMetric": "75%"
+        }
       },
       {
         "name": "Dr. Jonathan Sullivan",
@@ -447,7 +759,11 @@ export const rooms = [
           "Improve UI consistency",
           "Increase feature delivery"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Sprint Goal Contribution",
+          "kpiMetric": "80%"
+        }
       },
       {
         "name": "Ana Cole",
@@ -460,7 +776,11 @@ export const rooms = [
           "Boost deployment frequency",
           "Streamline design process"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": {  // Added member KPI
+          "kpiName": "Task Completion Rate",
+          "kpiMetric": "68%"
+        }
       },
       {
         "name": "Jacqueline Bray",
@@ -473,14 +793,31 @@ export const rooms = [
           "Reduce bug count",
           "Reduce time to resolve issues"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Risk Identification",
+          "kpiMetric": "90%"
+        }
       }
     ],
     "tasks": [
       {
-        "taskName": "Send certainly eye someone",
-        "dueBy": "2025-05-17",
-        "assignedTo": [
+        id: "task-17",
+        created_at: "2024-07-31T10:00:00Z",
+        updated_at: "2024-07-31T12:15:00Z",
+        title: "Send certainly eye someone",
+        duration: "2.25 hours",
+        is_recurring: false,
+        status: "in progress",
+        category: "Planning",
+        task_tools: ["Jira", "Confluence"],
+        deadline: "2025-05-17",
+        due_by: "2025-05-17",
+        task_point: 14,
+        completed_at: null,
+        created_by_id: "user-13",
+        workroom_id: "room-7",
+        assignedTo: [
           "Sheri Pierce",
           "Jacqueline Bray",
           "Ana Cole",
@@ -488,9 +825,22 @@ export const rooms = [
         ]
       },
       {
-        "taskName": "Audience do",
-        "dueBy": "2025-06-08",
-        "assignedTo": [
+        id: "task-18",
+        created_at: "2024-08-01T09:00:00Z",
+        updated_at: "2024-08-01T11:00:00Z",
+        title: "Audience do",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "completed",
+        category: "Documentation",
+        task_tools: ["Google Docs"],
+        deadline: "2025-06-08",
+        due_by: "2025-06-08",
+        task_point: 10,
+        completed_at: "2024-08-01T11:00:00Z",
+        created_by_id: "user-14",
+        workroom_id: "room-7",
+        assignedTo: [
           "Sheri Pierce",
           "Jacqueline Bray",
           "Dr. Jonathan Sullivan",
@@ -504,6 +854,10 @@ export const rooms = [
     "peopleInRoom": true,
     "isActive": false,
     "createdByYou": false,
+    "kpi": { // Added room KPI
+      "kpiName": "Employee Engagement",
+      "kpiMetric": "80%"
+    },
     "members": [
       {
         "name": "Melissa Lara",
@@ -516,7 +870,11 @@ export const rooms = [
           "Boost deployment frequency",
           "Streamline design process"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Meeting Participation",
+          "kpiMetric": "90%"
+        }
       },
       {
         "name": "Scott Owens",
@@ -529,7 +887,11 @@ export const rooms = [
           "Boost deployment frequency",
           "Increase feature delivery"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Information Sharing",
+          "kpiMetric": "75%"
+        }
       },
       {
         "name": "Jacob Mitchell",
@@ -542,24 +904,67 @@ export const rooms = [
           "Reduce bug count",
           "Improve test coverage"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Cross-functional Collaboration",
+          "kpiMetric": "60%"
+        }
       }
     ],
     "tasks": [
       {
-        "taskName": "Skin figure throughout",
-        "dueBy": "2025-05-28",
-        "assignedTo": []
+        id: "task-19",
+        created_at: "2024-08-01T10:00:00Z",
+        updated_at: "2024-08-01T12:30:00Z",
+        title: "Skin figure throughout",
+        duration: "2.5 hours",
+        is_recurring: false,
+        status: "scheduled",
+        category: "Presentation",
+        task_tools: ["Google Slides", "Zoom"],
+        deadline: "2025-05-28",
+        due_by: "2025-05-28",
+        task_point: 8,
+        completed_at: null,
+        created_by_id: "user-15",
+        workroom_id: "room-8",
+        assignedTo: []
       },
       {
-        "taskName": "Development one we",
-        "dueBy": "2025-05-13",
-        "assignedTo": []
+        id: "task-20",
+        created_at: "2024-08-02T09:00:00Z",
+        updated_at: "2024-08-02T11:00:00Z",
+        title: "Development one we",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "scheduled",
+        category: "Discussion",
+        task_tools: ["Slack", "Microsoft Teams"],
+        deadline: "2025-05-13",
+        due_by: "2025-05-13",
+        task_point: 5,
+        completed_at: null,
+        created_by_id: "user-16",
+        workroom_id: "room-8",
+        assignedTo: []
       },
       {
-        "taskName": "Purpose politics case else dog",
-        "dueBy": "2025-05-23",
-        "assignedTo": []
+        id: "task-21",
+        created_at: "2024-08-02T14:00:00Z",
+        updated_at: "2024-08-02T16:45:00Z",
+        title: "Purpose politics case else dog",
+        duration: "2.75 hours",
+        is_recurring: true,
+        status: "scheduled",
+        category: "Brainstorming",
+        task_tools: ["Miro", "Jamboard"],
+        deadline: "2025-05-23",
+        due_by: "2025-05-23",
+        task_point: 12,
+        completed_at: null,
+        created_by_id: "user-15",
+        workroom_id: "room-8",
+        assignedTo: []
       }
     ]
   },
@@ -568,27 +973,83 @@ export const rooms = [
     "peopleInRoom": false,
     "isActive": true,
     "createdByYou": false,
+    "kpi": { // Added room KPI
+      "kpiName": "Standup Participation",
+      "kpiMetric": "95%"
+    },
     "members": [],
     "tasks": [
       {
-        "taskName": "Area majority experience",
-        "dueBy": "2025-05-21",
-        "assignedTo": []
+        id: "task-22",
+        created_at: "2024-08-02T10:00:00Z",
+        updated_at: "2024-08-02T10:15:00Z",
+        title: "Area majority experience",
+        duration: "15 minutes",
+        is_recurring: true,
+        status: "scheduled",
+        category: "Standup",
+        task_tools: ["Google Meet", "Slack"],
+        deadline: "2025-05-21",
+        due_by: "2025-05-21",
+        task_point: 2,
+        completed_at: null,
+        created_by_id: "user-17",
+        workroom_id: "room-9",
+        assignedTo: []
       },
       {
-        "taskName": "Cause paper drug",
-        "dueBy": "2025-06-06",
-        "assignedTo": []
+        id: "task-23",
+        created_at: "2024-08-03T10:00:00Z",
+        updated_at: "2024-08-03T10:15:00Z",
+        title: "Cause paper drug",
+        duration: "15 minutes",
+        is_recurring: true,
+        status: "scheduled",
+        category: "Standup",
+        task_tools: ["Zoom", "Microsoft Teams"],
+        deadline: "2025-06-06",
+        due_by: "2025-06-06",
+        task_point: 2,
+        completed_at: null,
+        created_by_id: "user-18",
+        workroom_id: "room-9",
+        assignedTo: []
       },
       {
-        "taskName": "Improve air relationship",
-        "dueBy": "2025-06-04",
-        "assignedTo": []
+        id: "task-24",
+        created_at: "2024-08-03T10:00:00Z",
+        updated_at: "2024-08-03T10:15:00Z",
+        title: "Improve air relationship",
+        duration: "15 minutes",
+        is_recurring: true,
+        status: "scheduled",
+        category: "Standup",
+        task_tools: ["Google Meet", "Slack"],
+        deadline: "2025-06-04",
+        due_by: "2025-06-04",
+        task_point: 2,
+        completed_at: null,
+        created_by_id: "user-17",
+        workroom_id: "room-9",
+        assignedTo: []
       },
       {
-        "taskName": "Truth consider company",
-        "dueBy": "2025-05-29",
-        "assignedTo": []
+        id: "task-25",
+        created_at: "2024-08-04T10:00:00Z",
+        updated_at: "2024-08-04T10:15:00Z",
+        title: "Truth consider company",
+        duration: "15 minutes",
+        is_recurring: true,
+        status: "scheduled",
+        category: "Standup",
+        task_tools: ["Zoom", "Microsoft Teams"],
+        deadline: "2025-05-29",
+        due_by: "2025-05-29",
+        task_point: 2,
+        completed_at: null,
+        created_by_id: "user-18",
+        workroom_id: "room-9",
+        assignedTo: []
       }
     ]
   },
@@ -597,6 +1058,10 @@ export const rooms = [
     "peopleInRoom": true,
     "isActive": false,
     "createdByYou": true,
+    "kpi": {  // Added room KPI
+      "kpiName": "API Performance",
+      "kpiMetric": "87%"
+    },
     "members": [
       {
         "name": "Michelle White",
@@ -609,7 +1074,11 @@ export const rooms = [
           "Reduce bug count",
           "Reduce time to resolve issues"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": {  // Added member KPI
+          "kpiName": "API Development",
+          "kpiMetric": "92%"
+        }
       },
       {
         "name": "Ashley Howell",
@@ -622,7 +1091,11 @@ export const rooms = [
           "Improve UI consistency",
           "Reduce time to resolve issues"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Database Management",
+          "kpiMetric": "80%"
+        }
       },
       {
         "name": "Heather Clark",
@@ -635,7 +1108,11 @@ export const rooms = [
           "Reduce bug count",
           "Streamline design process"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Server Optimization",
+          "kpiMetric": "70%"
+        }
       },
       {
         "name": "Kayla Schroeder",
@@ -648,14 +1125,31 @@ export const rooms = [
           "Improve UI consistency",
           "Increase feature delivery"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": {  // Added member KPI
+          "kpiName": "Code Deployment",
+          "kpiMetric": "88%"
+        }
       }
     ],
     "tasks": [
       {
-        "taskName": "Fast should what evening",
-        "dueBy": "2025-06-04",
-        "assignedTo": [
+        id: "task-26",
+        created_at: "2024-08-04T09:00:00Z",
+        updated_at: "2024-08-04T11:45:00Z",
+        title: "Fast should what evening",
+        duration: "2.75 hours",
+        is_recurring: false,
+        status: "in progress",
+        category: "Development",
+        task_tools: ["Git", "Docker"],
+        deadline: "2025-06-04",
+        due_by: "2025-06-04",
+        task_point: 22,
+        completed_at: null,
+        created_by_id: "user-19",
+        workroom_id: "room-10",
+        assignedTo: [
           "Heather Clark",
           "Ashley Howell",
           "Michelle White",
@@ -663,16 +1157,42 @@ export const rooms = [
         ]
       },
       {
-        "taskName": "Lay us",
-        "dueBy": "2025-06-01",
-        "assignedTo": [
+        id: "task-27",
+        created_at: "2024-08-05T10:00:00Z",
+        updated_at: "2024-08-05T12:00:00Z",
+        title: "Lay us",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "completed",
+        category: "Documentation",
+        task_tools: ["Swagger", "Postman"],
+        deadline: "2025-06-01",
+        due_by: "2025-06-01",
+        task_point: 15,
+        completed_at: "2024-08-05T12:00:00Z",
+        created_by_id: "user-20",
+        workroom_id: "room-10",
+        assignedTo: [
           "Michelle White"
         ]
       },
       {
-        "taskName": "Point few",
-        "dueBy": "2025-05-14",
-        "assignedTo": [
+        id: "task-28",
+        created_at: "2024-08-05T13:00:00Z",
+        updated_at: "2024-08-05T15:30:00Z",
+        title: "Point few",
+        duration: "2.5 hours",
+        is_recurring: true,
+        status: "in progress",
+        category: "Testing",
+        task_tools: ["JMeter", "JUnit"],
+        deadline: "2025-05-14",
+        due_by: "2025-05-14",
+        task_point: 18,
+        completed_at: null,
+        created_by_id: "user-19",
+        workroom_id: "room-10",
+        assignedTo: [
           "Heather Clark",
           "Ashley Howell",
           "Kayla Schroeder",
@@ -680,9 +1200,22 @@ export const rooms = [
         ]
       },
       {
-        "taskName": "Us report we crime",
-        "dueBy": "2025-05-14",
-        "assignedTo": []
+        id: "task-29",
+        created_at: "2024-08-06T08:00:00Z",
+        updated_at: "2024-08-06T10:00:00Z",
+        title: "Us report we crime",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "scheduled",
+        category: "Deployment",
+        task_tools: ["Jenkins", "Kubernetes"],
+deadline: "2025-05-14",
+        due_by: "2025-05-14",
+        task_point: 20,
+        completed_at: null,
+        created_by_id: "user-20",
+        workroom_id: "room-10",
+        assignedTo: []
       }
     ]
   },
@@ -691,6 +1224,10 @@ export const rooms = [
     "peopleInRoom": true,
     "isActive": true,
     "createdByYou": true,
+    "kpi": { // Added room KPI
+      "kpiName": "UI Responsiveness",
+      "kpiMetric": "91%"
+    },
     "members": [
       {
         "name": "Betty Moore",
@@ -703,7 +1240,11 @@ export const rooms = [
           "Boost deployment frequency",
           "Streamline design process"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Component Development",
+          "kpiMetric": "89%"
+        }
       },
       {
         "name": "Philip Collins",
@@ -716,7 +1257,11 @@ export const rooms = [
           "Improve UI consistency",
           "Improve test coverage"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Performance Optimization",
+          "kpiMetric": "85%"
+        }
       },
       {
         "name": "Mathew Carson",
@@ -729,7 +1274,11 @@ export const rooms = [
           "Improve UI consistency",
           "Reduce time to resolve issues"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Accessibility Implementation",
+          "kpiMetric": "92%"
+        }
       },
       {
         "name": "Robert Garcia",
@@ -742,1283 +1291,154 @@ export const rooms = [
           "Reduce bug count",
           "Streamline design process"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Code Review Quality",
+          "kpiMetric": "78%"
+        }
       }
     ],
     "tasks": [
       {
-        "taskName": "Item program father until",
-        "dueBy": "2025-05-29",
-        "assignedTo": []
+        id: "task-30",
+        created_at: "2024-08-06T09:00:00Z",
+        updated_at: "2024-08-06T11:15:00Z",
+        title: "Item program father until",
+        duration: "2.25 hours",
+        is_recurring: false,
+        status: "scheduled",
+        category: "Development",
+        task_tools: ["React", "Git"],
+        deadline: "2025-05-29",
+        due_by: "2025-05-29",
+        task_point: 18,
+        completed_at: null,
+        created_by_id: "user-21",
+        workroom_id: "room-11",
+        assignedTo: []
       },
       {
-        "taskName": "House interesting car reality",
-        "dueBy": "2025-06-01",
-        "assignedTo": []
+        id: "task-31",
+        created_at: "2024-08-07T10:00:00Z",
+        updated_at: "2024-08-07T12:00:00Z",
+        title: "House interesting car reality",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "scheduled",
+        category: "Testing",
+        task_tools: ["Jest", "Cypress"],
+        deadline: "2025-06-01",
+        due_by: "2025-06-01",
+        task_point: 14,
+        completed_at: null,
+        created_by_id: "user-22",
+        workroom_id: "room-11",
+        assignedTo: []
       },
       {
-        "taskName": "Really impact wind",
-        "dueBy": "2025-05-31",
-        "assignedTo": [
+        id: "task-32",
+        created_at: "2024-08-07T13:00:00Z",
+        updated_at: "2024-08-07T15:30:00Z",
+        title: "Really impact wind",
+        duration: "2.5 hours",
+        is_recurring: false,
+        status: "in progress",
+        category: "Design",
+        task_tools: ["Figma", "Miro"],
+        deadline: "2025-05-31",
+        due_by: "2025-05-31",
+        task_point: 20,
+        completed_at: null,
+        created_by_id: "user-21",
+        workroom_id: "room-11",
+        assignedTo: [
           "Betty Moore"
         ]
       },
       {
-        "taskName": "Plan she soon probably",
-        "dueBy": "2025-05-30",
-        "assignedTo": []
-      }
-    ]
-  },
-  {
-    "roomName": "Bug Bash",
-    "peopleInRoom": true,
-    "isActive": false,
-    "createdByYou": true,
-    "members": [
-      {
-        "name": "Gregory Underwood",
-        "image": "https://source.unsplash.com/random/100x100?sig=55",
-        "points": 4853,
-        "tasksDone": 42,
-        "level": "Beginner",
-        "kpiAlignment": "75%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Reduce time to resolve issues"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Andrea Young DVM",
-        "image": "https://source.unsplash.com/random/100x100?sig=56",
-        "points": 1195,
-        "tasksDone": 63,
-        "level": "Expert",
-        "kpiAlignment": "51%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Reduce time to resolve issues"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Tracy Gibson",
-        "image": "https://source.unsplash.com/random/100x100?sig=57",
-        "points": 2437,
-        "tasksDone": 89,
-        "level": "Intermediate",
-        "kpiAlignment": "96%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Gina Walker",
-        "image": "https://source.unsplash.com/random/100x100?sig=58",
-        "points": 4358,
-        "tasksDone": 98,
-        "level": "Beginner",
-        "kpiAlignment": "59%",
-        "roomKpis": [
-          "Improve UI consistency",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Shelly Wheeler",
-        "image": "https://source.unsplash.com/random/100x100?sig=59",
-        "points": 4042,
-        "tasksDone": 27,
-        "level": "Intermediate",
-        "kpiAlignment": "58%",
-        "roomKpis": [
-          "Boost deployment frequency",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "From my money shake",
-        "dueBy": "2025-06-01",
-        "assignedTo": [
-          "Tracy Gibson",
-          "Gregory Underwood",
-          "Gina Walker",
-          "Shelly Wheeler"
-        ]
-      },
-      {
-        "taskName": "Ready area usually likely marriage",
-        "dueBy": "2025-05-24",
-        "assignedTo": []
-      }
-    ]
-  },
-  {
-    "roomName": "Strategy Room",
-    "peopleInRoom": true,
-    "isActive": false,
-    "createdByYou": true,
-    "members": [
-      {
-        "name": "Crystal Smith",
-        "image": "https://source.unsplash.com/random/100x100?sig=60",
-        "points": 2078,
-        "tasksDone": 49,
-        "level": "Beginner",
-        "kpiAlignment": "41%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Brittany Patel",
-        "image": "https://source.unsplash.com/random/100x100?sig=61",
-        "points": 1903,
-        "tasksDone": 63,
-        "level": "Expert",
-        "kpiAlignment": "65%",
-        "roomKpis": [
-          "Reduce bug count",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Choice oil general different",
-        "dueBy": "2025-05-20",
-        "assignedTo": [
-          "Crystal Smith",
-          "Brittany Patel"
-        ]
-      },
-      {
-        "taskName": "Over hit sport green rule",
-        "dueBy": "2025-05-18",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Will focus stay measure with",
-        "dueBy": "2025-05-12",
-        "assignedTo": [
-          "Brittany Patel",
-          "Crystal Smith"
-        ]
-      },
-      {
-        "taskName": "Professional choose increase list",
-        "dueBy": "2025-05-22",
-        "assignedTo": [
-          "Crystal Smith"
+        id: "task-33",
+        created_at: "2024-08-08T09:00:00Z",
+        updated_at: "2024-08-08T11:00:00Z",
+        title: "Plan she soon",
+        duration: "2 hours",
+        is_recurring: true,
+        status: "scheduled",
+        category: "Documentation",
+        task_tools: ["Storybook", "Confluence"],
+        deadline: "2025-06-05",
+        due_by: "2025-06-05",
+        task_point: 12,
+        completed_at: null,
+        created_by_id: "user-22",
+        workroom_id: "room-11",
+        assignedTo: [
+          "Philip Collins",
+          "Mathew Carson",
+          "Robert Garcia"
         ]
       }
     ]
   },
   {
-    "roomName": "UX Brainstorm",
-    "peopleInRoom": true,
-    "isActive": false,
-    "createdByYou": false,
-    "members": [
-      {
-        "name": "Grant Gray",
-        "image": "https://source.unsplash.com/random/100x100?sig=65",
-        "points": 2692,
-        "tasksDone": 58,
-        "level": "Expert",
-        "kpiAlignment": "48%",
-        "roomKpis": [
-          "Reduce bug count",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Sharon Lee",
-        "image": "https://source.unsplash.com/random/100x100?sig=66",
-        "points": 1467,
-        "tasksDone": 39,
-        "level": "Intermediate",
-        "kpiAlignment": "47%",
-        "roomKpis": [
-          "Improve UI consistency",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Michelle Johnson",
-        "image": "https://source.unsplash.com/random/100x100?sig=67",
-        "points": 3363,
-        "tasksDone": 21,
-        "level": "Intermediate",
-        "kpiAlignment": "51%",
-        "roomKpis": [
-          "Improve UI consistency",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Tyler Harris",
-        "image": "https://source.unsplash.com/random/100x100?sig=68",
-        "points": 1191,
-        "tasksDone": 61,
-        "level": "Beginner",
-        "kpiAlignment": "78%",
-        "roomKpis": [
-          "Reduce bug count",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Melissa Lee",
-        "image": "https://source.unsplash.com/random/100x100?sig=69",
-        "points": 3391,
-        "tasksDone": 40,
-        "level": "Intermediate",
-        "kpiAlignment": "85%",
-        "roomKpis": [
-          "Boost deployment frequency",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Think I ever according early",
-        "dueBy": "2025-06-08",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Light series",
-        "dueBy": "2025-06-07",
-        "assignedTo": [
-          "Tyler Harris"
-        ]
-      },
-      {
-        "taskName": "Staff choice set risk down",
-        "dueBy": "2025-05-27",
-        "assignedTo": []
-      }
-    ]
-  },
-  {
-    "roomName": "Client Meeting",
+    "roomName": "Marketing Team",
     "peopleInRoom": true,
     "isActive": true,
     "createdByYou": false,
-    "members": [
-      {
-        "name": "Caleb Wall",
-        "image": "https://source.unsplash.com/random/100x100?sig=70",
-        "points": 1271,
-        "tasksDone": 43,
-        "level": "Intermediate",
-        "kpiAlignment": "45%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Michelle Rodriguez",
-        "image": "https://source.unsplash.com/random/100x100?sig=71",
-        "points": 3894,
-        "tasksDone": 71,
-        "level": "Expert",
-        "kpiAlignment": "58%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Green past already",
-        "dueBy": "2025-05-17",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Remember he rest place prove",
-        "dueBy": "2025-05-15",
-        "assignedTo": [
-          "Caleb Wall",
-          "Michelle Rodriguez"
-        ]
-      }
-    ]
-  },
-  {
-    "roomName": "Launch Prep",
-    "peopleInRoom": true,
-    "isActive": true,
-    "createdByYou": true,
-    "members": [
-      {
-        "name": "Kaitlyn Jones",
-        "image": "https://source.unsplash.com/random/100x100?sig=75",
-        "points": 2689,
-        "tasksDone": 80,
-        "level": "Expert",
-        "kpiAlignment": "79%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Nicole Lopez",
-        "image": "https://source.unsplash.com/random/100x100?sig=76",
-        "points": 1643,
-        "tasksDone": 38,
-        "level": "Expert",
-        "kpiAlignment": "85%",
-        "roomKpis": [
-          "Reduce bug count",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Become party kid surface produce",
-        "dueBy": "2025-05-15",
-        "assignedTo": [
-          "Kaitlyn Jones"
-        ]
-      },
-      {
-        "taskName": "Forward plant really",
-        "dueBy": "2025-05-24",
-        "assignedTo": [
-          "Nicole Lopez"
-        ]
-      },
-      {
-        "taskName": "Order current",
-        "dueBy": "2025-05-27",
-        "assignedTo": [
-          "Kaitlyn Jones"
-        ]
-      }
-    ]
-  },
-  {
-    "roomName": "Sales Sync",
-    "peopleInRoom": true,
-    "isActive": true,
-    "createdByYou": false,
-    "members": [
-      {
-        "name": "Jennifer Cherry",
-        "image": "https://source.unsplash.com/random/100x100?sig=80",
-        "points": 3602,
-        "tasksDone": 17,
-        "level": "Expert",
-        "kpiAlignment": "68%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Tyler Coleman",
-        "image": "https://source.unsplash.com/random/100x100?sig=81",
-        "points": 4464,
-        "tasksDone": 11,
-        "level": "Beginner",
-        "kpiAlignment": "54%",
-        "roomKpis": [
-          "Boost deployment frequency",
-          "Reduce time to resolve issues"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Amount defense again least offer",
-        "dueBy": "2025-05-27",
-        "assignedTo": [
-          "Tyler Coleman"
-        ]
-      },
-      {
-        "taskName": "Size make message",
-        "dueBy": "2025-05-26",
-        "assignedTo": [
-          "Jennifer Cherry",
-          "Tyler Coleman"
-        ]
-      }
-    ]
-  },
-  {
-    "roomName": "Engineering Deep Dive",
-    "peopleInRoom": true,
-    "isActive": true,
-    "createdByYou": false,
-    "members": [
-      {
-        "name": "James Brooks",
-        "image": "https://source.unsplash.com/random/100x100?sig=85",
-        "points": 3609,
-        "tasksDone": 55,
-        "level": "Intermediate",
-        "kpiAlignment": "70%",
-        "roomKpis": [
-          "Reduce bug count",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Lisa Wilson",
-        "image": "https://source.unsplash.com/random/100x100?sig=86",
-        "points": 2350,
-        "tasksDone": 27,
-        "level": "Intermediate",
-        "kpiAlignment": "45%",
-        "roomKpis": [
-          "Reduce bug count",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Shane Hendrix",
-        "image": "https://source.unsplash.com/random/100x100?sig=87",
-        "points": 4151,
-        "tasksDone": 48,
-        "level": "Beginner",
-        "kpiAlignment": "67%",
-        "roomKpis": [
-          "Reduce bug count",
-          "Reduce time to resolve issues"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Dr. Jennifer Garcia",
-        "image": "https://source.unsplash.com/random/100x100?sig=88",
-        "points": 3384,
-        "tasksDone": 32,
-        "level": "Intermediate",
-        "kpiAlignment": "54%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Reduce time to resolve issues"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Work business fall rest blue",
-        "dueBy": "2025-05-19",
-        "assignedTo": [
-          "Lisa Wilson"
-        ]
-      },
-      {
-        "taskName": "Oil idea night writer",
-        "dueBy": "2025-05-30",
-        "assignedTo": [
-          "Shane Hendrix",
-          "Lisa Wilson",
-          "James Brooks"
-        ]
-      },
-      {
-        "taskName": "Strong series",
-        "dueBy": "2025-05-18",
-        "assignedTo": []
-      }
-    ]
-  },
-  {
-    "roomName": "Data Review",
-    "peopleInRoom": true,
-    "isActive": false,
-    "createdByYou": false,
-    "members": [
-      {
-        "name": "Jerry Wood",
-        "image": "https://source.unsplash.com/random/100x100?sig=90",
-        "points": 1963,
-        "tasksDone": 15,
-        "level": "Intermediate",
-        "kpiAlignment": "50%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Reduce time to resolve issues"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Rebecca Young",
-        "image": "https://source.unsplash.com/random/100x100?sig=91",
-        "points": 3205,
-        "tasksDone": 79,
-        "level": "Expert",
-        "kpiAlignment": "50%",
-        "roomKpis": [
-          "Reduce bug count",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Also administration",
-        "dueBy": "2025-05-30",
-        "assignedTo": []
-      },
-      {
-        "taskName": "I finally",
-        "dueBy": "2025-05-20",
-        "assignedTo": [
-          "Rebecca Young"
-        ]
-      },
-      {
-        "taskName": "Letter culture kitchen into",
-        "dueBy": "2025-05-26",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Bill majority then",
-        "dueBy": "2025-05-12",
-        "assignedTo": [
-          "Rebecca Young"
-        ]
-      }
-    ]
-  },
-  {
-    "roomName": "User Interviews",
-    "peopleInRoom": true,
-    "isActive": false,
-    "createdByYou": true,
-    "members": [
-      {
-        "name": "Carrie Petty",
-        "image": "https://source.unsplash.com/random/100x100?sig=95",
-        "points": 1521,
-        "tasksDone": 81,
-        "level": "Beginner",
-        "kpiAlignment": "75%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Joel George",
-        "image": "https://source.unsplash.com/random/100x100?sig=96",
-        "points": 2997,
-        "tasksDone": 84,
-        "level": "Intermediate",
-        "kpiAlignment": "54%",
-        "roomKpis": [
-          "Improve UI consistency",
-          "Reduce time to resolve issues"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Tara Ruiz",
-        "image": "https://source.unsplash.com/random/100x100?sig=97",
-        "points": 3441,
-        "tasksDone": 10,
-        "level": "Expert",
-        "kpiAlignment": "68%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Ashley Conley",
-        "image": "https://source.unsplash.com/random/100x100?sig=98",
-        "points": 1621,
-        "tasksDone": 83,
-        "level": "Expert",
-        "kpiAlignment": "99%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Reduce time to resolve issues"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Erika Jackson DDS",
-        "image": "https://source.unsplash.com/random/100x100?sig=99",
-        "points": 4290,
-        "tasksDone": 49,
-        "level": "Beginner",
-        "kpiAlignment": "83%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Leg music begin stay",
-        "dueBy": "2025-05-12",
-        "assignedTo": [
-          "Joel George",
-          "Carrie Petty",
-          "Tara Ruiz"
-        ]
-      },
-      {
-        "taskName": "Parent opportunity stock",
-        "dueBy": "2025-06-06",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Concern with natural about job",
-        "dueBy": "2025-05-20",
-        "assignedTo": [
-          "Tara Ruiz",
-          "Ashley Conley",
-          "Joel George",
-          "Carrie Petty"
-        ]
-      },
-      {
-        "taskName": "Room grow",
-        "dueBy": "2025-06-04",
-        "assignedTo": []
-      }
-    ]
-  },
-  {
-    "roomName": "Growth Hackers",
-    "peopleInRoom": true,
-    "isActive": false,
-    "createdByYou": false,
-    "members": [
-      {
-        "name": "Nicholas Ramirez",
-        "image": "https://source.unsplash.com/random/100x100?sig=100",
-        "points": 2981,
-        "tasksDone": 73,
-        "level": "Intermediate",
-        "kpiAlignment": "95%",
-        "roomKpis": [
-          "Reduce bug count",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Amy Willis DVM",
-        "image": "https://source.unsplash.com/random/100x100?sig=101",
-        "points": 1378,
-        "tasksDone": 22,
-        "level": "Expert",
-        "kpiAlignment": "95%",
-        "roomKpis": [
-          "Boost deployment frequency",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Anything guess only likely service",
-        "dueBy": "2025-05-26",
-        "assignedTo": [
-          "Amy Willis DVM"
-        ]
-      },
-      {
-        "taskName": "Song your popular",
-        "dueBy": "2025-05-30",
-        "assignedTo": []
-      },
-      {
-        "taskName": "All gun chance sometimes start",
-        "dueBy": "2025-05-20",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Fire drug day tough",
-        "dueBy": "2025-05-25",
-        "assignedTo": []
-      }
-    ]
-  },
-  {
-    "roomName": "Operations Room",
-    "peopleInRoom": true,
-    "isActive": true,
-    "createdByYou": false,
-    "members": [
-      {
-        "name": "Kelly Shields",
-        "image": "https://source.unsplash.com/random/100x100?sig=105",
-        "points": 1066,
-        "tasksDone": 49,
-        "level": "Beginner",
-        "kpiAlignment": "63%",
-        "roomKpis": [
-          "Improve UI consistency",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Lisa Cox",
-        "image": "https://source.unsplash.com/random/100x100?sig=106",
-        "points": 4457,
-        "tasksDone": 49,
-        "level": "Intermediate",
-        "kpiAlignment": "88%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Question moment such call",
-        "dueBy": "2025-06-07",
-        "assignedTo": [
-          "Lisa Cox"
-        ]
-      },
-      {
-        "taskName": "Here current spend herself something",
-        "dueBy": "2025-05-28",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Expect drive world never away",
-        "dueBy": "2025-06-07",
-        "assignedTo": [
-          "Lisa Cox",
-          "Kelly Shields"
-        ]
-      }
-    ]
-  },
-  {
-    "roomName": "Team Check-in",
-    "peopleInRoom": true,
-    "isActive": true,
-    "createdByYou": true,
-    "members": [
-      {
-        "name": "Laura Martinez",
-        "image": "https://source.unsplash.com/random/100x100?sig=110",
-        "points": 3840,
-        "tasksDone": 70,
-        "level": "Expert",
-        "kpiAlignment": "70%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Kimberly Williams",
-        "image": "https://source.unsplash.com/random/100x100?sig=111",
-        "points": 2828,
-        "tasksDone": 84,
-        "level": "Beginner",
-        "kpiAlignment": "89%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Robert Miller",
-        "image": "https://source.unsplash.com/random/100x100?sig=112",
-        "points": 2871,
-        "tasksDone": 56,
-        "level": "Beginner",
-        "kpiAlignment": "41%",
-        "roomKpis": [
-          "Boost deployment frequency",
-          "Reduce time to resolve issues"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Situation beat million",
-        "dueBy": "2025-05-16",
-        "assignedTo": [
-          "Kimberly Williams"
-        ]
-      },
-      {
-        "taskName": "Bank former campaign remain",
-        "dueBy": "2025-05-21",
-        "assignedTo": [
-          "Laura Martinez",
-          "Robert Miller"
-        ]
-      }
-    ]
-  },
-  {
-    "roomName": "Night Owls",
-    "peopleInRoom": true,
-    "isActive": true,
-    "createdByYou": true,
-    "members": [
-      {
-        "name": "Wanda Carlson",
-        "image": "https://source.unsplash.com/random/100x100?sig=115",
-        "points": 3921,
-        "tasksDone": 15,
-        "level": "Intermediate",
-        "kpiAlignment": "82%",
-        "roomKpis": [
-          "Boost deployment frequency",
-          "Reduce time to resolve issues"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Joshua Sanders",
-        "image": "https://source.unsplash.com/random/100x100?sig=116",
-        "points": 2856,
-        "tasksDone": 90,
-        "level": "Expert",
-        "kpiAlignment": "56%",
-        "roomKpis": [
-          "Boost deployment frequency",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Charles White",
-        "image": "https://source.unsplash.com/random/100x100?sig=117",
-        "points": 1118,
-        "tasksDone": 63,
-        "level": "Expert",
-        "kpiAlignment": "50%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Option seat decision",
-        "dueBy": "2025-06-03",
-        "assignedTo": [
-          "Wanda Carlson",
-          "Joshua Sanders",
-          "Charles White"
-        ]
-      },
-      {
-        "taskName": "Stock the away",
-        "dueBy": "2025-05-22",
-        "assignedTo": [
-          "Joshua Sanders"
-        ]
-      }
-    ]
-  },
-  {
-    "roomName": "Morning Sync",
-    "peopleInRoom": true,
-    "isActive": true,
-    "createdByYou": true,
-    "members": [
-      {
-        "name": "Gail Acevedo",
-        "image": "https://source.unsplash.com/random/100x100?sig=120",
-        "points": 4948,
-        "tasksDone": 95,
-        "level": "Beginner",
-        "kpiAlignment": "80%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Susan Cooke",
-        "image": "https://source.unsplash.com/random/100x100?sig=121",
-        "points": 4029,
-        "tasksDone": 90,
-        "level": "Beginner",
-        "kpiAlignment": "61%",
-        "roomKpis": [
-          "Boost deployment frequency",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "High career color wait",
-        "dueBy": "2025-06-04",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Each green around majority",
-        "dueBy": "2025-05-24",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Girl buy",
-        "dueBy": "2025-05-27",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Fine a put",
-        "dueBy": "2025-05-26",
-        "assignedTo": []
-      }
-    ]
-  },
-  {
-    "roomName": "Boardroom",
-    "peopleInRoom": false,
-    "isActive": true,
-    "createdByYou": false,
-    "members": [],
-    "tasks": [
-      {
-        "taskName": "Base PM report person only",
-        "dueBy": "2025-05-28",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Health strong",
-        "dueBy": "2025-05-30",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Paper result exactly",
-        "dueBy": "2025-05-26",
-        "assignedTo": []
-      },
-      {
-        "taskName": "Throw around no",
-        "dueBy": "2025-06-09",
-        "assignedTo": []
-      }
-    ]
-  },
-  {
-    "roomName": "Weekly Digest",
-    "peopleInRoom": true,
-    "isActive": false,
-    "createdByYou": false,
-    "members": [
-      {
-        "name": "Antonio Thornton",
-        "image": "https://source.unsplash.com/random/100x100?sig=130",
-        "points": 1876,
-        "tasksDone": 54,
-        "level": "Expert",
-        "kpiAlignment": "93%",
-        "roomKpis": [
-          "Boost deployment frequency",
-          "Increase feature delivery"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Andrew Ramos",
-        "image": "https://source.unsplash.com/random/100x100?sig=131",
-        "points": 3269,
-        "tasksDone": 85,
-        "level": "Intermediate",
-        "kpiAlignment": "82%",
-        "roomKpis": [
-          "Boost deployment frequency",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Thomas Allison",
-        "image": "https://source.unsplash.com/random/100x100?sig=132",
-        "points": 4338,
-        "tasksDone": 33,
-        "level": "Intermediate",
-        "kpiAlignment": "59%",
-        "roomKpis": [
-          "Boost deployment frequency",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Rebecca Harris",
-        "image": "https://source.unsplash.com/random/100x100?sig=133",
-        "points": 1288,
-        "tasksDone": 21,
-        "level": "Beginner",
-        "kpiAlignment": "57%",
-        "roomKpis": [
-          "Reduce bug count",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Robert Carter",
-        "image": "https://source.unsplash.com/random/100x100?sig=134",
-        "points": 3907,
-        "tasksDone": 39,
-        "level": "Intermediate",
-        "kpiAlignment": "82%",
-        "roomKpis": [
-          "Boost deployment frequency",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Else own offer",
-        "dueBy": "2025-05-23",
-        "assignedTo": [
-          "Rebecca Harris",
-          "Andrew Ramos"
-        ]
-      },
-      {
-        "taskName": "Very catch feeling but",
-        "dueBy": "2025-06-09",
-        "assignedTo": []
-      }
-    ]
-  },
-  {
-    "roomName": "Content Creators",
-    "peopleInRoom": true,
-    "isActive": false,
-    "createdByYou": false,
-    "members": [
-      {
-        "name": "Pam Benjamin",
-        "image": "https://source.unsplash.com/random/100x100?sig=135",
-        "points": 2923,
-        "tasksDone": 60,
-        "level": "Intermediate",
-        "kpiAlignment": "44%",
-        "roomKpis": [
-          "Reduce bug count",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Shelley Harrell",
-        "image": "https://source.unsplash.com/random/100x100?sig=136",
-        "points": 2061,
-        "tasksDone": 60,
-        "level": "Intermediate",
-        "kpiAlignment": "47%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Reduce time to resolve issues"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Politics five",
-        "dueBy": "2025-06-08",
-        "assignedTo": [
-          "Shelley Harrell"
-        ]
-      },
-      {
-        "taskName": "Ok them",
-        "dueBy": "2025-06-07",
-        "assignedTo": [
-          "Shelley Harrell",
-          "Pam Benjamin"
-        ]
-      },
-      {
-        "taskName": "Candidate half stop day plant",
-        "dueBy": "2025-05-24",
-        "assignedTo": [
-          "Shelley Harrell"
-        ]
-      }
-    ]
-  },
-  {
-    "roomName": "Beta Feedback",
-    "peopleInRoom": true,
-    "isActive": true,
-    "createdByYou": false,
-    "members": [
-      {
-        "name": "Robert Reyes",
-        "image": "https://source.unsplash.com/random/100x100?sig=140",
-        "points": 2498,
-        "tasksDone": 87,
-        "level": "Expert",
-        "kpiAlignment": "70%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Victoria Gonzalez",
-        "image": "https://source.unsplash.com/random/100x100?sig=141",
-        "points": 3134,
-        "tasksDone": 79,
-        "level": "Intermediate",
-        "kpiAlignment": "88%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Improve test coverage"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      },
-      {
-        "name": "Isaac Carr",
-        "image": "https://source.unsplash.com/random/100x100?sig=142",
-        "points": 4155,
-        "tasksDone": 56,
-        "level": "Beginner",
-        "kpiAlignment": "81%",
-        "roomKpis": [
-          "Enhance customer satisfaction",
-          "Streamline design process"
-        ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
-      }
-    ],
-    "tasks": [
-      {
-        "taskName": "Of education coach themselves",
-        "dueBy": "2025-05-23",
-        "assignedTo": [
-          "Robert Reyes"
-        ]
-      },
-      {
-        "taskName": "Prove carry easy",
-        "dueBy": "2025-05-23",
-        "assignedTo": [
-          "Robert Reyes",
-          "Victoria Gonzalez"
-        ]
-      },
-      {
-        "taskName": "Worry easy ground",
-        "dueBy": "2025-05-12",
-        "assignedTo": [
-          "Robert Reyes",
-          "Isaac Carr",
-          "Victoria Gonzalez"
-        ]
-      },
-      {
-        "taskName": "Brother argue building paper market",
-        "dueBy": "2025-05-28",
-        "assignedTo": [
-          "Victoria Gonzalez",
-          "Robert Reyes"
-        ]
-      }
-    ]
-  },
-  {
-    "roomName": "Partner Collab",
-    "peopleInRoom": true,
-    "isActive": false,
-    "createdByYou": true,
+    "kpi": { // Added room KPI
+      "kpiName": "Lead Generation",
+      "kpiMetric": "83%"
+    },
     "members": [
       {
         "name": "Lori Wood",
         "image": "https://source.unsplash.com/random/100x100?sig=145",
-        "points": 1755,
-        "tasksDone": 29,
-        "level": "Beginner",
-        "kpiAlignment": "71%",
+        "points": 3396,
+        "tasksDone": 99,
+        "level": "Intermediate",
+        "kpiAlignment": "85%",
         "roomKpis": [
-          "Boost deployment frequency",
+          "Enhance customer satisfaction",
           "Reduce time to resolve issues"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": {  // Added member KPI
+          "kpiName": "Campaign Management",
+          "kpiMetric": "91%"
+        }
       },
       {
-        "name": "Pamela Weiss",
+        "name": "Cynthia Young",
         "image": "https://source.unsplash.com/random/100x100?sig=146",
-        "points": 3787,
-        "tasksDone": 32,
+        "points": 3381,
+        "tasksDone": 53,
         "level": "Expert",
-        "kpiAlignment": "71%",
+        "kpiAlignment": "86%",
         "roomKpis": [
           "Improve UI consistency",
-          "Improve test coverage"
+          "Increase feature delivery"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": {  // Added member KPI
+          "kpiName": "Content Marketing",
+          "kpiMetric": "87%"
+        }
       },
       {
-        "name": "Jeanette Edwards",
+        "name": "Jose Alexander",
         "image": "https://source.unsplash.com/random/100x100?sig=147",
-        "points": 1166,
-        "tasksDone": 49,
-        "level": "Expert",
-        "kpiAlignment": "75%",
+        "points": 2577,
+        "tasksDone": 80,
+        "level": "Intermediate",
+        "kpiAlignment": "52%",
         "roomKpis": [
           "Boost deployment frequency",
-          "Improve test coverage"
+          "Streamline design process"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": {  // Added member KPI
+          "kpiName": "Social Media Marketing",
+          "kpiMetric": "79%"
+        }
       },
       {
         "name": "Terri Buckley",
@@ -2031,7 +1451,11 @@ export const rooms = [
           "Enhance customer satisfaction",
           "Improve test coverage"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "Email Marketing",
+          "kpiMetric": "84%"
+        }
       },
       {
         "name": "Sandy Goodman",
@@ -2044,30 +1468,119 @@ export const rooms = [
           "Reduce bug count",
           "Improve test coverage"
         ],
-        "aiSummary": "This member is performing well and aligning with KPIs."
+        "aiSummary": "This member is performing well and aligning with KPIs.",
+        "kpi": { // Added member KPI
+          "kpiName": "SEO Performance",
+          "kpiMetric": "76%"
+        }
       }
     ],
     "tasks": [
       {
-        "taskName": "South bit occur",
-        "dueBy": "2025-05-18",
-        "assignedTo": [
+        id: "task-34",
+        created_at: "2024-08-08T10:00:00Z",
+        updated_at: "2024-08-08T12:00:00Z",
+        title: "South bit occur",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "completed",
+        category: "Advertising",
+        task_tools: ["Google Ads", "Facebook Ads"],
+        deadline: "2025-05-18",
+        due_by: "2025-05-18",
+        task_point: 16,
+        completed_at: "2024-08-08T12:00:00Z",
+        created_by_id: "user-23",
+        workroom_id: "room-12",
+        assignedTo: [
           "Lori Wood",
+          "Cynthia Young"
+        ]
+      },
+      {
+        id: "task-35",
+        created_at: "2024-08-09T09:00:00Z",
+        updated_at: "2024-08-09T11:30:00Z",
+        title: "Assume beautiful",
+        duration: "2.5 hours",
+        is_recurring: false,
+        status: "in progress",
+        category: "Content Creation",
+        task_tools: ["WordPress", "Contentful"],
+        deadline: "2025-05-22",
+        due_by: "2025-05-22",
+        task_point: 18,
+        completed_at: null,
+        created_by_id: "user-24",
+        workroom_id: "room-12",
+        assignedTo: [
+          "Jose Alexander",
           "Terri Buckley"
         ]
       },
       {
-        "taskName": "How animal",
-        "dueBy": "2025-06-07",
-        "assignedTo": [
-          "Jeanette Edwards"
+        id: "task-36",
+        created_at: "2024-08-09T14:00:00Z",
+        updated_at: "2024-08-09T16:00:00Z",
+        title: "Recently community",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "scheduled",
+        category: "Social Media",
+        task_tools: ["Hootsuite", "Buffer"],
+        deadline: "2025-06-02",
+        due_by: "2025-06-02",
+        task_point: 14,
+        completed_at: null,
+        created_by_id: "user-23",
+        workroom_id: "room-12",
+        assignedTo: [
+          "Sandy Goodman"
         ]
       },
       {
-        "taskName": "Provide pick happen quickly focus",
-        "dueBy": "2025-05-17",
-        "assignedTo": []
+        id: "task-37",
+        created_at: "2024-08-10T10:00:00Z",
+        updated_at: "2024-08-10T12:45:00Z",
+        title: "Anyone brother",
+        duration: "2.75 hours",
+        is_recurring: true,
+        status: "in progress",
+        category: "Email Marketing",
+        task_tools: ["Mailchimp", "SendGrid"],
+        deadline: "2025-05-24",
+        due_by: "2025-05-24",
+        task_point: 20,
+        completed_at: null,
+        created_by_id: "user-24",
+        workroom_id: "room-12",
+        assignedTo: [
+          "Lori Wood",
+          "Terri Buckley",
+          "Sandy Goodman"
+        ]
+      },
+      {
+        id: "task-38",
+        created_at: "2024-08-10T13:00:00Z",
+        updated_at: "2024-08-10T15:00:00Z",
+        title: "Foot ball",
+        duration: "2 hours",
+        is_recurring: false,
+        status: "completed",
+        category: "SEO",
+        task_tools: ["SEMrush", "Ahrefs"],
+        deadline: "2025-05-20",
+        due_by: "2025-05-20",
+        task_point: 17,
+        completed_at: "2024-08-10T15:00:00Z",
+        created_by_id: "user-23",
+        workroom_id: "room-12",
+        assignedTo: [
+          "Cynthia Young",
+          "Jose Alexander"
+        ]
       }
     ]
   }
-]
+];

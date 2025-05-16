@@ -12,6 +12,7 @@ import Link from "next/link";
 import { toast } from "../../../components/ui/use-toast";
 
 import { useUserSession } from "@/contexts/useUserSession";
+import { backendUri } from "@/lib/config";
 
 const SignUp = () => {
   const { currentUser } = useUserSession();
@@ -39,19 +40,16 @@ const SignUp = () => {
     setError(null);
 
     try {
-      const response = await fetch(
-        "https://hudddle-backend.onrender.com/api/v1/auth/signup",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: emailAddress,
-            password: password,
-          }),
-        }
-      );
+      const response = await fetch(`${backendUri}/api/v1/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: emailAddress,
+          password: password,
+        }),
+      });
       if (!response.ok) {
         throw new Error(
           "Failed to authenticate. Please check your credentials."
@@ -78,9 +76,9 @@ const SignUp = () => {
   return (
     <div className="w-full flex text-black max-h-screen overflow-hidden relative">
       <div className="flex w-full justify-between items-center flex-row">
-        <div className="w-[clamp(28.125rem,_26.6036rem+7.6068vw,_33.6875rem)] bg-white justify-center items-center flex flex-col space-y-[clamp(0.5rem,_0.6838vw,_1rem)] h-full">
+        <div className="w-3/4 bg-white justify-center items-center flex flex-col space-y-[clamp(0.5rem,_0.6838vw,_1rem)] h-full">
           <div className="flex items-center justify-center">
-            <div className=" justify-center items-center shadow-lg p-10 w-[539px] bg-[#ffffff] rounded-[5px] border border-transparent">
+            <div className=" justify-center items-center card-morph p-10 w-[539px] bg-[#ffffff] rounded-[5px] border border-transparent">
               <div className="flex flex-col space-y-5">
                 <h1 className="text-[36px] font-inter font-semibold text-center leading-[43.57px]">
                   Sign Up

@@ -16,6 +16,10 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import UpdateTaskSheet from "./update-task-sheet";
+import { backendUri } from "@/lib/config";
+import { useRouter } from "next/navigation";
+import fetchTasks from "@/lib/fetch-tasks";
 
 const ITEMS_PER_PAGE = 3;
 
@@ -40,23 +44,101 @@ export interface Task {
 interface MyTaskProps {
   tasks: Task[];
   totalItems: number;
+  setLoadingTasks: React.Dispatch<React.SetStateAction<boolean>>;
+  setErrorTasks: React.Dispatch<React.SetStateAction<string | null>>;
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
 }
 
 const MyTask: React.FC<MyTaskProps> = ({
   tasks: initialTasks,
   totalItems: initialTotalItems,
+  setLoadingTasks,
+  setErrorTasks,
+  setTasks,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [tasks, setTasks] = useState<Task[]>(
+  const [newTasks, setNewTasks] = useState<Task[]>(
     initialTasks.slice(0, ITEMS_PER_PAGE)
   );
   const [totalItems, setTotalItems] = useState(initialTotalItems);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleTaskCreated = () => {
+    // Logic to refresh tasks after a task is created
+    router.refresh(); // Ensure the UI refreshes after task creation
+  };
+
+  const handleTaskUpdated = () => {
+    fetchTasks({
+      setLoadingTasks,
+      setErrorTasks,
+      setTasks,
+    });
+
+    router.refresh(); // Ensure the UI refreshes after task update
+  };
+
+  const openUpdateSheet = (taskId: string) => {
+    setSelectedTaskId(taskId);
+    setIsSheetOpen(true);
+  };
+
+  const handleMarkAsCompleted = async (taskId: string) => {
+    const storedToken = localStorage.getItem("token");
+
+    if (!storedToken) {
+      console.error("No token found, cannot update task status.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${backendUri}/api/v1/tasks/${taskId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${storedToken}`,
+        },
+        body: JSON.stringify({
+          status: "COMPLETED",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to update task status:", errorData);
+        return;
+      }
+      fetchTasks({
+        setLoadingTasks,
+        setErrorTasks,
+        setTasks,
+      });
+
+      router.refresh(); // Refresh the page to reflect the updated status
+    } catch (error) {
+      console.error("Error updating task status:", error);
+    }
+  };
 
   useEffect(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    setTasks(initialTasks.slice(startIndex, endIndex));
-  }, [currentPage, initialTasks]);
+
+    if (typeof setTasks === "function") {
+      const slicedTasks = initialTasks.slice(startIndex, endIndex);
+      setTasks((prevTasks) => {
+        // Only update if the tasks have changed
+        if (JSON.stringify(prevTasks) !== JSON.stringify(slicedTasks)) {
+          return slicedTasks;
+        }
+        return prevTasks;
+      });
+    } else {
+      console.error("setTasks is not a function");
+    }
+  }, [currentPage, initialTasks, setTasks]);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= Math.ceil(totalItems / ITEMS_PER_PAGE)) {
@@ -66,12 +148,12 @@ const MyTask: React.FC<MyTaskProps> = ({
 
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
-  return (
+  return initialTasks && initialTasks.length > 0 ? (
     <>
       <div className="flex flex-col gap-8">
-        {tasks &&
-          Array.isArray(tasks) &&
-          tasks.map((task) => (
+        {newTasks &&
+          Array.isArray(newTasks) &&
+          newTasks.map((task) => (
             <div
               key={task.id}
               className="p-[clamp(0.875rem,_0.5128vw,_1.25rem)] rounded-[8px] task-morph w-full h-[clamp(6.25rem,_5.9765rem+1.3675vw,_7.25rem)]"
@@ -102,7 +184,10 @@ const MyTask: React.FC<MyTaskProps> = ({
                     </div>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <Checkbox />
+                    <Checkbox
+                      id="mark-as-completed"
+                      onCheckedChange={() => handleMarkAsCompleted(task.id)}
+                    />
                     <span className="text-[#999999] text-[clamp(0.75rem,_0.7158rem+0.1709vw,_0.875rem)]">
                       Mark as Completed
                     </span>
@@ -148,14 +233,18 @@ const MyTask: React.FC<MyTaskProps> = ({
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <Button variant={"ghost"} className="hover:bg-transparent">
+                    <Button
+                      variant={"ghost"}
+                      className="hover:bg-transparent"
+                      onClick={() => openUpdateSheet(task.id)}
+                    >
                       <Pencil size={18} color="#707070" />
                     </Button>
                     <span
                       className={cn(
                         "px-2 py-[3px] flex items-center justify-center border border-slate-300 rounded-full text-[clamp(0.8125rem,_0.7612rem+0.2564vw,_1rem)]",
-                        task.status === "In progress" && "bg-[#FFADF8]",
-                        task.status === "Completed" && "bg-green-200",
+                        task.status === "PENDING" && "bg-[#FFADF8]",
+                        task.status === "COMPLETED" && "bg-green-200",
                         task.status === "Not Completed" && "bg-red-200"
                       )}
                     >
@@ -166,7 +255,7 @@ const MyTask: React.FC<MyTaskProps> = ({
               </div>
             </div>
           ))}
-        {tasks && Array.isArray(tasks) && tasks.length === 0 && (
+        {newTasks && Array.isArray(newTasks) && newTasks.length === 0 && (
           <p>No tasks available on this page.</p>
         )}
       </div>
@@ -209,7 +298,15 @@ const MyTask: React.FC<MyTaskProps> = ({
           </PaginationContent>
         </Pagination>
       )}
+      <UpdateTaskSheet
+        taskId={selectedTaskId ?? undefined}
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        onTaskCreated={handleTaskUpdated}
+      />
     </>
+  ) : (
+    <div>No tasks available.</div>
   );
 };
 

@@ -8,8 +8,9 @@ import { SlidersHorizontal } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import TodaysTask from "./todays-task";
 import { Metadata } from "next";
-import { useUserSession } from "@/contexts/useUserSession";
 import { TaskTodayProps } from "@/lib/@types";
+import { backendUri } from "@/lib/config";
+import LoadingPage from "@/components/shared/loading-page";
 
 export const metadata: Metadata = {
   title: "Hudddle | Dashboard",
@@ -29,15 +30,17 @@ interface UserLevelData {
 
 interface UserData {
   id: number;
-  first_name: string;
-  last_name: string;
+  username: string | null;
+  first_name: string | null;
+  last_name: string | null;
   email: string;
-  // ... other user properties
-  productivity: number;
-  average_task_time: number;
+  productivity_percentage: number;
+  average_task_time_hours: number;
   xp: number;
   daily_active_minutes: number;
   teamwork_collaborations: number;
+  avatar_url: string | null;
+  friends: any[];
 }
 
 const levelDescriptions: Record<UserLevelData["category"], string> = {
@@ -53,17 +56,14 @@ const levelDescriptions: Record<UserLevelData["category"], string> = {
 
 const PageDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
-
   const [currentPage, setCurrentPage] = useState(1);
   const tasksPerPage = 5;
 
-  const { currentUser, loading, error } = useUserSession();
-  const [isLoadingStreak, setIsLoadingStreak] = useState(true);
-  const [isLoadingLevels, setIsLoadingLevels] = useState(true);
-  const [isUpdatingActiveMinutes, setIsUpdatingActiveMinutes] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
   const [todaysTasks, setTodaysTasks] = useState<TaskTodayProps[]>([]);
   const [userStreak, setUserStreak] = useState<UserStreakData | null>(null);
   const [userLevels, setUserLevels] = useState<UserLevelData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const filteredTasks = todaysTasks.filter((task) =>
     task.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -80,161 +80,105 @@ const PageDashboard: React.FC = () => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const updateDailyActiveMinutes = async (minutes: number) => {
-    if (!currentUser?.id || isUpdatingActiveMinutes) {
-      return;
-    }
-    setIsUpdatingActiveMinutes(true);
-    const storedToken = localStorage.getItem("token");
-    if (!storedToken) return;
-
-    try {
-      const response = await fetch(
-        `https://hudddle-backend.onrender.com/api/v1/users/${currentUser.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${storedToken}`,
-          },
-          body: JSON.stringify({ daily_active_minutes: minutes }),
-        }
-      );
-
-      if (!response.ok) {
-        console.error(
-          "Failed to update daily active minutes:",
-          response.status,
-          response.statusText
-        );
-        // Optionally handle error (e.g., retry, display message)
-      } else {
-        console.log("Daily active minutes updated successfully:", minutes);
-        // You might want to update the local currentUser state if needed
-        // For example, by refetching user data or updating a local copy
-      }
-    } catch (error) {
-      console.error("Error updating daily active minutes:", error);
-    } finally {
-      setIsUpdatingActiveMinutes(false);
-    }
-  };
-
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     if (!storedToken) return;
+
     const fetchDashboardData = async () => {
-      setIsLoadingStreak(true);
-      setIsLoadingLevels(true);
+      setLoading(true);
       try {
-        const tasksResponse = await fetch(
-          "https://hudddle-backend.onrender.com/api/v1/tasks",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${storedToken}`,
-            },
-          }
-        );
-        if (!tasksResponse.ok) {
-          console.error(
-            "Failed to fetch tasks:",
-            tasksResponse.status,
-            tasksResponse.statusText
-          );
-        } else {
-          const tasksData = await tasksResponse.json();
-          const today = new Date().toISOString().split("T")[0];
-          const todaysFilteredTasks = tasksData
-            .filter((task: any) => task.deadline.split("T")[0] === today)
-            .map((task: any) => ({
-              title: task.title,
-              time: task.due_by
-                ? new Date(task.due_by).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "N/A",
-              points: task.task_point,
-            }));
-          setTodaysTasks(todaysFilteredTasks);
-        }
-      } catch (err) {
-        console.error("Error fetching tasks:", err);
-      }
+        const response = await fetch(`${backendUri}/api/v1/dashboard`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${storedToken}`,
+          },
+        });
 
-      try {
-        const streakResponse = await fetch(
-          "https://hudddle-backend.onrender.com/api/v1/achievements/users/me/streak",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${storedToken}`,
-            },
-          }
-        );
-        if (!streakResponse.ok) {
-          console.error(
-            "Failed to fetch streak data:",
-            streakResponse.status,
-            streakResponse.statusText
-          );
-          setUserStreak(null);
-        } else {
-          const streakData: UserStreakData = await streakResponse.json();
-          console.log(`Streak Data: ${streakData.current_streak}`);
-          setUserStreak(streakData);
+        if (!response.ok) {
+          console.error("Failed to fetch dashboard data:", response.status);
+          return;
         }
-      } catch (err) {
-        console.error("Error fetching streak data:", err);
-        setUserStreak(null);
-      } finally {
-        setIsLoadingStreak(false);
-      }
 
-      try {
-        const levelsResponse = await fetch(
-          "https://hudddle-backend.onrender.com/api/v1/achievements/users/me/levels",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${storedToken}`,
-            },
-          }
+        const data = await response.json();
+        localStorage.setItem("user", JSON.stringify(data));
+
+        // Safely handle undefined user fields
+        const user: UserData = {
+          id: data.id || 0,
+          username: data.username || null,
+          first_name: data.first_name || "Guest",
+          last_name: data.last_name || "",
+          email: data.email || "",
+          productivity_percentage: data.productivity_percentage || 0,
+          average_task_time_hours: data.average_task_time_hours || 0,
+          xp: data.xp || 0,
+          daily_active_minutes: data.daily_active_minutes || 0,
+          teamwork_collaborations: data.teamwork_collaborations || 0,
+          avatar_url: data.avatar_url || null,
+          friends: data.friends || [],
+        };
+        setCurrentUser(user);
+
+        // Safely handle undefined tasks
+        const tasks = data.daily_tasks || [];
+        const today = new Date().toISOString().split("T")[0];
+        const todaysFilteredTasks = tasks
+          .filter((task: any) => task.deadline?.split("T")[0] === today)
+          .map((task: any) => ({
+            title: task.title,
+            time: task.due_by
+              ? new Date(task.due_by).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "N/A",
+            points: task.task_point,
+          }));
+        setTodaysTasks(todaysFilteredTasks);
+
+        // Safely handle undefined streak fields
+        const streak = {
+          current_streak: data.streaks || 0,
+          highest_streak: data.highest_streak || 0,
+          last_active_date: data.last_active_date || null,
+        };
+        setUserStreak(streak);
+
+        // Safely handle undefined levels and populate missing fields
+        const levels = (data.levels || []).map(
+          (level: Partial<UserLevelData>) => ({
+            category: level.category || "Slacker", // Default to "Slacker" if category is missing
+            tier: level.tier || "Beginner", // Default tier if missing
+            points: level.points || 0, // Default points to 0 if missing
+          })
         );
-        if (!levelsResponse.ok) {
-          console.error(
-            "Failed to fetch level data:",
-            levelsResponse.status,
-            levelsResponse.statusText
-          );
-          setUserLevels([]);
-        } else {
-          const levelsData: UserLevelData[] = await levelsResponse.json();
-          console.log("Level Data:", levelsData);
-          setUserLevels(levelsData);
-        }
-      } catch (err) {
-        console.error("Error fetching level data:", err);
-        setUserLevels([]);
+        console.log("Processed Levels:", levels); // Debugging log
+        setUserLevels(levels);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
       } finally {
-        setIsLoadingLevels(false);
+        setLoading(false);
       }
     };
 
     fetchDashboardData();
   }, []);
 
-  // if (loading || isLoadingLevels || isLoadingStreak) return <div>Loading...</div>;
-  // if (error) return <div>Error:{error}</div>;
+  if (loading) return <LoadingPage loadingText="Loading your dashboard" />;
 
-  const levelImageMap: Record<UserLevelData["category"], string | undefined> = {
-    Leader: statsCardsData.find((stat) => stat.title === "Leader")?.image,
-    Workaholic: statsCardsData.find((stat) => stat.title === "Workaholic")
-      ?.image,
-    "Team Player": statsCardsData.find((stat) => stat.title === "Team Player")
-      ?.image,
-    Slacker: statsCardsData.find((stat) => stat.title === "Slacker")?.image,
+  const levelImageMap: Record<UserLevelData["category"], string> = {
+    Leader:
+      statsCardsData.find((stat) => stat.title === "Leader")?.image ||
+      "default-leader.png",
+    Workaholic:
+      statsCardsData.find((stat) => stat.title === "Workaholic")?.image ||
+      "default-workaholic.png",
+    "Team Player":
+      statsCardsData.find((stat) => stat.title === "Team Player")?.image ||
+      "default-teamplayer.png",
+    Slacker:
+      statsCardsData.find((stat) => stat.title === "Slacker")?.image ||
+      "default-slacker.png",
   };
 
   return (
@@ -251,47 +195,45 @@ const PageDashboard: React.FC = () => {
           <span className="text-custom-yellow">
             {userStreak?.current_streak || 0}
           </span>
-          {/* {userStreak?.highest_streak && (
-            <span className="text-sm text-gray-500 ml-2">
-              (Highest: {userStreak.highest_streak})
-            </span>
-          )} */}
         </p>
         <ProductivitySection
-          currentUser={currentUser}
-          updateDailyActiveMinutes={updateDailyActiveMinutes}
-        />
-        {currentUser && (
-          <h1 className="mt-10 font-bold text-slate-600 text-xl">
-            Weekly Stats
-          </h1>
-        )}
-        <div className="grid grid-cols-2 mt-2 gap-x-10 gap-y-5">
-          {userLevels.map((level) => {
-            const matchingStat = statsCardsData.find(
-              (stat) => stat.title === level.category
-            );
-            return (
-              <StatsCard
-                key={level.category}
-                image={matchingStat?.image}
-                title={level.category}
-                description={levelDescriptions[level.category]}
-                progressValue={level.points}
-                progressColor={
-                  level.category === "Leader"
-                    ? "#F97316"
-                    : level.category === "Workaholic"
-                    ? "#84CC16"
-                    : level.category === "Team Player"
-                    ? "#2563EB"
-                    : "#EC4899"
+          currentUser={
+            currentUser
+              ? {
+                  productivity: currentUser.productivity_percentage,
+                  average_task_time: currentUser.average_task_time_hours,
+                  xp: currentUser.xp,
+                  daily_active_minutes: currentUser.daily_active_minutes,
+                  teamwork_collaborations: currentUser.teamwork_collaborations,
                 }
-              />
-            );
-          })}
+              : null
+          }
+          updateDailyActiveMinutes={(minutes) => {
+            if (currentUser) {
+              setCurrentUser({ ...currentUser, daily_active_minutes: minutes });
+            }
+          }}
+        />
+        <div className="w-full grid grid-cols-2 gap-x-10 gap-y-5 mt-10">
+          {userLevels.map((level) => (
+            <StatsCard
+              key={level.category}
+              image={levelImageMap[level.category]}
+              title={level.category}
+              description={levelDescriptions[level.category]}
+              progressValue={level.points}
+              progressColor={
+                level.category === "Leader"
+                  ? "#F97316"
+                  : level.category === "Workaholic"
+                  ? "#84CC16"
+                  : level.category === "Team Player"
+                  ? "#2563EB"
+                  : "#EC4899"
+              }
+            />
+          ))}
         </div>
-
         <div className="mt-10 flex justify-between items-center">
           <h1 className="font-bold text-slate-600 text-xl">
             Today's task for {currentUser?.first_name}
@@ -307,20 +249,9 @@ const PageDashboard: React.FC = () => {
           </div>
         </div>
         <Card className="mt-5 p-4 border-none max-h-60 overflow-y-auto neo-effect">
-          {/* {filteredTasks.map((task, index) => (
-          <TodaysTask key={index} task={task} />
-        ))}
-        {filteredTasks.length === 0 && (
-          <p className="text-slate-500">
-            {todaysTasks.length === 0 ? 'No tasks for today.' : 'No tasks match your search.'}
-          </p>
-        )} */}
-          {todaysTasks.map((task, index) => (
+          {currentTasks.map((task, index) => (
             <TodaysTask key={index} task={task} />
           ))}
-          {todaysTasks.length === 0 && (
-            <p className="text-slate-500">No tasks for today.</p>
-          )}
         </Card>
         {filteredTasks.length > tasksPerPage && (
           <div className="flex justify-center mt-4">
@@ -369,207 +300,3 @@ const PageDashboard: React.FC = () => {
 };
 
 export default PageDashboard;
-
-// "use client";
-// import React, { useContext, useEffect, useState } from "react";
-// import Header from "./header";
-// import ProductivitySection from "./productivity-section";
-// import StatsCard from "./stats-card";
-// import { statsCardsData, tasksData } from "@/data/data";
-// import { SlidersHorizontal } from "lucide-react";
-// import { Card } from "@/components/ui/card";
-// import TodaysTask from "./todays-task";
-// import { Metadata } from "next";
-// import { getToken } from "@/utils";
-// import { AuthContext } from "@/contexts/AuthContext";
-
-// export const metadata: Metadata = {
-//   title: "Hudddle | Dashboard",
-// };
-// const PageDashboard: React.FC = () => {
-//   const [currentUser, setCurrentUser] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-
-//   useEffect(() => {
-//     const getCurrentUser = async () => {
-//       try {
-//         const token = getToken();
-//         console.log(token);
-//         if (!token){
-//           throw new Error("No access token found");
-//         }
-//         const response = await fetch("https://hudddle-backend.onrender.com/api/v1/auth/me", {
-//           method: "GET",
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${token}`,
-//           },
-//         });
-
-//         console.log(response);
-//         if (!response.ok) {
-//           const errorResponse = await response.json();
-//           throw new Error(`${response.status} - ${errorResponse.message}`);
-//         };
-//         const userData = await response.json();
-//         setCurrentUser(userData);
-//         console.log(userData);
-//         return userData;
-
-//       } catch (error) {
-//         console.error("Failed to fetch user data:", error);
-//         setError(error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     getCurrentUser();
-//   }, []);
-
-//   if (loading) {
-//     return <div>Loading...</div>;
-//   }
-
-//   if (error) {
-//     return <div>Error: {error}</div>;
-//   }
-//   return (
-//     <section className="pt-8 pb-10 px-12">
-//       <Header
-//         name="Esther"
-//         isInWorkroom={false}
-//         teamName="Design Team"
-//         companyName="Atlassian Incorporated"
-//       />
-//       <div className="mt-10">
-//         <p></p>
-//         <p className="text-custom-semiBlack font-semibold text-right">
-//           Streaks <span className="text-custom-yellow">5 days</span>
-//         </p>
-//         <ProductivitySection />
-//         {currentUser && (
-//           <h1 className="mt-10 font-bold text-slate-600 text-xl">
-//             Welcome, {currentUser.name}
-
-//           </h1>
-//         )}
-//         <div className="grid grid-cols-2 mt-2 gap-x-10 gap-y-5">
-//           {statsCardsData.map((stat, index) => (
-//             <StatsCard
-//               key={index}
-//               image={stat.image}
-//               title={stat.title}
-//               description={stat.description}
-//               progressValue={stat.progressValue}
-//               progressColor={stat.progressColor}
-//             />
-//           ))}
-//         </div>
-
-//         <div className="mt-10 flex justify-between items-center">
-//           <h1 className="font-bold text-slate-600 text-xl">Today's task</h1>
-//           <SlidersHorizontal
-//             size={18}
-//             color="#D9D9D9"
-//             className="cursor-pointer"
-//           />
-//         </div>
-//         <Card className="mt-5 p-4 border-none max-h-60 overflow-y-auto neo-effect">
-//           {tasksData.map((task, index) => (
-//             <TodaysTask key={index} task={task} />
-//           ))}
-//         </Card>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default PageDashboard;
-// // import React, { useEffect } from "react";
-// // import Header from "./header";
-// // import ProductivitySection from "./productivity-section";
-// // import StatsCard from "./stats-card";
-// // import { statsCardsData, tasksData } from "@/data/data";
-// // import { SlidersHorizontal } from "lucide-react";
-// // import { Card } from "@/components/ui/card";
-// // import TodaysTask from "./todays-task";
-// // import { Metadata } from "next";
-
-// // export const metadata: Metadata = {
-// //   title: "Hudddle | Dashboard",
-// //   //description: "Generated by create next app",
-// // };
-
-// // const PageDashboard: React.FC = () => {
-// //   const getCurrentUser = async () => {
-// //     try {
-// //       const token=process.env.HUDDLE_ACCESS_TOKEN;
-// //       const response = await fetch("https://hudddle-backend.onrender.com/api/v1/auth/me", {
-// //         method: "GET",
-// //         headers: {
-// //           "Content-Type": "application/json",
-// //           "Authorization": `Bearer ${token}`,
-// //         }
-// //       });
-
-// //       if (!response.ok) {
-// //         throw new Error(`Error: ${response.status} ${response.statusText}`);
-// //       }
-// //       const userData = await response.json();
-// //       console.log("User Data:", userData);
-// //       return userData;
-// //     } catch (error) {
-// //       console.error("Failed to fetch user data:", error);
-// //     }
-// //   };
-
-// //  const currentUser = getCurrentUser();
-
-// //  console.log(currentUser);
-// //   return (
-// //     <section className="pt-8 pb-10 px-12">
-// //       <Header
-// //         name="Esther"
-// //         isInWorkroom={false}
-// //         teamName="Design Team"
-// //         companyName="Atlassian Incorporated"
-// //       />
-// //       <div className="mt-10">
-// //         <p className="text-custom-semiBlack font-semibold text-right">
-// //           Streaks <span className="text-custom-yellow">5 days</span>
-// //         </p>
-// //         <ProductivitySection />
-// //         <h1 className="mt-10 font-bold text-slate-600 text-xl">{currentUser}</h1>
-// //         <div className="grid grid-cols-2 mt-2 gap-x-10 gap-y-5">
-// //           {statsCardsData.map((stat, index) => (
-// //             <StatsCard
-// //               key={index}
-// //               image={stat.image}
-// //               title={stat.title}
-// //               description={stat.description}
-// //               progressValue={stat.progressValue}
-// //               progressColor={stat.progressColor}
-// //             />
-// //           ))}
-// //         </div>
-
-// //         <div className="mt-10 flex justify-between items-center">
-// //           <h1 className="font-bold text-slate-600 text-xl">Today's task</h1>
-// //           <SlidersHorizontal
-// //             size={18}
-// //             color="#D9D9D9"
-// //             className="cursor-pointer"
-// //           />
-// //         </div>
-// //         <Card className="mt-5 p-4 border-none max-h-60 overflow-y-auto neo-effect">
-// //           {tasksData.map((task, index) => (
-// //             <TodaysTask key={index} task={task} />
-// //           ))}
-// //         </Card>
-// //       </div>
-// //     </section>
-// //   );
-// // };
-
-// // export default PageDashboard;

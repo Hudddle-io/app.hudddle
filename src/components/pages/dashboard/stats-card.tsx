@@ -4,9 +4,9 @@ import React from 'react';
 import ProgressBar from '@/components/shared/progress-bar';
 import { StatsCardProps } from '@/lib/@types';
 
+type UserLevelCategory = 'Leader' | 'Workaholic' | 'Team Player' | 'Slacker';
 
-const calculateProgressPercentage = (points: number, category: UserLevelData["category"]): number => {
-  // You'll need to fetch or define these thresholds based on your backend logic
+const calculateProgressPercentage = (points: number, category: UserLevelCategory): number => {
   const thresholds = {
     Leader: { Beginner: 0, Intermediate: 50, Advanced: 150, Expert: 300 },
     Workaholic: { Beginner: 0, Intermediate: 50, Advanced: 150, Expert: 300 },
@@ -46,13 +46,11 @@ const StatsCard: React.FC<StatsCardProps> = ({ image, title, description, progre
           <CardDescription>{description}</CardDescription>
         </div>
       </CardContent>
-      <div className='rounded-full bg-[#D9D9D9] w-[80%]'>
       <ProgressBar
         className='h-10 rounded-full'
-        progressValue={calculateProgressPercentage(progressValue, title as UserLevelData["category"])}
+        progressValue={calculateProgressPercentage(progressValue, title as UserLevelCategory)}
         progressColor={progressColor}
       />
-      </div>
     </Card>
   );
 };

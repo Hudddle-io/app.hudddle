@@ -1,6 +1,13 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { ArrowLeft, CalendarIcon, Plus, Search } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarIcon,
+  Loader,
+  Loader2,
+  Plus,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import building from "../../../../public/assets/building.png";
 import Image from "next/image";
@@ -10,6 +17,7 @@ import { format } from "date-fns";
 import CreateNewTask from "@/components/shared/create-new-task";
 import fetchTasks from "@/lib/fetch-tasks";
 import CreateTaskSheet from "./create-task-sheet";
+import LoadingPage from "@/components/shared/loading-page";
 
 const Page = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -26,6 +34,8 @@ const Page = () => {
   const currentDate = new Date();
   const formattedDate = format(currentDate, "MMMM dd, yyyy");
 
+  const stableSetTasks = useCallback(setTasks, []);
+
   const handleTaskCreated = () => {
     fetchTasks({
       setLoadingTasks,
@@ -41,6 +51,13 @@ const Page = () => {
       setTasks,
     });
   }, []);
+
+  useEffect(() => {
+    if (allTasks.length === 0 && tasks.length > 0) {
+      console.log("Synchronizing allTasks with tasks", tasks);
+      setAllTasks(tasks); // Synchronize allTasks with the initial tasks
+    }
+  }, [tasks, allTasks]);
 
   const completedTasksCount = tasks.filter(
     (task) => task.status === "COMPLETED"
@@ -90,6 +107,22 @@ const Page = () => {
     setTasks([...allTasks]);
   }, [allTasks]);
 
+  const handleSearch = useCallback(
+    (searchTerm: string) => {
+      console.log("Search term:", searchTerm);
+      console.log("All tasks:", allTasks);
+
+      const sourceTasks = allTasks.length > 0 ? allTasks : tasks; // Fallback to tasks if allTasks is empty
+      const filteredTasks = sourceTasks.filter((task) =>
+        task.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      console.log("Filtered tasks:", filteredTasks);
+      setTasks(filteredTasks);
+    },
+    [allTasks, tasks]
+  );
+
   return (
     <div className="min-w-full flex px-8 flex-col">
       <div className="w-full my-10 items-center flex justify-between">
@@ -117,16 +150,32 @@ const Page = () => {
           </Button>
           <Button variant="outline" className="flex space-x-2">
             <Image src={building} alt="" width={20} height={20} />
-            <h1>
-              <strong>
-                {completedTasksCount}/{totalTasksCount} tasks
+            <h1 className="flex items-center gap-1">
+              <strong className="flex items-center gap-1">
+                {completedTasksCount ? (
+                  completedTasksCount
+                ) : (
+                  <Loader2 className="animate-spin h-2 w-2" />
+                )}
+                /
+                {totalTasksCount ? (
+                  totalTasksCount
+                ) : (
+                  <Loader2 className="animate-spin h-2 w-2" />
+                )}{" "}
+                tasks
               </strong>{" "}
               completed
             </h1>
           </Button>
           <Button variant="outline" className="flex space-x-2">
             <h1 className="text-[#956FD6]">
-              {pendingTasksCount} Pending tasks
+              {pendingTasksCount ? (
+                pendingTasksCount
+              ) : (
+                <Loader2 className="animate-spin h-2 w-2" />
+              )}{" "}
+              Pending tasks
             </h1>
           </Button>
         </div>
@@ -149,6 +198,7 @@ const Page = () => {
               <Input
                 className="pl-10 h-[50px] rounded-[38px]"
                 placeholder="Search"
+                onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
             <CreateNewTask />
@@ -156,11 +206,17 @@ const Page = () => {
 
           <div>
             {loadingTasks ? (
-              <div>Loading tasks...</div>
+              <LoadingPage loadingText="Loading your tasks ..." />
             ) : errorTasks ? (
               <div>Error loading tasks: {errorTasks}</div>
             ) : tasks.length > 0 ? (
-              <MyTask tasks={tasks} totalItems={tasks.length} />
+              <MyTask
+                setTasks={setTasks}
+                setErrorTasks={setErrorTasks}
+                setLoadingTasks={setLoadingTasks}
+                tasks={tasks}
+                totalItems={tasks.length}
+              />
             ) : (
               <p>No tasks available.</p>
             )}

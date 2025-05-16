@@ -36,6 +36,7 @@ import {
   UserSessionProvider,
 } from "@/contexts/useUserContext";
 import { MainHeading, SubHeading } from "@/components/basics/Heading";
+import { backendUri } from "@/lib/config";
 
 const FormSchema = z.object({
   firstName: z.string().min(2, {
@@ -68,7 +69,7 @@ const OnBoarding: React.FC = () => {
       console.log("Profile already exists, redirecting to dashboard");
       router.push("/dashboard");
     }
-  }, [currentUser, router]);
+  }, [currentUser?.first_name, currentUser?.last_name, router]); // Minimized dependencies to avoid unnecessary re-renders
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
@@ -89,32 +90,29 @@ const OnBoarding: React.FC = () => {
         throw new Error("No access token found.");
       }
 
-      const response = await fetch(
-        "https://hudddle-backend.onrender.com/api/v1/auth/update-profile",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            first_name: data.firstName,
-            last_name: data.lastName,
-            user_type: data.occupation,
-            find_us: data.awareness,
-            software_used: data.software
-              .split(",")
-              .map((item) => item.trim())
-              .filter(Boolean),
-          }),
-        }
-      );
+      const response = await fetch(`${backendUri}/api/v1/auth/update-profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          first_name: data.firstName,
+          last_name: data.lastName,
+          user_type: data.occupation,
+          find_us: data.awareness,
+          software_used: data.software
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean),
+        }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to update profile.");
       }
-
+      console.log("This is the response ", +response.json());
       toast({
         title: "Profile Updated Successfully!",
       });

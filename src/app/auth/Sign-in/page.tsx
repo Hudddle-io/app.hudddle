@@ -11,6 +11,7 @@ import { auth, googleProvider } from "../../../../config/firebase";
 import { toast } from "@/components/ui/use-toast";
 import { title } from "process";
 import Link from "next/link";
+import { backendUri } from "@/lib/config";
 // import { storeToken } from '@/utils';
 
 const SignIn = () => {
@@ -34,19 +35,16 @@ const SignIn = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(
-        "https://hudddle-backend.onrender.com/api/v1/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: emailAddress,
-            password: password,
-          }),
-        }
-      );
+      const response = await fetch(`${backendUri}/api/v1/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: emailAddress,
+          password: password,
+        }),
+      });
       if (!response.ok) {
         throw new Error(
           "Failed to authenticate. Please check your Email or password again"
@@ -71,7 +69,7 @@ const SignIn = () => {
       <div className="flex w-full justify-between items-center flex-row">
         <div className="w-2/3 bg-white justify-center items-center flex flex-col space-y-4 h-full">
           <div className="flex items-center justify-center">
-            <div className=" justify-center items-center shadow-lg p-10 w-[539px] bg-[#FDFCFC] rounded-[12px] border border-transparent">
+            <div className=" justify-center items-center card-morph p-10 w-[539px] bg-[#FDFCFC] rounded-[12px] border border-transparent">
               <div className="flex flex-col space-y-5">
                 <h1 className="text-[36px] font-inter font-semibold text-center leading-[43.57px]">
                   Sign In

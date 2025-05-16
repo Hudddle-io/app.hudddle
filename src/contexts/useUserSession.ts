@@ -1,3 +1,4 @@
+import { backendUri } from "@/lib/config";
 import { useState, useEffect } from "react";
 
 export const getToken = (): string | null => {
@@ -22,16 +23,13 @@ export const useUserSession = () => {
       }
 
       try {
-        const response = await fetch(
-          "https://hudddle-backend.onrender.com/api/v1/auth/me",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await fetch(`${backendUri}/api/v1/auth/me`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (!response.ok) {
           const errorResponse = await response.json();
