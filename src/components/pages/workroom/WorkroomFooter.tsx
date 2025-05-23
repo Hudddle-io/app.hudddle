@@ -34,17 +34,19 @@ const WorkroomFooter: FC<WorkroomFooterProps> = ({
             : current_step === 2
             ? "Create Workroom"
             : current_step === 3
-            ? "Invite Members"
+            ? "Create Kpi's"
             : current_step === 4
+            ? "Invite Members"
+            : current_step === 5
             ? "Add Task"
             : ""}
         </span>
       </Button>
-      {current_step === 4 ? (
+      {current_step === 5 ? (
         ""
       ) : (
         <Button
-          disabled={current_step === 4 ? true : false}
+          disabled={current_step === 5 ? true : false}
           onClick={() => {
             set_current_step((prev: number) => prev + 1);
           }}
@@ -57,10 +59,12 @@ const WorkroomFooter: FC<WorkroomFooterProps> = ({
           <span className="flex items-center gap-2 text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[22px]">
             <SkipForward />
             {current_step === 1
-              ? "Select Friends"
+              ? "Create Kpi's"
               : current_step === 2
-              ? "Add or Create Task"
+              ? "Invite Members"
               : current_step === 3
+              ? "Add or Create Task"
+              : current_step === 4
               ? "Go Live"
               : ""}
           </span>

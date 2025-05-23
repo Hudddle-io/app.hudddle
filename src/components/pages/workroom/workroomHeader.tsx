@@ -31,7 +31,9 @@ const WorkroomHeader: FC<WorkroomHeader> = ({
           </Button>
           <h3 className="font-semibold text-[clamp(0.5rem,_0.6838vw,_1rem)] leading-[22px] text-[#4D4D4D]">
             {headerTitle} :{" "}
-            <span className="font-light">Select your friends</span>
+            <span className="font-light">
+              Add teams, Tasks, Kpi&apos;s to properly manage your Results
+            </span>
           </h3>
         </div>
 

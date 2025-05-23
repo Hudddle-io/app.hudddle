@@ -13,6 +13,7 @@ import { useRouter, usePathname } from "next/navigation";
 import pinterest from "../../../public/assets/pinterest.svg";
 import dribble from "../../../public/assets/dribble.svg";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { backendUri } from "@/lib/config";
 
 interface UserOnlineStatusProps extends HTMLAttributes<HTMLDivElement> {
   isOnline: boolean;
@@ -81,15 +82,12 @@ const Sidebar = () => {
       return;
     }
     try {
-      const response = await fetch(
-        "https://hudddle-backend.onrender.com/api/v1/auth/logout",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${storedToken}`,
-          },
-        }
-      );
+      const response = await fetch(`${backendUri}/api/v1/auth/logout`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${storedToken}`,
+        },
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -128,12 +126,50 @@ const Sidebar = () => {
     }
   };
 
-  const handleUploadButtonClick = () => {
+  const handleUploadButtonClick = async () => {
     const fileInput = document.getElementById(
       "image-upload"
     ) as HTMLInputElement;
     if (fileInput) {
       fileInput.click();
+      fileInput.onchange = async (event: Event) => {
+        const file = (event.target as HTMLInputElement)?.files?.[0];
+        if (file) {
+          const formData = new FormData();
+          formData.append("profile_image", file);
+
+          try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+              toast.error("Authorization token not found. Please log in.");
+              return;
+            }
+
+            const response = await fetch(
+              "https://hudddle-backend.onrender.com/api/v1/auth/update-profile",
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+                body: formData,
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error("Failed to update profile image");
+            }
+
+            toast.success("Profile image updated successfully!");
+
+            // Refresh user data
+            router.refresh();
+          } catch (error) {
+            toast.error("Failed to update profile image. Please try again.");
+            console.error("Error updating profile image:", error);
+          }
+        }
+      };
     }
   };
 
@@ -224,7 +260,7 @@ const Sidebar = () => {
                   )}
                   variant={"ghost"}
                 >
-                  <div className="relative w-[clamp(0.9375rem,_0.4274vw,_1.25rem)] h-[clamp(0.9375rem,_0.4274vh,_1.25rem)]">
+                  <div className="relative w-[clamp(0.9375rem,_0.4274vw,_1.25rem)] h-[clamp(0.9375rem,_0.4274vh,_1.25rem]">
                     <Image alt={link.text} src={`${link.icon}`} fill />
                   </div>
 

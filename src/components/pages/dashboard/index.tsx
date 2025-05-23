@@ -236,7 +236,7 @@ const PageDashboard: React.FC = () => {
         </div>
         <div className="mt-10 flex justify-between items-center">
           <h1 className="font-bold text-slate-600 text-xl">
-            Today's task for {currentUser?.first_name}
+            Today&apos;s task for {currentUser?.first_name}
           </h1>
           <div className="mt-4">
             <input

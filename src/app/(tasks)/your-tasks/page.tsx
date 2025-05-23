@@ -152,10 +152,12 @@ const Page = () => {
             <Image src={building} alt="" width={20} height={20} />
             <h1 className="flex items-center gap-1">
               <strong className="flex items-center gap-1">
-                {completedTasksCount ? (
+                {!completedTasksCount ? (
+                  <Loader2 className="animate-spin h-2 w-2" />
+                ) : completedTasksCount > 0 ? (
                   completedTasksCount
                 ) : (
-                  <Loader2 className="animate-spin h-2 w-2" />
+                  0
                 )}
                 /
                 {totalTasksCount ? (

@@ -165,9 +165,10 @@ const MyTask: React.FC<MyTaskProps> = ({
                       {task.title}
                     </h1>
                     <p className="text-[#999999] text-[clamp(0.8125rem,_0.7612rem+0.2564vw,_1rem)]">
-                      <span className="font-bold">Deadline:</span>{" "}
+                      <span className="font-bold">Duration:</span>{" "}
                       <span className="">
-                        {new Date(task.deadline).toLocaleDateString()}
+                        {/* {new Date(task.deadline).toLocaleDateString()} */}
+                        {task.duration}
                       </span>
                     </p>
                     <div className="flex items-center flex-row space-x-2">
@@ -204,7 +205,7 @@ const MyTask: React.FC<MyTaskProps> = ({
                         color="#956FD699"
                       />{" "}
                       <p className="text-[clamp(0.75rem,_0.7158rem+0.1709vw,_0.875rem)] text-[#999999]">
-                        Due by{" "}
+                        Due by {task.due_by}{" "}
                         {new Date(task.due_by).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -218,10 +219,10 @@ const MyTask: React.FC<MyTaskProps> = ({
                       <h1 className="text-[#999999] text-[14px] font-bold">
                         Tools
                       </h1>
-                      {task.task_tools.map((tool, index) => (
+                      {task?.task_tools?.map((tool, index) => (
                         <span key={index}>{tool}</span>
                       ))}
-                      {task.task_tools.length > 0 && (
+                      {task?.task_tools?.length > 0 && (
                         <Image
                           src={ball}
                           width={19}

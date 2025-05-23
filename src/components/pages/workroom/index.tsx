@@ -1,16 +1,18 @@
 "use client";
-
+// className="bg-transparent shadow-none ring-0 border-0"
+//    className="aspect-auto h-[160px] w-[600px]"
+//  fill="#956fd670"
 import React, { useState, useMemo, useEffect } from "react";
 import { Metadata } from "next";
 import { MainHeading, SubHeading } from "@/components/basics/Heading";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { rooms } from "@/data/roomsData";
+import NavigationLink from "@/components/basics/Navigation-link";
 import { getToken } from "@/utils";
 import { backendUri } from "@/lib/config";
 import LoadingPage from "@/components/shared/loading-page";
@@ -29,8 +31,11 @@ export const metadata: Metadata = {
 const WorkroomPage = (props: Props) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [newRoomId, setNewRoomId] = useState<string | null>(null);
+
   const [roomsData, setRoomsData] = useState<any[]>([]); // will use API schema
-  const route = useRouter();
+  const router = useRouter();
 
   // Simulated current user ID from token
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -119,23 +124,90 @@ const WorkroomPage = (props: Props) => {
       );
 
       if (response.status === 201) {
-        toast({
-          description: "Workroom created successfully!",
-        });
-
         // Clear any existing room ID in localStorage
         localStorage.removeItem("roomId");
 
         // Store the new room ID in localStorage
         const roomId = response.data.id;
         localStorage.setItem("roomId", roomId);
+        setNewRoomId(roomId);
+        toast({
+          description: "Workroom created successfully!",
+        });
 
         // Route to the /create/{roomId} page
-        route.push(`/workroom/create/${roomId}`);
+        router.push(`/workroom/create/${roomId}`);
       }
     } catch (error) {
       toast({
         description: "Failed to create workroom. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteWorkroom = async (workroomId: string) => {
+    const token = getToken();
+    setDeleting(true);
+    if (!token) {
+      toast({
+        description: "Authorization token not found. Please log in.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${backendUri}/api/v1/workrooms/${workroomId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete workroom");
+      }
+
+      toast({
+        description: "Workroom deleted successfully!",
+      });
+
+      // Refresh the workrooms
+      const fetchWorkrooms = async () => {
+        const response = await fetch(`${backendUri}/api/v1/workrooms/all`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch workrooms");
+        }
+
+        const data = await response.json();
+        const workrooms = (data.workrooms || []).map((room: any) => ({
+          id: room.id,
+          name: room.title || "Untitled Room",
+          createdBy: room.created_by || "Unknown",
+          users: room.members || [],
+          isActive: false,
+        }));
+
+        setRoomsData(workrooms);
+      };
+
+      await fetchWorkrooms();
+      router.refresh();
+      setDeleting(false);
+    } catch (error) {
+      console.error("Error deleting workroom:", error);
+      toast({
+        description: "Failed to delete workroom. Please try again.",
         variant: "destructive",
       });
     }
@@ -159,13 +231,15 @@ const WorkroomPage = (props: Props) => {
           <Button className="w-[clamp(6.25rem,_4.8718vw,_9.8125rem)] rounded-[16px] bg-white text-[#956FD6] shadow">
             {roomsData.filter((room) => room.isActive).length} Active
           </Button>
-          <Button
-            className="flex space-x-2 bg-[#956FD6] rounded-[16px]"
-            onClick={() => handleCreateRoom()}
+          <NavigationLink
+            onClick={handleCreateRoom}
+            icon={{
+              icon_component: <Plus size={24} color="white" />,
+              icon_position: "left",
+            }}
           >
-            <Plus size={24} color="white" />
-            <span>Create Workroom</span>
-          </Button>
+            Create Workroom
+          </NavigationLink>
         </div>
       </header>
 
@@ -184,12 +258,14 @@ const WorkroomPage = (props: Props) => {
                 <MainHeading variant="bigCardTitle">
                   {roomsData[0].name}
                 </MainHeading>
-                <Button
-                  variant="ghost"
-                  className="text-[#956FD6] text-xs p-0 h-0"
-                >
-                  Edit workroom
-                </Button>
+                <Link href={`/workroom/room/${roomsData[0].id}`}>
+                  <Button
+                    variant="ghost"
+                    className="text-[#956FD6] text-xs p-0 h-0"
+                  >
+                    Edit workroom
+                  </Button>
+                </Link>
               </div>
               {roomsData[0].isActive && (
                 <div className="w-4 h-4 bg-[#ADD359] animate-pulse rounded-full" />
@@ -203,8 +279,15 @@ const WorkroomPage = (props: Props) => {
                     .map((user: any, idx: number) => (
                       <div
                         key={idx}
-                        className="w-6 h-6 bg-black rounded-full"
-                      />
+                        className="w-6 h-6 bg-black rounded-full relative"
+                      >
+                        <Image
+                          src={user.avatar_url}
+                          className="rounded-full object-cover"
+                          alt="user-img"
+                          fill
+                        />
+                      </div>
                     ))}
                 </span>
                 <p className="text-sm text-[#999999]">
@@ -256,42 +339,72 @@ const WorkroomPage = (props: Props) => {
                 const isCreatedByYou = room.createdBy?._id === currentUserId;
 
                 return (
-                  <Link
-                    href={`/workroom/room/${room.name
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
+                  <div
                     key={index}
+                    className="rounded-[16px] shadow-lg py-1 px-4 h-[clamp(7.5rem,_7.1068rem+1.9658vh,_8.9375rem)] flex flex-col justify-between hover:border hover:border-[#956FD6] "
                   >
-                    <div className="rounded-[16px] shadow-lg py-1 px-4 h-[clamp(7.5rem,_7.1068rem+1.9658vh,_8.9375rem)] flex flex-col justify-between">
-                      <header className="flex justify-between">
-                        <div className="flex flex-col items-start gap-2">
-                          <MainHeading variant="smallCardTitle">
-                            {room.name}
-                          </MainHeading>
-                          {isCreatedByYou ? (
+                    <header className="flex justify-between">
+                      <div className="flex flex-col items-start gap-2">
+                        <MainHeading variant="smallCardTitle">
+                          {room.name}
+                        </MainHeading>
+                        {isCreatedByYou ? (
+                          <Link href={`/workroom/room/${room.id}`}>
                             <Button
                               variant="ghost"
                               className="text-[#956FD6] text-xs p-0 h-0"
                             >
                               Edit workroom
                             </Button>
-                          ) : (
-                            <span className="text-sm text-muted-foreground">
-                              Created by {room.createdBy?.fullname || "someone"}
-                            </span>
-                          )}
-                        </div>
-                        {room.isActive && (
-                          <div className="w-4 h-4 bg-[#ADD359] animate-pulse rounded-full" />
+                          </Link>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">
+                            Created by {room.createdBy?.fullname || "someone"}
+                          </span>
                         )}
-                      </header>
-                      <p className="text-sm text-[#999999]">
-                        {room.users?.length > 0
-                          ? `${room.users.length} people in this workroom`
-                          : "No one is in this workroom"}
-                      </p>
-                    </div>
-                  </Link>
+                      </div>
+                      {room.isActive && (
+                        <div className="w-4 h-4 bg-[#ADD359] animate-pulse rounded-full" />
+                      )}
+                    </header>
+                    <footer className="w-full flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-[#999999]">
+                          {room.users?.length > 0
+                            ? `${room.users.length} people in this workroom`
+                            : "No one is in this workroom"}
+                        </p>
+                        <NavigationLink
+                          href={`/workroom/room/${room.id}`}
+                          variant={"outline"}
+                          className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none"
+                        >
+                          Open Workroom
+                        </NavigationLink>
+                      </div>
+                      <Button
+                        id="delete-btn-workrooms"
+                        variant="ghost"
+                        disabled={deleting}
+                        className="p-0 h-0"
+                        onClick={() => handleDeleteWorkroom(room.id)}
+                      >
+                        {deleting ? (
+                          <div className="flex items-center gap-2 text-red-500">
+                            <Loader2 className="animate-spin h-2 w-2" />
+                            Deleting room ...
+                          </div>
+                        ) : (
+                          <Image
+                            src={Trash}
+                            alt="trash"
+                            width={13}
+                            height={15}
+                          />
+                        )}
+                      </Button>
+                    </footer>
+                  </div>
                 );
               })}
             </TabsContent>

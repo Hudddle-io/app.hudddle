@@ -24,7 +24,7 @@ interface ChipImageProps {
 function ChipImage({ src }: ChipImageProps) {
   return (
     <div className="relative w-[clamp(1.375rem,_0.6838vw,_1.875rem)] h-[clamp(1.375rem,_0.6838vw,_1.875rem)]">
-      <Image src={src} alt={"img"} fill className={"rounded-full "} />
+      <Image src={src} alt={"img"} fill className={"rounded-full object-fit"} />
     </div>
   );
 }

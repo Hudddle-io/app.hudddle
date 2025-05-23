@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Header, HeaderActions, HeaderTexts } from "./Header";
-import { workroomMembers, workroomtasks } from "@/data/workroom";
-import { generateUniqueKey } from "@/lib/utils";
+
 import { Chip, ChipImage, ChipTitle } from "@/components/shared/Chip";
+import NavigationLink from "@/components/basics/Navigation-link";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -12,16 +12,19 @@ import {
   TaskDueTime,
   TaskTitle,
 } from "./Task";
-import { Zap } from "lucide-react";
+import { Zap, ExternalLink, SquareArrowOutUpLeft, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import GoliveButton from "@/components/shared/golive-components/golive-button";
+import { WorkroomDetails } from "@/lib/fetch-workroom";
 
 interface Props {
   stepsData: any;
+  workroomId: string | null;
+  data: WorkroomDetails | null;
   setStepsData: React.Dispatch<any>;
+  onLoad?: () => void;
 }
 
-const Golive = ({ stepsData, setStepsData }: Props) => {
+const Golive = ({ stepsData, workroomId, data, setStepsData }: Props) => {
   return (
     <motion.div className="relative w-3/4 h-3/4 rounded-[6px] p-6 flex flex-col gap-8">
       <Header>
@@ -30,11 +33,10 @@ const Golive = ({ stepsData, setStepsData }: Props) => {
             Your team members
           </h2>
           <HeaderActions className="flex-wrap">
-            {workroomMembers.map((member) => {
-              const { _id } = generateUniqueKey(member.name);
+            {data?.members.map((member) => {
               return (
-                <Chip key={_id}>
-                  <ChipImage src={member.img} />
+                <Chip key={member.name}>
+                  <ChipImage src={member.avatar_url} />
                   <ChipTitle>{member.name}</ChipTitle>
                 </Chip>
               );
@@ -54,21 +56,19 @@ const Golive = ({ stepsData, setStepsData }: Props) => {
         <h2 className="font-bold text-[clamp(0.9375rem,_0.4274vw,_1.25rem)] leading-[22px] text-[#956FD6]">
           Workroom Tasks
         </h2>
-        {workroomtasks.map((task) => {
-          const { _id } = generateUniqueKey(task.title);
-
+        {data?.tasks.map((task) => {
           return (
-            <Task key={_id}>
+            <Task key={task.id}>
               <TaskDescription>
                 <TaskTitle className="text-[#211451] text-[clamp(0.9375rem,_0.4274vw,_1.25rem)]">
                   {task.title}
                 </TaskTitle>
-                <TaskDueTime>{task.Due}</TaskDueTime>
+                <TaskDueTime>{task.due_by}</TaskDueTime>
               </TaskDescription>
               <TaskActions>
                 <span className="text-[#EEAE05] flex items-center text-[clamp(0.5rem, _0.2564vw, _0.6875rem)]">
                   +<Zap width={10} height={10} />
-                  {task.points}
+                  {task.task_point}
                 </span>
 
                 <Button
@@ -82,7 +82,22 @@ const Golive = ({ stepsData, setStepsData }: Props) => {
           );
         })}
       </div>
-      <GoliveButton />
+      <footer className="flex items-center justify-end gap-4">
+        <NavigationLink
+          icon={{ icon_component: <SquareArrowOutUpLeft /> }}
+          href="/workroom"
+          variant={"ghost"}
+        >
+          View all Workrooms
+        </NavigationLink>
+        <NavigationLink
+          icon={{ icon_component: <ExternalLink /> }}
+          href={`/workroom/room/${workroomId}`}
+        >
+          Open Workroom
+        </NavigationLink>
+      </footer>
+      {/* <GoliveButton /> */}
     </motion.div>
   );
 };
