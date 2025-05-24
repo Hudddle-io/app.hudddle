@@ -10,7 +10,7 @@ import CreateRoom from "../create-room";
 import { backendUri } from "@/lib/config";
 import fetchWorkroomDetails, { WorkroomDetails } from "@/lib/fetch-workroom"; // Import the interface
 import CreateKpi from "../create-kpi";
-import LoadingPage from "@/components/shared/loading-page";
+import CreateWorkroomLoader from "@/components/loaders/create-workroom";
 
 const CreateWorkroom = () => {
   const router = useRouter();
@@ -115,7 +115,7 @@ const CreateWorkroom = () => {
   };
 
   if (loading) {
-    return <LoadingPage loadingText="Fetching workroom details ..." />; // Or use your LoadingPage component
+    return <CreateWorkroomLoader />; // Or use your LoadingPage component
   }
 
   if (error) {

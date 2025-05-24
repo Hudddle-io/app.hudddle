@@ -1,10 +1,6 @@
 "use client";
 
 import SignUp from "@/app/auth/Sign-up/page";
-import { Button } from "@/components/ui/button";
-import { getAuth } from "firebase/auth";
-import Link from "next/link";
-import Dashboard from "./(dashboard)/dashboard/page";
 import { useUserSession } from "@/contexts/useUserSession";
 import { redirect } from "next/navigation";
 
@@ -23,7 +19,7 @@ export default function Home() {
   //   return <Dashboard/>
   //  }
   return (
-    <div className="">
+    <div className="w-full h-screen">
       <SignUp />
       {/* <Link href={'/dashboard'}>
         <Button>Dashboard</Button>

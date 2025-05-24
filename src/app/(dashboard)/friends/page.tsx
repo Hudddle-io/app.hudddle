@@ -1,7 +1,47 @@
-// components/pages/friends/index.tsx (This is the original FriendsPage, renamed for clarity)
-// This file should actually be the main Friends route component, e.g., app/friends/page.tsx
+import { Metadata } from "next"; // Import Metadata type
+import FriendsPageContent from "@/components/pages/friends"; // Assuming this is your actual client component
 
-import FriendsPageContent from "@/components/pages/friends";
+// Define metadata for this page
+export const metadata: Metadata = {
+  title: "App.Hudddle | Friends",
+  description:
+    "Connect with your friends on App.Hudddle. View all your connections, manage friend requests, and discover new collaborators.",
+  keywords: [
+    "App.Hudddle",
+    "Friends",
+    "Connections",
+    "Social",
+    "Networking",
+    "Friend Requests",
+    "Collaborators",
+  ],
+  openGraph: {
+    title: "App.Hudddle | Friends",
+    description:
+      "Connect with your friends on App.Hudddle. View all your connections, manage friend requests, and discover new collaborators.",
+    url: "https://app-hudddle.vercel.app/friends", // Replace with your actual Friends page URL
+    siteName: "App.Hudddle",
+    images: [
+      {
+        url: "https://app-hudddle.vercel.app/og-image-friends.jpg", // Path to a specific image for your friends page
+        width: 1200,
+        height: 630,
+        alt: "App.Hudddle Friends Page",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "App.Hudddle | Friends",
+    description:
+      "Connect with your friends on App.Hudddle. View all your connections, manage friend requests, and discover new collaborators.",
+    creator: "@your_twitter_handle", // Replace with your organization's Twitter handle
+    images: ["https://app-hudddle.vercel.app/twitter-image-friends.jpg"], // Path to Twitter card image
+  },
+  // If this Friends URL should be the primary URL for its content
+  // canonical: 'https://app-hudddle.vercel.app/friends',
+};
 
 // app/friends/page.tsx (or equivalent route file)
 

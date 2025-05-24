@@ -15,7 +15,9 @@ import Link from "next/link";
 import NavigationLink from "@/components/basics/Navigation-link";
 import { getToken } from "@/utils";
 import { backendUri } from "@/lib/config";
-import LoadingPage from "@/components/shared/loading-page";
+import WorkroomsLoader, {
+  RecentWorkroomsLoader,
+} from "@/components/loaders/workrooms";
 import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
 
@@ -251,7 +253,7 @@ const WorkroomPage = (props: Props) => {
           </Button>
         </header>
 
-        {roomsData[0] && (
+        {roomsData[0] ? (
           <div className="w-full h-[clamp(6.25rem,_3.6752vh,_8.9375rem)] rounded-[16px] card-morph border border-[#956FD6] py-1 px-4 flex flex-col justify-between">
             <section className="flex justify-between">
               <div className="flex items-start flex-col gap-1">
@@ -296,18 +298,21 @@ const WorkroomPage = (props: Props) => {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Button
+                <NavigationLink
+                  href={`/workroom/room/${roomsData[0].id}`}
                   variant={"outline"}
                   className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none"
                 >
-                  Join Workroom
-                </Button>
+                  join Workroom
+                </NavigationLink>
                 <Button variant="ghost" size="icon" className="w-fit p-0 h-0">
                   <Image src={Trash} alt="trash" width={13} height={15} />
                 </Button>
               </div>
             </section>
           </div>
+        ) : (
+          <RecentWorkroomsLoader />
         )}
       </section>
 
@@ -329,7 +334,7 @@ const WorkroomPage = (props: Props) => {
           </div>
 
           {loading ? (
-            <LoadingPage loadingText="Loading your workrooms ..." />
+            <WorkroomsLoader />
           ) : (
             <TabsContent
               value="workroom"

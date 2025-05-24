@@ -1,5 +1,5 @@
 "use client";
-import { toast } from "sonner";
+import { toast } from "sonner"; // Assuming sonner toast is used here
 import { cn } from "@/lib/utils";
 import { cva } from "class-variance-authority";
 import Image from "next/image";
@@ -7,8 +7,8 @@ import Link from "next/link";
 import React, { FC, HTMLAttributes, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dribbble, Figma, Home, ImageIcon, LogOut, Pencil } from "lucide-react";
-import { sideLinks } from "@/data/data";
-import { useUserSession } from "@/contexts/useUserSession";
+import { sideLinks } from "@/data/data"; // Make sure sideLinks contains correct icon paths
+import { useUserSession } from "@/contexts/useUserSession"; // This now provides refreshUser
 import { useRouter, usePathname } from "next/navigation";
 import pinterest from "../../../public/assets/pinterest.svg";
 import dribble from "../../../public/assets/dribble.svg";
@@ -19,7 +19,9 @@ interface UserOnlineStatusProps extends HTMLAttributes<HTMLDivElement> {
   isOnline: boolean;
   statusText?: boolean | string;
 }
+
 const onlinestatusstyles = cva("flex items-center gap-2");
+
 export const UserOnlineStatus: FC<UserOnlineStatusProps> = ({
   isOnline,
   statusText,
@@ -48,7 +50,7 @@ export const UserOnlineStatus: FC<UserOnlineStatusProps> = ({
 const Sidebar = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null); // State for local preview
 
   const router = useRouter();
   const pathname = usePathname();
@@ -57,15 +59,17 @@ const Sidebar = () => {
     error,
     currentUser,
     logout: logoutContext,
-  } = useUserSession();
+    refreshUser, // Destructure refreshUser from useUserSession
+  } = useUserSession(); // Using useUserSession directly as per your provided context structure
 
   useEffect(() => {
+    // Set preview image from currentUser's avatar_url
     if (currentUser) {
       setPreviewImage(currentUser.avatar_url || null);
     } else {
       setPreviewImage(null);
     }
-  }, [currentUser]);
+  }, [currentUser]); // Re-run when currentUser changes
 
   const getInitials = (
     firstName: string | undefined,
@@ -93,50 +97,55 @@ const Sidebar = () => {
         const errorData = await response.json();
         console.error("Logout failed:", errorData);
         if (response.status === 401) {
-          logoutContext();
+          logoutContext(); // Clear context on 401 even if backend didn't officially log out
           router.push("/auth/Sign-in");
           return;
         }
         throw new Error(errorData.message || "Logout failed");
       }
 
-      logoutContext();
+      logoutContext(); // Clear context after successful backend logout
       router.push("/auth/Sign-in");
     } catch (error) {
       toast.error("Network Error", {
-        description: "Could not connect to the server",
+        description: "Could not connect to the server or logout failed.",
       });
       console.error("Error during logout:", error);
     } finally {
+      // Ensure token is removed from localStorage even if fetch fails
       localStorage.removeItem("token");
     }
   };
 
-  const handleImageUpload = async (
+  // This function is for showing local preview *before* upload
+  const handleImageLocalPreview = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        setPreviewImage(reader.result as string);
-        // Here you can add the logic to upload the image to the server
+        setPreviewImage(reader.result as string); // Update local preview
       };
       reader.readAsDataURL(file);
     }
   };
 
+  // This function handles the actual upload to the server
   const handleUploadButtonClick = async () => {
     const fileInput = document.getElementById(
       "image-upload"
     ) as HTMLInputElement;
+
     if (fileInput) {
-      fileInput.click();
+      fileInput.click(); // Programmatically click the hidden file input
+
+      // Listen for when a file is selected
       fileInput.onchange = async (event: Event) => {
         const file = (event.target as HTMLInputElement)?.files?.[0];
         if (file) {
           const formData = new FormData();
-          formData.append("profile_image", file);
+          formData.append("profile_image", file); // Ensure your backend expects 'profile_image' as the field name
 
           try {
             const token = localStorage.getItem("token");
@@ -146,27 +155,44 @@ const Sidebar = () => {
             }
 
             const response = await fetch(
-              "https://hudddle-backend.onrender.com/api/v1/auth/update-profile",
+              `${backendUri}/api/v1/auth/update-profile-image`, // Corrected API endpoint
               {
-                method: "POST",
+                method: "POST", // Method is POST as requested
                 headers: {
                   Authorization: `Bearer ${token}`,
+                  // Do NOT set Content-Type: 'multipart/form-data' here; FormData does it automatically
                 },
-                body: formData,
+                body: formData, // Send the FormData object
               }
             );
 
             if (!response.ok) {
-              throw new Error("Failed to update profile image");
+              const errorData = await response.json();
+              throw new Error(
+                errorData.message || "Failed to update profile image"
+              );
             }
 
             toast.success("Profile image updated successfully!");
 
-            // Refresh user data
-            router.refresh();
-          } catch (error) {
-            toast.error("Failed to update profile image. Please try again.");
+            // Refresh user data in the context to get the new avatar_url
+            if (refreshUser) {
+              await refreshUser();
+              console.log("User session refreshed after profile image update.");
+            } else {
+              console.warn(
+                "refreshUser function not available in context. User state might be stale."
+              );
+            }
+          } catch (error: any) {
+            toast.error(
+              error.message ||
+                "Failed to update profile image. Please try again."
+            );
             console.error("Error updating profile image:", error);
+          } finally {
+            // Clear the file input value after upload attempt (optional, to allow re-uploading same file)
+            fileInput.value = "";
           }
         }
       };
@@ -193,21 +219,13 @@ const Sidebar = () => {
             <div className="w-[100px] h-[100px] relative">
               <Avatar>
                 <AvatarImage
-                  src={`${previewImage}`}
+                  src={previewImage || undefined} // Use previewImage for immediate feedback, fallback to undefined
                   alt={`@${currentUser?.first_name}`}
                 />
                 <AvatarFallback>
                   {getInitials(currentUser?.first_name, currentUser?.last_name)}
                 </AvatarFallback>
               </Avatar>
-              {/* <Image
-                className="rounded-full shadow-xl ring-1 ring-[#956FD6] object-cover"
-                fill
-                id="user-img"
-                src={previewImage || "/assets/profileImage.svg"}
-                alt="user image"
-                loading="lazy"
-              /> */}
             </div>
             {isHovered && (
               <div className="absolute inset-0 flex items-end justify-end gap-2">
@@ -221,7 +239,7 @@ const Sidebar = () => {
                   <label htmlFor="image-upload" className="cursor-pointer fle">
                     <Button
                       id="upload-btn"
-                      onClick={handleUploadButtonClick}
+                      onClick={handleUploadButtonClick} // This triggers the file input click
                       className="bg-white ring-1 ring-[#956FD6] hover:text-white shadow text-[#956FD6] h-5 w-5 rounded-full p-0"
                     >
                       <Pencil className="w-3 h-3" />
@@ -232,7 +250,10 @@ const Sidebar = () => {
                       accept="image/*"
                       className="hidden"
                       placeholder="upload"
-                      onChange={handleImageUpload}
+                      // onChange is now handled by handleUploadButtonClick's fileInput.onchange
+                      // You can remove this onChange if you strictly use the button click flow
+                      // or keep it if you want the local preview to update immediately when a file is selected
+                      onChange={handleImageLocalPreview}
                     />
                   </label>
                 </div>
@@ -240,7 +261,8 @@ const Sidebar = () => {
             )}
           </div>
           <header className="w-full -translate-y-[20%] flex flex-col -mt-9 items-center gap-[4px] px-8">
-            <UserOnlineStatus isOnline statusText />
+            <UserOnlineStatus isOnline statusText />{" "}
+            {/* isOnline is hardcoded here */}
             <h1 className="text-[#FFFFFF] text-[clamp(0.9375rem,_0.5128vw,_1.3125rem)] font-semibold text-center">
               {currentUser?.first_name} {currentUser?.last_name}
             </h1>
@@ -261,9 +283,9 @@ const Sidebar = () => {
                   variant={"ghost"}
                 >
                   <div className="relative w-[clamp(0.9375rem,_0.4274vw,_1.25rem)] h-[clamp(0.9375rem,_0.4274vh,_1.25rem]">
+                    {/* Ensure link.icon contains a valid path to an image file */}
                     <Image alt={link.text} src={`${link.icon}`} fill />
                   </div>
-
                   <span>{link.text}</span>
                 </Button>{" "}
               </Link>
@@ -277,7 +299,7 @@ const Sidebar = () => {
                 width={20}
                 height={20}
                 alt="signout image"
-                src={"/assets/home.svg"}
+                src={"/assets/home.svg"} // Consider using a dedicated logout icon if available
               />
               <span>Clock out</span>
             </Button>{" "}
@@ -289,11 +311,11 @@ const Sidebar = () => {
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
             <div className="relative">
               <Image
-                src={previewImage || ""}
+                src={previewImage || "/assets/profileImage.svg"} // Fallback for preview
                 alt="Preview"
                 width={300}
                 height={300}
-                className="rounded-lg"
+                className="rounded-lg object-cover"
               />
               <Button
                 variant="secondary"

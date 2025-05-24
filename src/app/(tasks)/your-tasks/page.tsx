@@ -1,13 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import {
-  ArrowLeft,
-  CalendarIcon,
-  Loader,
-  Loader2,
-  Plus,
-  Search,
-} from "lucide-react";
+import { ArrowLeft, CalendarIcon, Loader2, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import building from "../../../../public/assets/building.png";
 import Image from "next/image";

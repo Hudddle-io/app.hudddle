@@ -9,10 +9,10 @@ import { useRouter } from "next/navigation";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../../../../config/firebase";
 import { toast } from "@/components/ui/use-toast";
-import { title } from "process";
+// import { title } from "process"; // This import is likely unused and can be removed
 import Link from "next/link";
 import { backendUri } from "@/lib/config";
-// import { storeToken } from '@/utils';
+// import { storeToken } from '@/utils'; // Commented out as in original
 
 const SignIn = () => {
   const router = useRouter();
@@ -24,9 +24,14 @@ const SignIn = () => {
   const SignInWithGoogle = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
+      toast({ description: "Logged in with Google!" }); // Added toast for Google sign-in
       router.push("/onBoarding");
     } catch (err) {
       console.error(err);
+      toast({
+        description: "Failed to sign in with Google. Please try again.",
+        variant: "destructive", // Add a destructive variant for errors
+      });
     }
   };
 
@@ -46,8 +51,11 @@ const SignIn = () => {
         }),
       });
       if (!response.ok) {
+        // You might want to parse response.json() here to get more specific error messages from your backend
+        const errorData = await response.json();
         throw new Error(
-          "Failed to authenticate. Please check your Email or password again"
+          errorData.message ||
+            "Failed to authenticate. Please check your Email or password again"
         );
       }
       const data = await response.json();
@@ -55,62 +63,81 @@ const SignIn = () => {
       localStorage.setItem("token", data.access_token);
       router.push("/onBoarding");
       toast({
-        description: "Login Successfull",
+        description: "Login Successful",
       });
-      //   setLoading(true);
     } catch (err: any) {
       setError(err.message);
+      toast({
+        description: err.message || "An unexpected error occurred.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
+
   return (
-    <div className="w-full flex text-black max-h-screen overflow-hidden relative">
-      <div className="flex w-full justify-between items-center flex-row">
-        <div className="w-2/3 bg-white justify-center items-center flex flex-col space-y-4 h-full">
-          <div className="flex items-center justify-center">
-            <div className=" justify-center items-center card-morph p-10 w-[539px] bg-[#FDFCFC] rounded-[12px] border border-transparent">
+    // Main container: full width, min height screen, flex column on small, flex row on large
+    // Centered content both vertically and horizontally
+    <div className="w-full min-h-screen flex flex-col lg:flex-row justify-center items-center text-black overflow-hidden relative">
+      <div className="flex flex-col lg:flex-row w-full h-full lg:h-screen">
+        {" "}
+        {/* Adjusted height for lg screens */}
+        {/* Left Section (Form): full width on small, 2/3 on large, centered content */}
+        <div className="w-full lg:w-2/3 bg-white flex flex-col justify-center items-center py-8 px-4 sm:px-6 md:px-8 lg:py-0 lg:px-0">
+          <div className="flex flex-col items-center justify-center w-full">
+            {/* Form Card: flexible width, max-width to prevent stretching, responsive padding */}
+            <div className="card-morph p-6 sm:p-10 w-full max-w-md md:max-w-lg lg:max-w-[539px] bg-[#FDFCFC] rounded-[12px] border border-transparent">
               <div className="flex flex-col space-y-5">
-                <h1 className="text-[36px] font-inter font-semibold text-center leading-[43.57px]">
+                <h1 className="text-[28px] sm:text-[36px] font-inter font-semibold text-center leading-[36px] sm:leading-[43.57px]">
                   Sign In
                 </h1>
                 <form onSubmit={handleSubmit}>
-                  <div className="flex flex-col space-y-8">
+                  <div className="flex flex-col space-y-6 sm:space-y-8">
                     <div>
-                      <label>Email Address</label>
+                      <label htmlFor="email">Email Address</label>
                       <Input
+                        id="email" // Added id for accessibility
                         disabled={loading}
-                        type="text"
+                        type="email" // Changed to type="email" for better validation
                         value={emailAddress}
                         placeholder="@gmail.com"
                         onChange={(e) => setEmailAddress(e.target.value)}
                         required
-                        className=""
+                        className="shadow-lg rounded-[8px]" // Changed to 8px for consistency with other inputs
                       />
                     </div>
                     <div>
-                      <label className="">Password</label>
+                      <label htmlFor="password">Password</label>{" "}
+                      {/* Added id for accessibility */}
                       <Input
+                        id="password"
                         disabled={loading}
                         type="password"
                         placeholder="Enter password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="shadow-lg rounded-[26px] mb-8 placeholder-slate-300"
+                        className="shadow-lg rounded-[8px] mb-6 sm:mb-8 placeholder-slate-300"
                         required
                       />
                     </div>
-                    <p className="text-center pt-9">
+                    <p className="text-center pt-4 sm:pt-6 text-sm sm:text-base">
                       Don&apos;t have an account?{" "}
                       <span className="text-violet-500 hover:text-violet-800 hover:underline">
                         <Link href="/auth/Sign-up">Sign up</Link>
                       </span>
                     </p>
+                    {error && (
+                      <p className="text-red-500 text-center text-sm mt-2">
+                        {error}
+                      </p>
+                    )}
                     <Button
                       type="submit"
                       size={"sm"}
                       disabled={loading}
-                      className="bg-[#5C5CE9] my-32 rounded-[8px]"
+                      // Reduced margin on mobile, kept large on desktop
+                      className="bg-[#5C5CE9] mt-8 mb-4 rounded-[8px] w-full py-2" // Full width button
                     >
                       {loading ? <h1>Logging In....</h1> : <h1>Sign In</h1>}
                     </Button>
@@ -119,76 +146,30 @@ const SignIn = () => {
               </div>
             </div>
           </div>
-          <div className="top-8 relative">
+          {/* Google Sign-in Button: flexible width, centered */}
+          <div className="mt-8 relative w-full px-4 sm:px-0">
+            {" "}
+            {/* Added padding for small screens */}
             <Button
               onClick={SignInWithGoogle}
-              className="w-[400px] justify-center text-black space-x-3 border rounded-md border-slate-200 bg-[#CACACA33]"
+              className="w-full max-w-xs sm:max-w-[400px] mx-auto flex justify-center text-black space-x-3 border rounded-md border-slate-200 bg-[#CACACA33] py-2"
             >
               <Image src={Google} width={20} height={20} alt="google icon" />
-              <h1>Sign In with google</h1>
+              <h1>Sign In with Google</h1>
             </Button>
           </div>
         </div>
-
-        <Image
-          src={huddleLogo}
-          alt=""
-          className="w-1/3 rounded-t-[12px] rounded-bl-[12px]"
-        />
-        {/* <Image /> */}
+        {/* Right Section (Image): Hidden on small/medium screens, visible on large */}
+        <div className="hidden lg:block lg:w-1/3">
+          <Image
+            src={huddleLogo}
+            alt="Huddle Logo - Collaborative Workspace" // Descriptive alt text
+            className="w-full h-full object-cover rounded-t-[12px] rounded-bl-[12px]" // Ensure image covers its container
+          />
+        </div>
       </div>
     </div>
   );
 };
 
 export default SignIn;
-
-// "use client";
-// import React from 'react'
-// import { Button } from '../../components/ui/button'
-// import {auth, googleProvider, } from "../../../config/firebase";
-// import { signInWithPopup,signOut } from 'firebase/auth';
-// import  { useRouter } from "next/navigation";
-// import { SigninForm } from '@/components/sign-in-form';
-// const SignIn = () => {
-//     const router = useRouter();
-
-//     console.log(auth?.currentUser?.displayName);
-
-//     const SignInWithGoogle = async () => {
-//         try{
-//             await signInWithPopup(auth,googleProvider);
-//             router.push('/onBoarding');
-//         }
-//         catch(err){
-//             console.error(err);
-//         }
-//     }
-//     const LogOut = async() => {
-//         try{
-//             await signOut(auth);
-//             router.push('/onBoarding');
-//         }
-//         catch(err){
-//             console.error(err);
-//         }
-//     }
-//   return (
-//     <div className='w-full h-full '>
-//         <div className='w-3/4 h-full'>
-//         <div className='flex justify-center flex-col gap-5 items-center '>
-//                <h1 className='font-inter font-semibold leading-[43.57px] text-[36px]'>Sign In</h1>
-//                <SigninForm/>
-//         </div>
-
-//         </div>
-//         <Button onClick={SignInWithGoogle}>SignIn with Google</Button>
-//         <Button onClick={LogOut}>Logout</Button>
-//         {
-
-//         }
-//     </div>
-//   )
-// }
-
-// export default SignIn

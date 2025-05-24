@@ -1,6 +1,6 @@
 "use client";
 
-import { HTMLAttributes, useEffect, useState, useRef } from "react";
+import { HTMLAttributes, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { motion, useAnimation } from "framer-motion"; // Import motion and useAnimation
@@ -14,7 +14,7 @@ export default function PreventTabletAndMobileWrapper({
 }: PreventTabletAndMobileProps) {
   const [isMobile, setIsMobile] = useState<boolean>(false);
   const route = usePathname();
-  console.log(route);
+  // console.log("Current route:", route); // For debugging
 
   // Use useAnimation hook for more imperative control over animations
   const controls1 = useAnimation();
@@ -23,16 +23,20 @@ export default function PreventTabletAndMobileWrapper({
 
   useEffect(() => {
     const updateScreenSize = () => {
+      // Define your mobile breakpoint. Consistent with previous usage (<= 900px)
       setIsMobile(window.innerWidth <= 900);
     };
 
-    updateScreenSize();
-    window.addEventListener("resize", updateScreenSize);
+    updateScreenSize(); // Set initial state
+    window.addEventListener("resize", updateScreenSize); // Listen for resize events
 
     return () => {
-      window.removeEventListener("resize", updateScreenSize);
+      window.removeEventListener("resize", updateScreenSize); // Cleanup on unmount
     };
   }, []);
+
+  // Determine if the route is an authentication route
+  const isAuthRoute = route.startsWith("/auth/");
 
   useEffect(() => {
     // Function to generate random values for animation properties
@@ -87,29 +91,37 @@ export default function PreventTabletAndMobileWrapper({
       });
     };
 
-    if (isMobile) {
+    // Blobs should only animate if it's a mobile device AND NOT an auth route
+    const shouldAnimateBlobs = isMobile && !isAuthRoute;
+
+    if (shouldAnimateBlobs) {
       startBlobAnimation(controls1, 0);
       startBlobAnimation(controls2, 5); // Stagger start by 5 seconds
       startBlobAnimation(controls3, 10); // Stagger start by 10 seconds
     } else {
-      // Stop animations when not mobile to prevent memory leaks
+      // Stop animations when condition is not met to prevent memory leaks
       controls1.stop();
       controls2.stop();
       controls3.stop();
     }
-  }, [isMobile, controls1, controls2, controls3]); // Add controls to dependency array
+  }, [isMobile, isAuthRoute, controls1, controls2, controls3]); // Add 'isAuthRoute' to dependency array
+
+  // Determine if the mobile message should be shown
+  const shouldShowMobileMessage = isMobile && !isAuthRoute;
 
   return (
     <main
       className={cn(
         `w-full h-full flex items-center justify-center fixed top-0 left-0 ${
-          isMobile && "bg-gradient-to-br from-purple-800 to-indigo-900"
-        }`, // Darker gradient background for better glass effect
+          shouldShowMobileMessage &&
+          "bg-gradient-to-br from-purple-800 to-indigo-900"
+        }`, // Apply background only when mobile message is shown
         className
       )}
       {...props}
     >
-      {isMobile ? (
+      {/* Conditional rendering based on isAuthRoute and isMobile */}
+      {shouldShowMobileMessage ? (
         <>
           {/* Background Blobs Container */}
           <div className="absolute inset-0 overflow-hidden">
@@ -176,14 +188,11 @@ export default function PreventTabletAndMobileWrapper({
               width: 150px; /* Base size */
               height: 150px; /* Base size */
               will-change: transform, border-radius, filter;
-              /* Initial positioning is now handled by 'initial' prop in motion.div */
-              /* Specific sizes for different blobs if desired, or let random scale handle it */
-              /* .blob:nth-child(2) { width: 200px; height: 200px; } */
-              /* .blob:nth-child(3) { width: 180px; height: 180px; } */
             }
           `}</style>
         </>
       ) : (
+        // Render children if it's an auth route, or if it's not mobile
         children
       )}
     </main>
