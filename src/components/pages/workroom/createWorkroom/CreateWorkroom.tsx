@@ -84,7 +84,11 @@ const CreateWorkroom = () => {
         return <CreateKpi workroomId={workroomId && workroomId} />;
       case 3:
         return (
-          <InviteMembers stepsData={stepsData} setStepsData={setStepsData} />
+          <InviteMembers
+            workroomId={workroomId && workroomId}
+            stepsData={stepsData}
+            setStepsData={setStepsData}
+          />
         );
       case 4:
         return (

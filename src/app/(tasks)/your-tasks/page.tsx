@@ -34,8 +34,6 @@ const Page = () => {
   const currentDate = new Date();
   const formattedDate = format(currentDate, "MMMM dd, yyyy");
 
-  const stableSetTasks = useCallback(setTasks, []);
-
   const handleTaskCreated = () => {
     fetchTasks({
       setLoadingTasks,

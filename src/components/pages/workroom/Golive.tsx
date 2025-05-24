@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react"; // Import useState
 import { Header, HeaderActions, HeaderTexts } from "./Header";
 
 import { Chip, ChipImage, ChipTitle } from "@/components/shared/Chip";
@@ -12,9 +12,21 @@ import {
   TaskDueTime,
   TaskTitle,
 } from "./Task";
-import { Zap, ExternalLink, SquareArrowOutUpLeft, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  Zap,
+  ExternalLink,
+  SquareArrowOutUpLeft,
+  Loader2,
+  X,
+} from "lucide-react"; // Import X for modal close
+import { motion, AnimatePresence } from "framer-motion"; // Import AnimatePresence for modal animations
 import { WorkroomDetails } from "@/lib/fetch-workroom";
+
+interface Member {
+  name: string;
+  avatar_url: string;
+  // Add any other member properties if available in WorkroomDetails
+}
 
 interface Props {
   stepsData: any;
@@ -24,7 +36,95 @@ interface Props {
   onLoad?: () => void;
 }
 
+// New Modal Component for displaying all members
+interface MembersListModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  members: Member[];
+}
+
+const MembersListModal: React.FC<MembersListModalProps> = ({
+  isOpen,
+  onClose,
+  members,
+}) => {
+  const modalVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { type: "spring", stiffness: 200, damping: 25 },
+    },
+    exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } },
+  };
+
+  const overlayVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.2 } },
+    exit: { opacity: 0, transition: { duration: 0.2 } },
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          {/* Overlay */}
+          <motion.div
+            className="absolute inset-0 bg-black bg-opacity-50"
+            variants={overlayVariants}
+            onClick={onClose}
+          />
+
+          {/* Modal Content */}
+          <motion.div
+            className="relative bg-white rounded-lg shadow-xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto"
+            variants={modalVariants}
+          >
+            <button
+              onClick={onClose}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 transition-colors"
+            >
+              <X size={24} />
+            </button>
+            <h3 className="text-xl font-bold text-[#262626] mb-4">
+              All Team Members
+            </h3>
+            <div className="flex flex-wrap gap-3">
+              {members.map((member, index) => (
+                <Chip key={index}>
+                  <ChipImage
+                    src={
+                      member.avatar_url ||
+                      "https://placehold.co/24x24/CCCCCC/000000?text=M"
+                    }
+                  />{" "}
+                  {/* Fallback image */}
+                  <ChipTitle>{member.name}</ChipTitle>
+                </Chip>
+              ))}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 const Golive = ({ stepsData, workroomId, data, setStepsData }: Props) => {
+  const [isMembersModalOpen, setIsMembersModalOpen] = useState<boolean>(false);
+
+  const membersToDisplay = data?.members ? data.members.slice(0, 6) : [];
+  const remainingMembersCount = data?.members
+    ? data.members.length - membersToDisplay.length
+    : 0;
+
   return (
     <motion.div className="relative w-3/4 h-3/4 rounded-[6px] p-6 flex flex-col gap-8">
       <Header>
@@ -33,21 +133,33 @@ const Golive = ({ stepsData, workroomId, data, setStepsData }: Props) => {
             Your team members
           </h2>
           <HeaderActions className="flex-wrap">
-            {data?.members.map((member) => {
+            {membersToDisplay.map((member, index) => {
+              // Use membersToDisplay
               return (
-                <Chip key={member.name}>
-                  <ChipImage src={member.avatar_url} />
+                <Chip key={index}>
+                  {" "}
+                  {/* Use index as key if member.name is not unique */}
+                  <ChipImage
+                    src={
+                      member.avatar_url ||
+                      "https://placehold.co/24x24/CCCCCC/000000?text=M"
+                    }
+                  />{" "}
+                  {/* Fallback image */}
                   <ChipTitle>{member.name}</ChipTitle>
                 </Chip>
               );
             })}
 
-            <Button
-              className="text-[18px] leading-[20px] font-normal text-[#956FD699]"
-              variant={"ghost"}
-            >
-              + 4 Others
-            </Button>
+            {remainingMembersCount > 0 && ( // Conditionally render if there are more members
+              <Button
+                className="text-[18px] leading-[20px] font-normal text-[#956FD699]"
+                variant={"ghost"}
+                onClick={() => setIsMembersModalOpen(true)} // Open modal on click
+              >
+                + {remainingMembersCount} Others
+              </Button>
+            )}
           </HeaderActions>
         </HeaderTexts>
       </Header>
@@ -97,7 +209,13 @@ const Golive = ({ stepsData, workroomId, data, setStepsData }: Props) => {
           Open Workroom
         </NavigationLink>
       </footer>
-      {/* <GoliveButton /> */}
+
+      {/* Render the MembersListModal */}
+      <MembersListModal
+        isOpen={isMembersModalOpen}
+        onClose={() => setIsMembersModalOpen(false)}
+        members={data?.members || []}
+      />
     </motion.div>
   );
 };

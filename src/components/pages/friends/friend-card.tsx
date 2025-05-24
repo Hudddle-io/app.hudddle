@@ -1,3 +1,6 @@
+// components/pages/friends/friend-card.tsx
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,13 +20,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface FriendProps {
   id: string;
-  name: string;
-  avatar: string;
+  first_name: string;
+  last_name: string;
+  avatar_url?: string; // Made optional as it might not always be present
   email: string;
 }
 
 interface FriendCardProps {
-  friend: FriendProps; // The prop name is 'friend'
+  friend: FriendProps;
 }
 
 const FriendCard: React.FC<FriendCardProps> = ({ friend }) => {
@@ -37,20 +41,29 @@ const FriendCard: React.FC<FriendCardProps> = ({ friend }) => {
                 <TooltipTrigger>
                   <Avatar className="w-8 h-8">
                     <AvatarImage
-                      src={friend.avatar}
+                      src={
+                        friend.avatar_url ||
+                        `https://placehold.co/48x48/E0E0E0/333333?text=${
+                          friend && friend.first_name.slice(0, 1).toUpperCase()
+                        }` ||
+                        "name"
+                      }
                       loading="lazy"
-                      alt={friend.name}
+                      alt={friend.first_name}
                     />
                     <AvatarFallback className="text-[0.5rem]">
-                      {friend.name.slice(0, 2).toUpperCase()}
+                      {friend.first_name.slice(0, 1).toUpperCase()}
+                      {friend.last_name.slice(0, 1).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </TooltipTrigger>
-                <TooltipContent>{friend.name}</TooltipContent>
+                <TooltipContent>
+                  {friend.first_name} {friend.last_name}
+                </TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <CardTitle className="text-slate-600 text-lg p-0">
-              {friend.name}
+              {friend.first_name} {friend.last_name}
             </CardTitle>
           </div>
           <CardDescription className="text-sm text-muted-foreground">

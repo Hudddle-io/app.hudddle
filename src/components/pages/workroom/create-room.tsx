@@ -1,8 +1,11 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { backendUri } from "@/lib/config";
+import { Loader2 } from "lucide-react";
 import axios from "axios";
 import React from "react";
 
@@ -13,9 +16,11 @@ interface Props {
 }
 
 const CreateRoom = ({ stepsData, setStepsData, onWorkroomCreated }: Props) => {
+  const [isCreating, setIsCreating] = React.useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setIsCreating(true);
     const token = localStorage.getItem("token");
     if (!token) {
       toast({
@@ -48,7 +53,7 @@ const CreateRoom = ({ stepsData, setStepsData, onWorkroomCreated }: Props) => {
           },
         }
       );
-
+      setIsCreating(false);
       if (response.status === 200) {
         toast({
           description: "Workroom updated successfully!",
@@ -84,10 +89,12 @@ const CreateRoom = ({ stepsData, setStepsData, onWorkroomCreated }: Props) => {
           }
         />
         <Button
+          disabled={isCreating}
           type="submit"
-          className="bg-[#956FD6] mt-2 w-[clamp(12.5rem,_8.547vw,_18.75rem)] h-[clamp(2.rem,_1.7094vh,_2.5rem)] text-[clamp(0.6rem,_0.5128vw,_0.875rem)]"
+          className="bg-[#956FD6] mt-2 w-[clamp(12.5rem,_8.547vw,_18.75rem)] h-[clamp(2.rem,_1.7094vh,_2.5rem)] text-[clamp(0.6rem,_0.5128vw,_0.875rem)] gap-2"
         >
           Create workroom
+          {isCreating && <Loader2 className="animate-spin h-3 w-3" />}
         </Button>
       </form>
     </div>

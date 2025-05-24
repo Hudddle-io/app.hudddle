@@ -1,4 +1,7 @@
-import React from "react";
+// components/pages/friends/pending-card.tsx
+"use client";
+
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import {
@@ -8,22 +11,48 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import CancelButton from "@/components/shared/cancel-button";
+import CancelButton from "@/components/shared/cancel-button"; // Assuming this is a generic confirmation button
+import { Check, X } from "lucide-react"; // Icons for accept/decline
 
 interface Friend {
-  id: string;
-  name: string;
-  avatar?: string;
+  id: string; // The ID of the pending request or the sender's user ID
+  first_name: string;
+  last_name: string;
+  avatar_url?: string;
   email?: string;
+  // If your backend provides a specific 'request_id' for pending requests,
+  // ensure it's included in this interface, e.g., requestId: string;
+  // For now, assuming 'id' can serve as the request ID.
 }
 
 interface PendingProps {
   pending: Friend;
+  onAccept: (requestId: string) => void; // Callback for accepting
+  onDecline: (requestId: string) => void; // Callback for declining
 }
 
-const PendingCard: React.FC<PendingProps> = ({ pending }) => {
+const PendingCard: React.FC<PendingProps> = ({
+  pending,
+  onAccept,
+  onDecline,
+}) => {
+  const [isAccepting, setIsAccepting] = useState(false);
+  const [isDeclining, setIsDeclining] = useState(false);
+
+  const handleAcceptClick = async () => {
+    setIsAccepting(true);
+    await onAccept(pending.id); // Assuming pending.id is the request ID
+    setIsAccepting(false);
+  };
+
+  const handleDeclineClick = async () => {
+    setIsDeclining(true);
+    await onDecline(pending.id); // Assuming pending.id is the request ID
+    setIsDeclining(false);
+  };
+
   return (
-    <Card className="rounded-none shadow-none bg-transparent py-4 border-x-0 border-0 hover:bg-custom-whitesmoke  px-0 items-center grid grid-cols-9 ">
+    <Card className="rounded-none shadow-none bg-transparent py-4 border-x-0 border-0 hover:bg-custom-whitesmoke px-0 items-center grid grid-cols-9">
       <CardContent className="col-span-6 flex justify-between items-center p-0">
         <div className="space-y-1 p-0 w-full pb-5 hover:border-b-custom-purple border-b-[1px] border-b-slate-300">
           <div className="flex items-center gap-2">
@@ -32,27 +61,50 @@ const PendingCard: React.FC<PendingProps> = ({ pending }) => {
                 <TooltipTrigger>
                   <Avatar className="w-8 h-8">
                     <AvatarImage
-                      src={pending.avatar}
+                      src={
+                        pending.avatar_url ||
+                        `https://placehold.co/48x48/E0E0E0/333333?text=${pending.first_name
+                          .slice(0, 1)
+                          .toUpperCase()}`
+                      }
                       loading="lazy"
                       alt="profile"
                     />
                     <AvatarFallback className="text-[0.5rem]">
-                      {pending.name}
+                      {pending.first_name.slice(0, 1).toUpperCase()}
+                      {pending.last_name.slice(0, 1).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </TooltipTrigger>
-                <TooltipContent>{pending.name}</TooltipContent>
+                <TooltipContent>
+                  {pending.first_name} {pending.last_name}
+                </TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <CardTitle className="text-slate-600 text-lg p-0">
-              {pending.name}
+              {pending.first_name} {pending.last_name}
             </CardTitle>
             <p className="text-xs text-slate-400 ml-5 italic">Pending</p>
           </div>
         </div>
       </CardContent>
-      <div className="col-span-3 flex items-center justify-end p-0">
-        <CancelButton notificationType="delete">Yes, delete</CancelButton>
+      <div className="col-span-3 flex items-center justify-end p-0 gap-2">
+        <Button
+          className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md"
+          onClick={handleAcceptClick}
+          disabled={isAccepting || isDeclining}
+        >
+          {isAccepting ? "Accepting..." : <Check size={18} />}
+        </Button>
+        <Button
+          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md"
+          onClick={handleDeclineClick}
+          disabled={isAccepting || isDeclining}
+        >
+          {isDeclining ? "Declining..." : <X size={18} />}
+        </Button>
+        {/* You might keep CancelButton for other actions if needed, but for accept/decline, direct buttons are better */}
+        {/* <CancelButton notificationType="delete">Yes, delete</CancelButton> */}
       </div>
     </Card>
   );

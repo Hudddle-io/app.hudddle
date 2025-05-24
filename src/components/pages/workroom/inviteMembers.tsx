@@ -4,20 +4,105 @@ import { Input } from "@/components/ui/input";
 import { Chip, ChipImage, ChipTitle } from "@/components/shared/Chip";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast"; // Import useToast hook
+import { backendUri } from "@/lib/config"; // Import backend URI from config
+
+// Assuming backendUri is imported from a config file
+// import { backendUri } from "@/lib/config"; // Uncomment if you have this file
 
 interface Props {
-  stepsData: any;
+  workroomId?: string | null; // workroomId is now a direct prop
+  stepsData: any; // stepsData remains for other properties
   setStepsData: React.Dispatch<any>;
 }
 
-const InviteMembers = ({ stepsData, setStepsData }: Props) => {
+const InviteMembers = ({ workroomId, stepsData, setStepsData }: Props) => {
   const [members, setMembers] = useState<string[]>([]);
   const [email, setEmail] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false); // State for loading indicator
+
+  const { toast } = useToast(); // Initialize useToast hook
 
   const handleAddMember = () => {
     if (email.trim() !== "") {
       setMembers((prev) => [...prev, email.trim()]);
       setEmail("");
+    }
+  };
+
+  const handleInviteMembers = async () => {
+    console.log(members);
+    if (members.length === 0) {
+      toast({
+        title: "Info",
+        description: "Please add at least one member to invite.",
+        variant: "default", // Default variant for info
+      });
+      return;
+    }
+
+    if (!workroomId) {
+      toast({
+        title: "Error",
+        description: "Workroom ID is missing. Cannot invite members.",
+        variant: "destructive", // Destructive variant for error
+      });
+      return;
+    }
+
+    setIsLoading(true); // Set loading state to true when API call starts
+    try {
+      // Fetch token from standard browser localStorage
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Authentication token not found. Please log in.",
+          variant: "destructive",
+        });
+        setIsLoading(false); // Reset loading state
+        return;
+      }
+
+      // The API expects a list of emails directly, not an array of objects
+      const response = await fetch(
+        `${backendUri}/api/v1/workrooms/${workroomId}/members`, // Use the direct workroomId prop
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Include the authorization token
+          },
+          body: JSON.stringify({ members: members }), // Send the list of email strings under 'members' key
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Unknown error inviting members" }));
+        throw new Error(errorData.message || "Failed to invite members.");
+      }
+
+      const data = await response.json();
+      toast({
+        title: "Success",
+        description: "Members invited successfully!",
+        variant: "default", // Default variant for success
+      });
+      console.log("Invite members response:", data);
+      // Optionally clear members list after successful invitation
+      setMembers([]);
+    } catch (error: any) {
+      console.error("Error inviting members:", error);
+      toast({
+        title: "Error",
+        description: "An error occurred: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false); // Always reset loading state after API call
     }
   };
 
@@ -39,6 +124,13 @@ const InviteMembers = ({ stepsData, setStepsData }: Props) => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => {
+              // Allow adding member on Enter key press
+              if (e.key === "Enter") {
+                e.preventDefault(); // Prevent form submission if this is part of a form
+                handleAddMember();
+              }
+            }}
           />
           <Button id="add" variant="ghost" onClick={handleAddMember}>
             <Plus className="text-[#956FD666] w-[clamp(0.7rem,_0.5128vw,_0.875rem)] h-[clamp(0.7rem,_0.5128vh,_0.875rem)] text-[clamp(0.5rem,_0.5128vw,_0.875rem)]" />
@@ -57,8 +149,13 @@ const InviteMembers = ({ stepsData, setStepsData }: Props) => {
           ))
         )}
       </div>
-      <Button className="w-[clamp(17.5rem,_4.2735vw,_20.625rem)] bg-[#956FD699] mt-[clamp(1.875rem,_0.8547vw,_2.5rem)]">
-        Invite team members
+      <Button
+        className="w-[clamp(17.5rem,_4.2735vw,_20.625rem)] bg-[#956FD699] mt-[clamp(1.875rem,_0.8547vw,_2.5rem)]"
+        onClick={handleInviteMembers} // Attach the new handler
+        disabled={isLoading} // Disable button when loading
+      >
+        {isLoading ? "Inviting..." : "Invite team members"}{" "}
+        {/* Change button text */}
       </Button>
     </main>
   );

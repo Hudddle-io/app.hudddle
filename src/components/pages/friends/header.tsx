@@ -1,20 +1,27 @@
+// components/pages/friends/header.tsx
 "use client";
 
+import NavigationLink from "@/components/basics/Navigation-link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { backendUri } from "@/lib/config";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 interface FriendsHeaderProps {
-  searchPage: boolean;
+  searchPage?: boolean;
+  onFriendRequestSent?: () => void; // Made optional
 }
 
-const FriendsHeader: React.FC<FriendsHeaderProps> = ({ searchPage }) => {
+const FriendsHeader: React.FC<FriendsHeaderProps> = ({
+  searchPage,
+  onFriendRequestSent,
+}) => {
   const [searchId, setSearchId] = useState<string>("");
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const router = useRouter();
+  const router = useRouter(); // Not used in this component, can be removed if not needed
   const { toast } = useToast();
 
   const sendFriendRequest = async () => {
@@ -31,12 +38,12 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({ searchPage }) => {
       const storedUser = localStorage.getItem("user");
       if (!storedUser) throw new Error("User not logged in.");
 
-      const { id: sender_id } = JSON.parse(storedUser);
+      // const { id: sender_id } = JSON.parse(storedUser); // sender_id is not used in the payload, can be removed
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Authorization token missing.");
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URI}/api/v1/friends/friends/request`,
+        `${backendUri}/api/v1/friends/friends/request`,
         {
           method: "POST",
           headers: {
@@ -44,7 +51,6 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({ searchPage }) => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            sender_id,
             receiver_email: searchId,
           }),
         }
@@ -60,6 +66,8 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({ searchPage }) => {
         title: "Friend Request Sent",
         description: `Request sent to ${searchId}`,
       });
+      setSearchId(""); // Clear the input field after successful send
+      onFriendRequestSent?.(); // Conditionally call onFriendRequestSent
     } catch (error: any) {
       toast({
         title: "Error",
@@ -80,18 +88,25 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({ searchPage }) => {
             placeholder="Search by email"
             type="search"
             className="w-[500px] py-6 placeholder:font-bold focus-visible:ring-custom-purple"
+            value={searchId} // Control the input value with state
             onChange={(e) => setSearchId(e.target.value)}
           />
         )}
       </div>
       {!searchPage ? (
-        <Button
+        <NavigationLink
+          icon={{
+            icon_component: <Plus size={18} className="mr-2" />,
+            icon_position: "left",
+          }}
           className="text-black bg-custom-yellow hover:text-white"
           onClick={sendFriendRequest}
         >
-          <Plus size={18} className="mr-2" /> Add a Friend
-        </Button>
+          Add a Friend
+        </NavigationLink>
       ) : (
+        // This button seems to be for a different flow if searchPage is true,
+        // it doesn't trigger sendFriendRequest.
         <Button className="text-custom-semiBlack font-bold text-lg hover:bg-transparent bg-transparent hover:text-custom-purple">
           Add a Friend
         </Button>
