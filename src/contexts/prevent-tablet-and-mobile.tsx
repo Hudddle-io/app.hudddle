@@ -35,8 +35,12 @@ export default function PreventTabletAndMobileWrapper({
     };
   }, []);
 
-  // Determine if the route is an authentication route
+  // Determine if the route is an authentication route or the onboarding route
   const isAuthRoute = route.startsWith("/auth/");
+  const isOnboardingRoute = route === "/onboarding"; // Check for exact /onboarding route
+
+  // Condition to always show children: if it's NOT mobile OR it's an auth route OR it's the onboarding route
+  const shouldAlwaysShowChildren = !isMobile || isAuthRoute || isOnboardingRoute;
 
   useEffect(() => {
     // Function to generate random values for animation properties
@@ -91,8 +95,8 @@ export default function PreventTabletAndMobileWrapper({
       });
     };
 
-    // Blobs should only animate if it's a mobile device AND NOT an auth route
-    const shouldAnimateBlobs = isMobile && !isAuthRoute;
+    // Blobs should only animate if it's a mobile device AND NOT an auth route AND NOT the onboarding route
+    const shouldAnimateBlobs = isMobile && !isAuthRoute && !isOnboardingRoute;
 
     if (shouldAnimateBlobs) {
       startBlobAnimation(controls1, 0);
@@ -104,10 +108,11 @@ export default function PreventTabletAndMobileWrapper({
       controls2.stop();
       controls3.stop();
     }
-  }, [isMobile, isAuthRoute, controls1, controls2, controls3]); // Add 'isAuthRoute' to dependency array
+  }, [isMobile, isAuthRoute, isOnboardingRoute, controls1, controls2, controls3]); // Add new dependencies
 
   // Determine if the mobile message should be shown
-  const shouldShowMobileMessage = isMobile && !isAuthRoute;
+  // This is the inverse of shouldAlwaysShowChildren, but specifically for the mobile message content
+  const shouldShowMobileMessage = isMobile && !isAuthRoute && !isOnboardingRoute;
 
   return (
     <main
@@ -120,8 +125,12 @@ export default function PreventTabletAndMobileWrapper({
       )}
       {...props}
     >
-      {/* Conditional rendering based on isAuthRoute and isMobile */}
-      {shouldShowMobileMessage ? (
+      {/* Conditional rendering based on shouldAlwaysShowChildren */}
+      {shouldAlwaysShowChildren ? (
+        // Render children directly if the condition is met
+        children
+      ) : (
+        // Otherwise, show the mobile message and blobs
         <>
           {/* Background Blobs Container */}
           <div className="absolute inset-0 overflow-hidden">
@@ -191,9 +200,6 @@ export default function PreventTabletAndMobileWrapper({
             }
           `}</style>
         </>
-      ) : (
-        // Render children if it's an auth route, or if it's not mobile
-        children
       )}
     </main>
   );

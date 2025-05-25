@@ -34,7 +34,7 @@ import {
   UserSessionProvider,
 } from "@/contexts/useUserContext"; // Import updated context
 import { MainHeading, SubHeading } from "@/components/basics/Heading";
-import { backendUri } from "@/lib/config";
+import { backendUri } from "@/lib/config"; // Ensure backendUri is correctly configured here
 
 const FormSchema = z.object({
   firstName: z.string().min(2, {
@@ -77,8 +77,8 @@ const OnBoarding: React.FC = () => {
     defaultValues: {
       firstName: "",
       lastName: "",
-      occupation: "Frontend Developer",
-      awareness: "Website",
+      occupation: "Frontend Developer", // Ensure default values match SelectItem values
+      awareness: "Website", // Ensure default values match SelectItem values
       software: "",
     },
   });
@@ -93,7 +93,7 @@ const OnBoarding: React.FC = () => {
       }
 
       const response = await fetch(
-        `${backendUri}/api/v1/auth/update-profile-data`,
+        `${backendUri}/api/v1/auth/update-profile-data`, // Ensure this URL is correct
         {
           method: "PUT",
           headers: {
