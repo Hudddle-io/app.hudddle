@@ -28,24 +28,24 @@ const FriendsPageContent: React.FC<FriendsPageContentProps> = ({
     }
   }, [currentUser, loading, error]);
 
-  if (loading) {
-    return <LoadingPage loadingText="Loading user session..." />;
-  }
+  // if (loading) {
+  //   return <LoadingPage loadingText="Loading user session..." />;
+  // }
 
-  if (error) {
-    return (
-      <p className="text-center mt-20 text-red-500">
-        Error loading user session: {error}
-      </p>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <p className="text-center mt-20 text-red-500">
+  //       Error loading user session: {error}
+  //     </p>
+  //   );
+  // }
 
-  if (!currentUser) {
-    // This case should ideally be handled by the redirect above, but as a fallback
-    return (
-      <p className="text-center mt-20 text-red-500">User not authenticated.</p>
-    );
-  }
+  // if (!currentUser) {
+  //   // This case should ideally be handled by the redirect above, but as a fallback
+  //   return (
+  //     <p className="text-center mt-20 text-red-500">User not authenticated.</p>
+  //   );
+  // }
 
   // Callback to trigger a refresh in FriendList
   const handleRefresh = () => {

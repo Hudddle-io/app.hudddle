@@ -10,7 +10,7 @@ import TodaysTask from "./todays-task";
 import { Metadata } from "next";
 import { TaskTodayProps } from "@/lib/@types";
 import { backendUri } from "@/lib/config";
-import LoadingPage from "@/components/shared/loading-page";
+import DashboardLoader from "@/components/loaders/dashboard";
 
 export const metadata: Metadata = {
   title: "Hudddle | Dashboard",
@@ -164,7 +164,7 @@ const PageDashboard: React.FC = () => {
     fetchDashboardData();
   }, []);
 
-  if (loading) return <LoadingPage loadingText="Loading your dashboard" />;
+  if (loading) return <DashboardLoader />;
 
   const levelImageMap: Record<UserLevelData["category"], string> = {
     Leader:

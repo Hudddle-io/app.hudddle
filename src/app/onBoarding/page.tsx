@@ -89,7 +89,7 @@ const OnBoarding: React.FC = () => {
     try {
       const token = getToken();
       if (!token) {
-        throw new Error("No access token found. Please log in again.");
+        throw new Error("No access token found. Please log in again."); // no access found , meaning there is no login
       }
 
       const response = await fetch(

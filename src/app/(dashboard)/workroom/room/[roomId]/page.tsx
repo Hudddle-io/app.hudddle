@@ -19,10 +19,11 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import LoadingPage from "@/components/shared/loading-page";
 import NavigationLink from "@/components/basics/Navigation-link";
 import { MoveLeft } from "lucide-react";
 import { MetricChart } from "@/components/shared/mertic-chart";
+import RoomLoader from "@/components/loaders/room";
+import { backendUri } from "@/lib/config";
 
 const Trash = "/assets/trash.svg";
 const building = "/assets/building.png";
@@ -88,7 +89,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         }
 
         const response = await fetch(
-          `http://3.84.117.128/api/v1/workrooms/${params.roomId}`,
+          `${backendUri}/api/v1/workrooms/${params.roomId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -205,9 +206,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   };
 
   if (!roomData || extensionStatus.isLoading) {
-    return (
-      <LoadingPage loadingText="Fetching Workroom Data and Extension Status..." />
-    );
+    return <RoomLoader />;
   }
 
   // Determine if the button should be disabled

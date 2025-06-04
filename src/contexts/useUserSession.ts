@@ -34,7 +34,7 @@ export const useUserSession = () => {
     }
 
     setLoading(true); // Set loading true before fetch starts
-    setError(null);   // Clear previous errors
+    setError(null); // Clear previous errors
 
     try {
       const response = await fetch(`${backendUri}/api/v1/auth/me`, {
@@ -47,7 +47,9 @@ export const useUserSession = () => {
 
       // Handle unauthorized specifically, e.g., if token is invalid or expired
       if (response.status === 401) {
-        console.warn("Unauthorized: Token might be invalid or expired. Logging out.");
+        console.warn(
+          "Unauthorized: Token might be invalid or expired. Logging out."
+        );
         logout(); // Call the memoized logout function
         return; // Exit early after logout
       }
@@ -59,7 +61,6 @@ export const useUserSession = () => {
 
       const userData = await response.json();
       setCurrentUser(userData);
-      console.log("User data fetched:", userData);
     } catch (err: any) {
       setError(err.message);
       console.error("Error fetching user data:", err);
@@ -75,5 +76,12 @@ export const useUserSession = () => {
   }, [fetchCurrentUser]); // Dependency on the memoized fetchCurrentUser function
 
   // Expose fetchCurrentUser as refreshUser for external calls
-  return { currentUser, loading, error, token, logout, refreshUser: fetchCurrentUser };
+  return {
+    currentUser,
+    loading,
+    error,
+    token,
+    logout,
+    refreshUser: fetchCurrentUser,
+  };
 };

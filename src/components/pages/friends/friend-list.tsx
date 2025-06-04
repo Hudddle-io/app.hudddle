@@ -8,9 +8,9 @@ import FriendCard from "./friend-card";
 import PendingCard from "./pending-card";
 import Pagination from "@/components/shared/pagination"; // Assuming Pagination correctly updates URL search params
 import { Button } from "@/components/ui/button";
-import LoadingPage from "@/components/shared/loading-page";
 import { useToast } from "@/components/ui/use-toast"; // Added for toast notifications
 import { backendUri } from "@/lib/config";
+import FriendsLoader from "@/components/loaders/friends";
 
 interface Friend {
   id: string;
@@ -180,9 +180,7 @@ const FriendList: React.FC<FriendListProps> = ({
   };
 
   if (loading) {
-    return (
-      <LoadingPage loadingText={`Getting your ${tab.replace("-", " ")}...`} />
-    );
+    return <FriendsLoader />;
   }
 
   if (error) {
