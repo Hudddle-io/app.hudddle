@@ -284,7 +284,12 @@ const Sidebar = () => {
                 >
                   <div className="relative w-[clamp(0.9375rem,_0.4274vw,_1.25rem)] h-[clamp(0.9375rem,_0.4274vh,_1.25rem]">
                     {/* Ensure link.icon contains a valid path to an image file */}
-                    <Image alt={link.text} src={`${link.icon}`} fill />
+                    <Image
+                      alt={link.text}
+                      src={`${link.icon}`}
+                      width={24}
+                      height={24}
+                    />
                   </div>
                   <span>{link.text}</span>
                 </Button>{" "}

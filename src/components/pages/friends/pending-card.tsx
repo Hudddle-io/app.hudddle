@@ -1,4 +1,3 @@
-// components/pages/friends/pending-card.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -19,16 +18,17 @@ interface Friend {
   first_name: string;
   last_name: string;
   avatar_url?: string;
-  email?: string;
+  email?: string; // This will now be used as the sender_email for acceptance
+  sender_email?: string; // Added to potentially receive sender_email if backend provides it directly for pending requests
   // If your backend provides a specific 'request_id' for pending requests,
   // ensure it's included in this interface, e.g., requestId: string;
-  // For now, assuming 'id' can serve as the request ID.
+  // For now, assuming 'id' can serve as the request ID for decline.
 }
 
 interface PendingProps {
   pending: Friend;
-  onAccept: (requestId: string) => void; // Callback for accepting
-  onDecline: (requestId: string) => void; // Callback for declining
+  onAccept: (senderEmail: string) => void; // Callback for accepting, expects sender's email
+  onDecline: (requestId: string) => void; // Callback for declining, expects request ID
 }
 
 const PendingCard: React.FC<PendingProps> = ({
@@ -41,13 +41,14 @@ const PendingCard: React.FC<PendingProps> = ({
 
   const handleAcceptClick = async () => {
     setIsAccepting(true);
-    await onAccept(pending.id); // Assuming pending.id is the request ID
+    // Use pending.sender_email if available, otherwise fallback to pending.email
+    await onAccept(pending.sender_email || pending.email || "");
     setIsAccepting(false);
   };
 
   const handleDeclineClick = async () => {
     setIsDeclining(true);
-    await onDecline(pending.id); // Assuming pending.id is the request ID
+    await onDecline(pending.id); // Assuming pending.id is the request ID for decline
     setIsDeclining(false);
   };
 

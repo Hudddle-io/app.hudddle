@@ -1,4 +1,3 @@
-// components/pages/friends/friend-list.tsx
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -17,6 +16,7 @@ interface Friend {
   name: string;
   avatar?: string;
   email?: string;
+  sender_email?: string; // Added to reflect the backend's expectation for accepting requests
   // Add any other fields relevant for pending requests, e.g., 'sender_id', 'receiver_id'
 }
 
@@ -98,27 +98,27 @@ const FriendList: React.FC<FriendListProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [tab, toast]); // Add refreshKey to dependencies
+  }, [tab, toast]); // Add refreshKey to dependencies (removed page from here as it's not directly used in the API call for friend list)
 
   useEffect(() => {
     fetchFriendsData();
-  }, [fetchFriendsData]); // Re-fetch when fetchFriendsData callback changes (due to tab, page, refreshKey)
+  }, [fetchFriendsData, refreshKey]); // Re-fetch when fetchFriendsData callback changes or refreshKey changes
 
   // Handlers for accepting/declining pending requests
-  const handleAcceptRequest = async (requestId: string) => {
+  const handleAcceptRequest = async (senderEmail: string) => { // Changed parameter to senderEmail
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Authorization token missing.");
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URI}/api/v1/friends/friends/requests/accept`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URI}/api/v1/friends/friends/request/accept`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ request_id: requestId }),
+          body: JSON.stringify({ sender_email: senderEmail }), // Changed to sender_email
         }
       );
 
@@ -213,7 +213,8 @@ const FriendList: React.FC<FriendListProps> = ({
                   last_name: (profile as any).last_name ?? "",
                 }}
                 key={profile.id}
-                onAccept={handleAcceptRequest}
+                // Pass the sender_email for acceptance. Using profile.sender_email if available, fallback to profile.email
+                onAccept={() => handleAcceptRequest(profile.sender_email || profile.email || '')}
                 onDecline={handleDeclineRequest}
               />
             )
