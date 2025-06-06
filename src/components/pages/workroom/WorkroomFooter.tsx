@@ -2,15 +2,23 @@
 // setCurrent step
 
 import { Button } from "@/components/ui/button";
-import { SkipBack, SkipForward } from "lucide-react";
+import {
+  SkipBack,
+  SkipForward,
+  ExternalLink,
+  SquareArrowOutUpLeft,
+} from "lucide-react";
 import React, { FC } from "react";
+import NavigationLink from "@/components/basics/Navigation-link";
 
 interface WorkroomFooterProps {
+  workroomId: string | null;
   current_step: number;
   set_current_step: any;
 }
 
 const WorkroomFooter: FC<WorkroomFooterProps> = ({
+  workroomId,
   current_step,
   set_current_step,
 }) => {
@@ -43,7 +51,21 @@ const WorkroomFooter: FC<WorkroomFooterProps> = ({
         </span>
       </Button>
       {current_step === 5 ? (
-        ""
+        <div className="flex items-center justify-end gap-4">
+          <NavigationLink
+            icon={{ icon_component: <SquareArrowOutUpLeft /> }}
+            href="/workroom"
+            variant={"ghost"}
+          >
+            View all Workrooms
+          </NavigationLink>
+          <NavigationLink
+            icon={{ icon_component: <ExternalLink /> }}
+            href={`/workroom/room/${workroomId && workroomId}`}
+          >
+            Open Workroom
+          </NavigationLink>
+        </div>
       ) : (
         <Button
           disabled={current_step === 5 ? true : false}

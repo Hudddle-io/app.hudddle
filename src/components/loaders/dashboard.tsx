@@ -17,9 +17,9 @@ const DashboardLoader = () => {
 
       <div className="mt-10">
         {/* Streaks Skeleton */}
-        <p className="text-right">
+        <div className="text-right">
           <Skeleton className="h-6 w-32 ml-auto" /> {/* For Streaks text */}
-        </p>
+        </div>
 
         {/* ProductivitySection Skeleton */}
         <div className="flex flex-col md:flex-row justify-between items-center mt-6 p-4 rounded-lg border">

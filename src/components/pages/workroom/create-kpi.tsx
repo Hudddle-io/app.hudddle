@@ -352,7 +352,7 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
   }
 
   return (
-    <main className="w-full h-full min-h-[400px] flex flex-col gap-10">
+    <main className="w-full max-h-[60vh] min-h-[400px] overflow-y-auto flex flex-col gap-10">
       <section className="h-2/5 w-full ">
         <Form {...form}>
           <form

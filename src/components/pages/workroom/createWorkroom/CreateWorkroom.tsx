@@ -27,6 +27,7 @@ const CreateWorkroom = () => {
   const [workroomData, setWorkroomData] = useState<WorkroomDetails | null>(
     null
   ); // State for workroom data
+  const [roomName, setRoomName] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
 
@@ -58,6 +59,7 @@ const CreateWorkroom = () => {
           );
           console.log("Data from fetchWorkroomDetails:", data);
           setWorkroomData(data); // Store the fetched data
+          setRoomName(data?.name || ""); // Set room name, added nullish check
           setTasks(data?.tasks || []); //  set tasks, added nullish check
         } catch (err: any) {
           setError(err.message);
@@ -75,6 +77,8 @@ const CreateWorkroom = () => {
       case 1:
         return (
           <CreateRoom
+            setRoomName={setRoomName}
+            roomName={roomName}
             stepsData={stepsData}
             setStepsData={setStepsData}
             onWorkroomCreated={setWorkroomId}
@@ -85,6 +89,7 @@ const CreateWorkroom = () => {
       case 3:
         return (
           <InviteMembers
+            roomName={roomName}
             workroomId={workroomId && workroomId}
             stepsData={stepsData}
             setStepsData={setStepsData}
@@ -127,12 +132,13 @@ const CreateWorkroom = () => {
       <WorkroomHeader
         current_step={currentStep}
         header_steps={steps}
-        headerTitle="create workrooms"
+        headerTitle={roomName}
       />
 
       <div className="flex flex-col neo-effect px-4 py-[clamp(1.375rem,_1.3675vw,_2.375rem)] items-center w-full h-fit mt-[clamp(1.25rem,_1.0256vw,_2rem)] gap-8">
         {renderStepComponent()}
         <WorkroomFooter
+          workroomId={workroomId}
           current_step={currentStep}
           set_current_step={setCurrentStep}
         />

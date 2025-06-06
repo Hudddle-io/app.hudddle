@@ -2,7 +2,7 @@ import React, { useState } from "react"; // Import useState
 import { Header, HeaderActions, HeaderTexts } from "./Header";
 
 import { Chip, ChipImage, ChipTitle } from "@/components/shared/Chip";
-import NavigationLink from "@/components/basics/Navigation-link";
+
 import { Button } from "@/components/ui/button";
 
 import {
@@ -12,13 +12,7 @@ import {
   TaskDueTime,
   TaskTitle,
 } from "./Task";
-import {
-  Zap,
-  ExternalLink,
-  SquareArrowOutUpLeft,
-  Loader2,
-  X,
-} from "lucide-react"; // Import X for modal close
+import { Zap, X } from "lucide-react"; // Import X for modal close
 import { motion, AnimatePresence } from "framer-motion"; // Import AnimatePresence for modal animations
 import { WorkroomDetails } from "@/lib/fetch-workroom";
 
@@ -126,7 +120,7 @@ const Golive = ({ stepsData, workroomId, data, setStepsData }: Props) => {
     : 0;
 
   return (
-    <motion.div className="relative w-3/4 h-3/4 rounded-[6px] p-6 flex flex-col gap-8">
+    <motion.div className="relative w-3/4 h-3/4 rounded-[6px] p-6 flex flex-col gap-8 max-h-[60vh] overflow-y-auto">
       <Header>
         <HeaderTexts>
           <h2 className="font-bold text-[18px] leading-[22px] text-[#262626]">
@@ -194,21 +188,6 @@ const Golive = ({ stepsData, workroomId, data, setStepsData }: Props) => {
           );
         })}
       </div>
-      <footer className="flex items-center justify-end gap-4">
-        <NavigationLink
-          icon={{ icon_component: <SquareArrowOutUpLeft /> }}
-          href="/workroom"
-          variant={"ghost"}
-        >
-          View all Workrooms
-        </NavigationLink>
-        <NavigationLink
-          icon={{ icon_component: <ExternalLink /> }}
-          href={`/workroom/room/${workroomId}`}
-        >
-          Open Workroom
-        </NavigationLink>
-      </footer>
 
       {/* Render the MembersListModal */}
       <MembersListModal

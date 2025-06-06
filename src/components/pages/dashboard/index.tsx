@@ -82,7 +82,10 @@ const PageDashboard: React.FC = () => {
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    if (!storedToken) return;
+    if (!storedToken) {
+      setLoading(false); // Stop loading if no token
+      return;
+    }
 
     const fetchDashboardData = async () => {
       setLoading(true);
@@ -96,6 +99,7 @@ const PageDashboard: React.FC = () => {
 
         if (!response.ok) {
           console.error("Failed to fetch dashboard data:", response.status);
+          setLoading(false); // Stop loading on error
           return;
         }
 
@@ -119,11 +123,36 @@ const PageDashboard: React.FC = () => {
         };
         setCurrentUser(user);
 
-        // Safely handle undefined tasks
-        const tasks = data.daily_tasks || [];
-        const today = new Date().toISOString().split("T")[0];
-        const todaysFilteredTasks = tasks
-          .filter((task: any) => task.deadline?.split("T")[0] === today)
+        // --- Crucial Changes for Tasks ---
+        let allTasks = [];
+        if (data.tasks && Array.isArray(data.tasks)) {
+          allTasks = data.tasks;
+        } else if (
+          data.workroom_data?.tasks &&
+          Array.isArray(data.workroom_data.tasks)
+        ) {
+          allTasks = data.workroom_data.tasks;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize today's date to start of day
+
+        const todaysFilteredAndSortedTasks = allTasks
+          .filter((task: any) => {
+            if (!task.due_by) return false; // Exclude tasks without a due_by date
+            const taskDueDate = new Date(task.due_by);
+            taskDueDate.setHours(0, 0, 0, 0); // Normalize task due date to start of day for comparison
+            return (
+              taskDueDate.toISOString().split("T")[0] ===
+              today.toISOString().split("T")[0]
+            );
+          })
+          .sort((a: any, b: any) => {
+            // Sort by due_by: tasks with earlier due_by come first
+            const dateA = new Date(a.due_by);
+            const dateB = new Date(b.due_by);
+            return dateA.getTime() - dateB.getTime();
+          })
           .map((task: any) => ({
             title: task.title,
             time: task.due_by
@@ -134,7 +163,7 @@ const PageDashboard: React.FC = () => {
               : "N/A",
             points: task.task_point,
           }));
-        setTodaysTasks(todaysFilteredTasks);
+        setTodaysTasks(todaysFilteredAndSortedTasks);
 
         // Safely handle undefined streak fields
         const streak = {
@@ -152,7 +181,6 @@ const PageDashboard: React.FC = () => {
             points: level.points || 0, // Default points to 0 if missing
           })
         );
-        console.log("Processed Levels:", levels); // Debugging log
         setUserLevels(levels);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -162,7 +190,7 @@ const PageDashboard: React.FC = () => {
     };
 
     fetchDashboardData();
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
 
   if (loading) return <DashboardLoader />;
 
@@ -249,9 +277,13 @@ const PageDashboard: React.FC = () => {
           </div>
         </div>
         <Card className="mt-5 p-4 border-none max-h-60 overflow-y-auto neo-effect">
-          {currentTasks.map((task, index) => (
-            <TodaysTask key={index} task={task} />
-          ))}
+          {currentTasks.length > 0 ? (
+            currentTasks.map((task, index) => (
+              <TodaysTask key={index} task={task} />
+            ))
+          ) : (
+            <p className="text-center text-gray-500">No tasks for today!</p>
+          )}
         </Card>
         {filteredTasks.length > tasksPerPage && (
           <div className="flex justify-center mt-4">

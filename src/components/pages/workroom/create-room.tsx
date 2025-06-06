@@ -7,15 +7,23 @@ import { toast } from "@/components/ui/use-toast";
 import { backendUri } from "@/lib/config";
 import { Loader2 } from "lucide-react";
 import axios from "axios";
-import React from "react";
+import React, { useEffect } from "react";
 
 interface Props {
+  roomName: string;
+  setRoomName: React.Dispatch<React.SetStateAction<string>>;
   stepsData: any;
   setStepsData: React.Dispatch<any>;
   onWorkroomCreated?: (id: string) => void;
 }
 
-const CreateRoom = ({ stepsData, setStepsData, onWorkroomCreated }: Props) => {
+const CreateRoom = ({
+  roomName,
+  setRoomName,
+  stepsData,
+  setStepsData,
+  onWorkroomCreated,
+}: Props) => {
   const [isCreating, setIsCreating] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,6 +67,7 @@ const CreateRoom = ({ stepsData, setStepsData, onWorkroomCreated }: Props) => {
           description: "Workroom updated successfully!",
         });
       }
+      setRoomName(stepsData.name || "Untitled Room");
     } catch (error) {
       toast({
         description: "Failed to update workroom. Please try again.",
@@ -66,6 +75,12 @@ const CreateRoom = ({ stepsData, setStepsData, onWorkroomCreated }: Props) => {
       });
     }
   };
+
+  useEffect(() => {
+    if (roomName) {
+      setStepsData((prev: any) => ({ ...prev, name: roomName }));
+    }
+  }, [roomName, setStepsData]);
 
   return (
     <div className="w-full h-[clamp(22.25rem,_19.0598vh,_36.1875rem)] rounded-[16px] flex items-center justify-center">

@@ -29,9 +29,9 @@ const WorkroomHeader: FC<WorkroomHeader> = ({
               <MoveLeft className="stroke-[1px] text-[#4D4D4D]" />
             </Link>
           </Button>
-          <h3 className="font-semibold text-[clamp(0.5rem,_0.6838vw,_1rem)] leading-[22px] text-[#4D4D4D]">
+          <h3 className="font-semibold text-[clamp(1.2rem,_1.2vw,_1.8rem)] text-[#4D4D4D]">
             {headerTitle} :{" "}
-            <span className="font-light">
+            <span className="font-light text-[clamp(0.5rem,_0.6838vw,_1rem)] leading-[22px]">
               Add teams, Tasks, Kpi&apos;s to properly manage your Results
             </span>
           </h3>

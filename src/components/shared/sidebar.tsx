@@ -200,7 +200,7 @@ const Sidebar = () => {
   };
 
   return (
-    <section className="col-span-1 ring-[0.6px] ring-[#999999] ring-opacity-[25%] flex items-start justify-center py-10 px-6">
+    <section className="col-span-1 min-w-[250px] ring-[0.6px] ring-[#999999] ring-opacity-[25%] flex items-start justify-center py-10 px-6">
       <div className="w-full h-full flex flex-col gap-[40px] items-center">
         <Link
           href={"/"}
@@ -297,15 +297,17 @@ const Sidebar = () => {
             ))}
             <Button
               onClick={handleLogout}
-              className="text-white w-full hover:bg-[#EEAE05] hover:text-[#fff] text-[14px] gap-2 font-normal pl-[24px] justify-start"
+              className="text-white w-full hover:bg-[#EEAE05] hover:text-[#fff] text-[clamp(0.625rem,_0.3419vw,_0.875rem)] gap-2 font-normal pl-[24px] justify-start"
               variant={"ghost"}
             >
-              <Image
-                width={20}
-                height={20}
-                alt="signout image"
-                src={"/assets/home.svg"} // Consider using a dedicated logout icon if available
-              />
+              <div className="relative w-[clamp(0.9375rem,_0.4274vw,_1.25rem)] h-[clamp(0.9375rem,_0.4274vh,_1.25rem]">
+                <Image
+                  width={24}
+                  height={24}
+                  alt="signout image"
+                  src={"/assets/home.svg"} // Consider using a dedicated logout icon if available
+                />
+              </div>
               <span>Clock out</span>
             </Button>{" "}
           </div>

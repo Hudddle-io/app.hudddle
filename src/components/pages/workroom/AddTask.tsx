@@ -92,10 +92,10 @@ const AddTask = ({
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full px-16">
+    <div className="flex flex-col gap-4 w-full px-16 max-h-[60vh] overflow-y-auto">
       <header className="w-full flex justify-between items-center">
-        <h1 className="text-[clamp(0.875rem,_0.5983vw,_1.3125rem)] leading-[22px] text-[#956FD6] font-semibold">
-          Your Task
+        <h1 className="text-[clamp(1rem,_1vw,_1.5125rem)] leading-[22px] text-[#956FD6] font-semibold">
+          Your Tasks
         </h1>
         <div className="flex gap-2 items-center">
           <Button
@@ -113,7 +113,7 @@ const AddTask = ({
           />
         </div>
       </header>
-      <div className="flex flex-col w-full gap-[clamp(2.1875rem,_2.0166rem+0.8547vw,_2.8125rem)]">
+      <div className="flex flex-col w-full gap-[clamp(2.1875rem,_2.0166rem+0.8547vw,_2.8125rem)] mt-10">
         {workroomTasks.length > 0 ? (
           workroomTasks.map((task: any) => (
             <Task key={task.id}>

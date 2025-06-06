@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/tooltip";
 import Link from "next/link";
 import { MainHeading, SubHeading } from "@/components/basics/Heading";
+import NavigationLink from "@/components/basics/Navigation-link";
 
 interface HeaderProps {
   name: string;
@@ -102,14 +103,16 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
                 <p className="text-xs">Your team mates are waiting for you</p>
               </div>
-              <Button className="bg-[#956FD6] text-xl shadow-md">
-                <Link href={`/workroom`} className="flex items-center">
-                  <span className="mr-2.5">
-                    <Globe size={10} />
-                  </span>
-                  Join workroom
-                </Link>
-              </Button>
+              <NavigationLink
+                className="bg-[#956FD6] text-xl shadow-md"
+                href="/workroom/create"
+                icon={{
+                  icon_component: <Globe size={10} />,
+                  icon_position: "right",
+                }}
+              >
+                Create workroom
+              </NavigationLink>
             </>
           ) : (
             <p className="text-sm font-semibold text-custom-semiBlack">

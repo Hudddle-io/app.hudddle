@@ -11,12 +11,18 @@ import { backendUri } from "@/lib/config"; // Import backend URI from config
 // import { backendUri } from "@/lib/config"; // Uncomment if you have this file
 
 interface Props {
+  roomName: string;
   workroomId?: string | null; // workroomId is now a direct prop
   stepsData: any; // stepsData remains for other properties
   setStepsData: React.Dispatch<any>;
 }
 
-const InviteMembers = ({ workroomId, stepsData, setStepsData }: Props) => {
+const InviteMembers = ({
+  roomName,
+  workroomId,
+  stepsData,
+  setStepsData,
+}: Props) => {
   const [members, setMembers] = useState<string[]>([]);
   const [email, setEmail] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false); // State for loading indicator
@@ -107,15 +113,15 @@ const InviteMembers = ({ workroomId, stepsData, setStepsData }: Props) => {
   };
 
   return (
-    <main className="flex flex-col gap-[clamp(1.5rem,_0.6838vw,_2rem)]">
+    <main className="flex flex-col gap-[clamp(1.5rem,_0.6838vw,_2rem)] max-h-[60vh] overflow-y-auto">
       <div className="flex flex-col items-center gap-2">
         <label
           htmlFor="addTeamMembers"
-          className="font-normal text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[16px] text-[#44546F]"
+          className="font-normal text-[clamp(1rem,_1vw,_1.5rem)] leading-[16px] text-[#44546F] mb-6"
         >
-          Add your friends to <span className="font-bold">Work room name</span>
+          Add your friends to <span className="font-bold">{roomName}</span>
         </label>
-        <span className="flex gap-[clamp(1.5rem,_0.6838vw,_2rem)] items-center">
+        <span className="flex gap-[clamp(1.5rem,_0.6838vw,_2rem)] justify-center items-center">
           <Input
             className="w-[clamp(18rem,_4.1026vw,_21rem)] h-[clamp(2.25rem,_2.0513vw,_3.75rem)] neo-effect ring-1 ring-[#091E4224] text-[#626F86] text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[20px] font-normal outline-none"
             placeholder="Email address"
@@ -137,9 +143,9 @@ const InviteMembers = ({ workroomId, stepsData, setStepsData }: Props) => {
           </Button>
         </span>
       </div>
-      <div className="w-[clamp(20.5rem,_5.9829vw,_21.875rem)] flex flex-wrap h-fit gap-2">
+      <div className="w-[clamp(20.5rem,_5.9829vw,_21.875rem)] flex justify-center flex-wrap h-fit gap-2">
         {members.length === 0 ? (
-          <p className="text-[#999999]">No members yet</p>
+          <p className="text-[#999999] text-center">No members yet</p>
         ) : (
           members.map((member, index) => (
             <Chip key={index}>
@@ -150,7 +156,7 @@ const InviteMembers = ({ workroomId, stepsData, setStepsData }: Props) => {
         )}
       </div>
       <Button
-        className="w-[clamp(17.5rem,_4.2735vw,_20.625rem)] bg-[#956FD699] mt-[clamp(1.875rem,_0.8547vw,_2.5rem)]"
+        className="w-full bg-[#956FD699] mt-[clamp(1.875rem,_0.8547vw,_2.5rem)]"
         onClick={handleInviteMembers} // Attach the new handler
         disabled={isLoading} // Disable button when loading
       >

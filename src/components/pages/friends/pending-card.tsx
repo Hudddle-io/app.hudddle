@@ -64,28 +64,27 @@ const PendingCard: React.FC<PendingProps> = ({
                     <AvatarImage
                       src={
                         pending.avatar_url ||
-                        `https://placehold.co/48x48/E0E0E0/333333?text=${pending.first_name
-                          .slice(0, 1)
-                          .toUpperCase()}`
+                        `https://placehold.co/48x48/E0E0E0/333333?text=${
+                          pending.sender_email &&
+                          pending.sender_email.slice(0, 1).toUpperCase()
+                        }`
                       }
                       loading="lazy"
                       alt="profile"
                     />
                     <AvatarFallback className="text-[0.5rem]">
-                      {pending.first_name.slice(0, 1).toUpperCase()}
-                      {pending.last_name.slice(0, 1).toUpperCase()}
+                      {pending.sender_email &&
+                        pending.sender_email.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </TooltipTrigger>
-                <TooltipContent>
-                  {pending.first_name} {pending.last_name}
-                </TooltipContent>
+                <TooltipContent>{pending.sender_email}</TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <CardTitle className="text-slate-600 text-lg p-0">
-              {pending.first_name} {pending.last_name}
+              {pending.sender_email}
             </CardTitle>
-            <p className="text-xs text-slate-400 ml-5 italic">Pending</p>
+            <p className="text-xs text-yellow-600 ml-5 italic">Pending</p>
           </div>
         </div>
       </CardContent>
