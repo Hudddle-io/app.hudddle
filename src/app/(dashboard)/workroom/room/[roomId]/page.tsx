@@ -13,11 +13,11 @@ import WeeklyChart from "@/components/shared/demo-chart";
 import KpiChart from "@/components/shared/kpi-chart";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
-import MyTask from "@/app/(tasks)/your-tasks/my-task";
+import MyTask from "@/app/(tasks)/your-tasks/my-task"; // Assuming MyTask is a display component
 import Image from "next/image";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react"; // Added useMemo
 import { useRouter } from "next/navigation";
 import NavigationLink from "@/components/basics/Navigation-link";
 import { MoveLeft } from "lucide-react";
@@ -25,13 +25,23 @@ import { MetricChart } from "@/components/shared/mertic-chart";
 import RoomLoader from "@/components/loaders/room";
 import { backendUri } from "@/lib/config";
 
+// Import CreateWorkroomTaskSheet and fetchWorkroomDetails
+import CreateWorkroomTaskSheet from "@/components/shared/create-workroom-task";
+import fetchWorkroomDetails from "@/lib/fetch-workroom"; // Assuming this path is correct for WorkroomDetails interface
+
 const Trash = "/assets/trash.svg";
 const building = "/assets/building.png";
 const chess = "/assets/chess.svg";
 const strike = "/assets/strike-full.svg";
 const clock = "/assets/clock.svg";
 
-interface RoomData {
+// Reusing TaskTodayProps for task data consistency
+import { TaskTodayProps } from "@/lib/@types";
+import { toast } from "@/components/ui/use-toast";
+
+// Define WorkroomDetails interface if not already in fetch-workroom or @types
+// If fetchWorkroomDetails already exports WorkroomDetails, this is redundant.
+interface WorkroomDetails {
   name?: string;
   performance_metrics?: Array<{
     kpi_name: string;
@@ -43,17 +53,39 @@ interface RoomData {
     productivity: number;
     avatar_url: string;
     teamwork_collaborations: number;
-    // Add other member properties if needed, e.g., level, kpi, roomKpis
     level?: number;
     kpiAlignment?: string;
     kpi?: { kpiName: string; kpiMetric: string };
     roomKpis?: string[];
     aiSummary?: string;
   }>;
-
   completed_task_count?: number;
   pending_task_count?: number;
-  tasks?: any[];
+  tasks?: TaskTodayProps[];
+}
+
+interface RoomData {
+  // This is the interface for the current component's state
+  name?: string;
+  performance_metrics?: Array<{
+    kpi_name: string;
+    weight: number;
+  }>;
+  members?: Array<{
+    name: string;
+    xp: number;
+    productivity: number;
+    avatar_url: string;
+    teamwork_collaborations: number;
+    level?: number;
+    kpiAlignment?: string;
+    kpi?: { kpiName: string; kpiMetric: string };
+    roomKpis?: string[];
+    aiSummary?: string;
+  }>;
+  completed_task_count?: number;
+  pending_task_count?: number;
+  tasks?: TaskTodayProps[]; // Ensure tasks are typed as TaskTodayProps[]
 }
 
 interface AiSummary {
@@ -69,19 +101,63 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   const [aiSummary, setAiSummary] = useState<AiSummary | null>(null);
   const router = useRouter();
 
-  // New state for extension status
+  // State for search and pagination for tasks tab
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const tasksPerPage = 3; // Changed from 5 to 3 tasks per page
+
+  // State to hold all tasks, regardless of filtering or pagination
+  const [allRoomTasks, setAllRoomTasks] = useState<TaskTodayProps[]>([]);
+
+  // State for Create Task Sheet
+  const [isCreateTaskSheetOpen, setIsCreateTaskSheetOpen] = useState(false);
+
   const [extensionStatus, setExtensionStatus] = useState({
     isInstalled: false,
     isPinned: false,
-    isLoading: true, // Indicate initial loading state
+    isLoading: true,
   });
 
-  // IMPORTANT: Replace this with your actual Chrome Extension ID
-  // You can find this on chrome://extensions/ after loading your unpacked extension.
   const EXTENSION_ID = "bfmaemghdgdgllmphhdeapoeceicnaji";
 
+  // Function to re-fetch room data and update tasks (used after task creation)
+  const refreshRoomData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authorization token is missing");
+      }
+
+      const response = await fetch(
+        `${backendUri}/api/v1/workrooms/${params.roomId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch room data during refresh");
+      }
+
+      const data: WorkroomDetails = await response.json(); // Cast to WorkroomDetails
+      setRoomData(data);
+      setAllRoomTasks(data.tasks || []);
+      // Reset search and pagination to show newly created tasks
+      setSearchTerm("");
+      setCurrentPage(1);
+    } catch (error) {
+      console.error("Error refreshing room data:", error);
+      toast({
+        description: "Failed to refresh tasks. Please try reloading the page.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
-    async function fetchRoomData() {
+    async function fetchInitialRoomData() {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -102,10 +178,14 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         }
 
         const data = await response.json();
-        console.log(data);
+        console.log("Fetched room data:", data);
         setRoomData(data);
+        // Set all tasks from the fetched room data
+        setAllRoomTasks(data.tasks || []);
       } catch (error) {
         console.error("Error fetching room data:", error);
+        setRoomData(null); // Clear room data on error
+        setAllRoomTasks([]); // Clear tasks on error
       }
     }
 
@@ -131,7 +211,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     "Extension not installed or cannot be reached:",
                     window.chrome.runtime.lastError.message
                   );
-                  resolve(null); // Resolve with null if extension not found
+                  resolve(null);
                 } else {
                   resolve(res ?? null);
                 }
@@ -161,7 +241,6 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           });
         }
       } else {
-        // Not in a Chrome browser or chrome.runtime not available
         setExtensionStatus({
           isInstalled: false,
           isPinned: false,
@@ -170,9 +249,35 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
       }
     }
 
-    fetchRoomData();
-    checkExtensionStatus(); // Check extension status on mount
+    fetchInitialRoomData(); // Call this on mount
+    checkExtensionStatus();
   }, [params.roomId]);
+
+  // Reset currentPage to 1 when searchTerm changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  // Filter tasks based on searchTerm
+  const filteredTasks = useMemo(() => {
+    if (!searchTerm) {
+      return allRoomTasks;
+    }
+    return allRoomTasks.filter((task) =>
+      task.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [allRoomTasks, searchTerm]);
+
+  // Calculate pagination values
+  const indexOfLastTask = currentPage * tasksPerPage;
+  const indexOfFirstTask = indexOfLastTask - tasksPerPage;
+  const currentTasks = filteredTasks.slice(indexOfFirstTask, indexOfLastTask);
+  const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
+
+  const paginate = (pageNumber: number) => {
+    if (pageNumber < 1 || pageNumber > totalPages) return; // Prevent invalid page numbers
+    setCurrentPage(pageNumber);
+  };
 
   const safeRoomDataMembers = roomData?.members || [];
   const safeAiSummary = aiSummary || {
@@ -183,7 +288,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
   const handleMemberClick = (member: any) => {
     setSelectedMember(member);
-    setActiveTab("participants");
+    setActiveTab("participants"); // Switch to participants tab when a member is clicked
   };
 
   const handleBack = () => {
@@ -199,9 +304,12 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
       window.chrome?.runtime?.sendMessage(EXTENSION_ID, { action: "useRoom" });
       console.log(`sent action to : ${EXTENSION_ID}`);
     } else {
-      alert(
-        "Please use Chrome browser with the 'Huddle In Room' extension installed and pinned."
-      );
+      // Replaced alert with a toast message for better UX
+      toast({
+        description:
+          "Please use Chrome browser with the 'Huddle In Room' extension installed and pinned.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -209,12 +317,32 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
     return <RoomLoader />;
   }
 
-  // Determine if the button should be disabled
   const isUseInRoomButtonDisabled =
     !extensionStatus.isInstalled || !extensionStatus.isPinned;
 
   return (
     <main className="w-full flex flex-col gap-4 px-12 py-8">
+      {/* CSS for custom scrollbar */}
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 12px; /* width of the entire scrollbar */
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1; /* color of the tracking area */
+          border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #888; /* color of the scroll thumb */
+          border-radius: 10px; /* roundness of the scroll thumb */
+          border: 3px solid #f1f1f1; /* creates padding around scroll thumb */
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background-color: #555; /* color of the scroll thumb on hover */
+        }
+      `}</style>
       {/* header */}
       <header className="w-full h-[clamp(2.375rem,_2.2382rem+0.6838vh,_2.875rem)] flex justify-between items-center mb-[clamp(2.625rem,_2.4882rem+0.6838vw,_3.125rem)]">
         <div className="flex items-center gap-2">
@@ -459,12 +587,18 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
               </div>
             </div>
           </TabsContent>
-          <TabsContent value="tasks" className="w-full flex flex-col gap-10">
+          <TabsContent
+            value="tasks"
+            className="w-[90%] mx-auto max-h-[70vh] overflow-y-auto flex flex-col gap-10 custom-scrollbar"
+          >
             <header className="w-full flex items-center justify-between">
+              {/* Search Input for Tasks */}
               <Input
                 className="w-[clamp(18.75rem,_18.1346rem+3.0769vw,_21rem)] h-[clamp(2.125rem,_2.0395rem+0.4274vw,_2.4375rem)]"
                 type="search"
-                placeholder="Search ..."
+                placeholder="Search tasks..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
 
               <div className="flex gap-4 items-center">
@@ -491,23 +625,79 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     {roomData.pending_task_count || 0} Pending tasks
                   </h1>
                 </Button>
-                <Button className="bg-[#211451] h-[clamp(2.125rem,_2.0395rem+0.4274vw,_2.4375rem)]">
+                {/* Replaced existing Create Task Button */}
+                <Button
+                  className="bg-[#211451] h-[clamp(2.125rem,_2.0395rem+0.4274vw,_2.4375rem)]"
+                  onClick={() => setIsCreateTaskSheetOpen(true)} // Open the sheet
+                >
                   <Plus size={24} color="white" />
                   <span>Create Task</span>
                 </Button>
+                {/* CreateWorkroomTaskSheet Component */}
+                <CreateWorkroomTaskSheet
+                  isOpen={isCreateTaskSheetOpen}
+                  workroomId={params.roomId || undefined}
+                  onClose={() => setIsCreateTaskSheetOpen(false)}
+                  onTaskCreated={refreshRoomData} // Refresh tasks after creation
+                />
               </div>
             </header>
 
             <section className="flex flex-col gap-2">
-              <MyTask
-                tasks={roomData.tasks || []}
-                totalItems={10}
-                key={1}
-                setLoadingTasks={() => {}}
-                setErrorTasks={() => {}}
-                setTasks={() => {}}
-              />
+              {/* Display current tasks for the page */}
+              {currentTasks.length > 0 ? (
+                currentTasks.map((task) => (
+                  <MyTask
+                    key={task.id} // Assuming tasks have a unique 'id'
+                    tasks={[task]} // MyTask likely expects an array, pass single task in an array
+                    totalItems={1} // Adjust if MyTask needs actual total per item
+                    setLoadingTasks={() => {}}
+                    setErrorTasks={() => {}}
+                    setTasks={() => {}}
+                  />
+                ))
+              ) : (
+                <p className="text-center text-gray-500 py-4">
+                  No tasks found for the current search/filter.
+                </p>
+              )}
             </section>
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-4">
+                <nav className="inline-flex rounded-md shadow-sm -space-x-px">
+                  <Button
+                    onClick={() => paginate(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </Button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (pageNumber) => (
+                      <Button
+                        key={pageNumber}
+                        onClick={() => paginate(pageNumber)}
+                        className={`relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium ${
+                          pageNumber === currentPage
+                            ? "z-10 bg-indigo-50 border-indigo-500 text-indigo-600"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        {pageNumber}
+                      </Button>
+                    )
+                  )}
+                  <Button
+                    onClick={() => paginate(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </Button>
+                </nav>
+              </div>
+            )}
           </TabsContent>
           <TabsContent
             value="participants"
@@ -525,7 +715,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                       <Image
                         className="rounded-full object-cover"
                         fill
-                        src={selectedMember.avatar_url} // Use image_url here
+                        src={selectedMember.avatar_url}
                         alt={selectedMember.name}
                       />
                     </div>
@@ -538,7 +728,6 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   </div>
 
                   <div className="w-full flex flex-col gap-2" id="leaderboards">
-                    {/* leader */}
                     <div className="flex flex-col gap-2">
                       <span className="flex items-center gap-3">
                         <Image
@@ -553,7 +742,6 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                       </span>
                       <Progress className="w-full h-[clamp(0.8125rem,_00.7783rem+0.1709vh,_0.9375rem)] bg-[#D9D9D9]" />
                     </div>
-                    {/* workerholic */}
                     <div className="flex flex-col gap-2">
                       <span className="flex items-center gap-3">
                         <Image
@@ -568,7 +756,6 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                       </span>
                       <Progress className="w-full h-[clamp(0.8125rem,_00.7783rem+0.1709vh,_0.9375rem)] bg-[#D9D9D9]" />
                     </div>
-                    {/* team player */}
                     <div className="flex flex-col gap-2">
                       <span className="flex items-center gap-3">
                         <Image
@@ -583,7 +770,6 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                       </span>
                       <Progress className="w-full h-[clamp(0.8125rem,_00.7783rem+0.1709vh,_0.9375rem)] bg-[#D9D9D9]" />
                     </div>
-                    {/* slacker */}
                     <div className="flex flex-col gap-2">
                       <span className="flex items-center gap-3">
                         <Image
@@ -601,7 +787,6 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   </div>
                 </header>
                 <div className="w-full flex flex-col gap-2">
-                  {/* first section */}
                   <section className="w-full grid grid-cols-3 grid-rows-1 card-morph h-fit min-h-[58px] rounded-[16px] mb-10">
                     <div className="flex flex-col h-fit gap-[2px] border-r border-[#999999] px-2 py-1 items-center">
                       <span className="text-[clamp(0.5rem,_0.4316rem+0.3419vw,_0.75rem)] text-[#707070]">
@@ -645,7 +830,6 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     <h3 className="text-[#211451] text-[clamp(0.875rem,_0.8066rem+0.3419vw,_1.125rem)] font-inria mb-[clamp(0.625rem,_0.5566rem+0.3419vw,_0.875rem)]">
                       KPI Pulse Monitor
                     </h3>
-                    {/* {selectedMember.kpi} */}
                     <section className="flex items-center flex-wrap gap-4">
                       <div className="h-[200px] w-[200px] ring-1 rounded-md ring-[#956FD6] bg-[#956fd670]"></div>
                       <div className="h-[200px] w-[200px] ring-1 rounded-md ring-[#956FD6] bg-[#956fd670]"></div>
@@ -721,7 +905,6 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                         )}
                     </ul>
                   </div>
-                  {/* <p>AI Summary: {selectedMember.aiSummary}</p>  This is handled in the article block above */}
                   {selectedMember.kpi && (
                     <div>
                       <h3 className="font-semibold mt-2">Member KPI:</h3>
@@ -732,12 +915,11 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                 </div>
               </section>
             ) : (
-              // Otherwise, show the list of participants
               safeRoomDataMembers.map((member, i) => (
                 <div
                   key={i}
                   className="w-full border-b border-[#9999993d] h-[clamp(2.4375rem,_2.3349rem+0.5128vh,_2.8125rem)] flex items-center justify-between cursor-pointer"
-                  onClick={() => handleMemberClick(member)} // Pass the member
+                  onClick={() => handleMemberClick(member)}
                 >
                   <section className="flex items-center gap-5">
                     <div className="w-[clamp(1.5625rem,_1.477rem+0.4274vw,_1.875rem)] h-[clamp(1.5625rem,_1.477rem+0.4274vw,_1.875rem)] relative">
