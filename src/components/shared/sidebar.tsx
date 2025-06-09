@@ -87,7 +87,7 @@ const Sidebar = () => {
     }
     try {
       const response = await fetch(`${backendUri}/api/v1/auth/logout`, {
-        method: "GET",
+        method: "POST",
         headers: {
           Authorization: `Bearer ${storedToken}`,
         },
@@ -106,6 +106,7 @@ const Sidebar = () => {
 
       logoutContext(); // Clear context after successful backend logout
       router.push("/auth/Sign-in");
+      toast.success("Logged out successfully!");
     } catch (error) {
       toast.error("Network Error", {
         description: "Could not connect to the server or logout failed.",

@@ -6,13 +6,21 @@ import Google from "../../../../public/assets/google.svg";
 import huddleLogo from "../../../../public/assets/images/huddle-logo.png";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { signInWithPopup } from "firebase/auth";
+import { signInWithPopup, UserCredential } from "firebase/auth"; // Import UserCredential
 import { auth, googleProvider } from "../../../../config/firebase";
 import { toast } from "@/components/ui/use-toast";
-// import { title } from "process"; // This import is likely unused and can be removed
 import Link from "next/link";
 import { backendUri } from "@/lib/config";
-// import { storeToken } from '@/utils'; // Commented out as in original
+
+// Define an interface for the expected response from /api/v1/auth/me
+interface UserProfileData {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_user_onboarded: boolean; // The field we need
+  // Add other fields you expect from your /auth/me endpoint
+}
 
 const SignIn = () => {
   const router = useRouter();
@@ -21,17 +29,109 @@ const SignIn = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const SignInWithGoogle = async () => {
+  /**
+   * Handles fetching user data from /api/v1/auth/me and redirects based on onboarding status.
+   * @param token The access token to use for authentication.
+   */
+  const handleAuthSuccessAndRedirect = async (token: string) => {
     try {
-      await signInWithPopup(auth, googleProvider);
-      toast({ description: "Logged in with Google!" }); // Added toast for Google sign-in
-      router.push("/onBoarding");
-    } catch (err) {
-      console.error(err);
-      toast({
-        description: "Failed to sign in with Google. Please try again.",
-        variant: "destructive", // Add a destructive variant for errors
+      const meResponse = await fetch(`${backendUri}/api/v1/auth/me`, {
+        method: "GET", // Generally GET for fetching user data
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json", // Good practice even for GET
+        },
       });
+
+      if (!meResponse.ok) {
+        const errorData = await meResponse.json();
+        throw new Error(
+          errorData.message || "Failed to fetch user profile after login."
+        );
+      }
+
+      const userData: UserProfileData = await meResponse.json();
+      // Store the entire user data in local storage as well for easier access across components
+      localStorage.setItem("userData", JSON.stringify(userData));
+
+      if (userData.is_user_onboarded) {
+        router.push("/dashboard");
+      } else {
+        router.push("/onBoarding");
+      }
+      toast({
+        description: "Login Successful!",
+      });
+    } catch (meError: any) {
+      console.error(
+        "Error during post-login user data fetch or redirect:",
+        meError
+      );
+      setError(meError.message || "An error occurred during login process.");
+      toast({
+        description:
+          meError.message || "An error occurred after login. Please try again.",
+        variant: "destructive",
+      });
+      // Important: If fetching user data fails, clear the token and send back to sign-in
+      localStorage.removeItem("token");
+      router.push("/auth/Sign-in");
+    }
+  };
+
+  const SignInWithGoogle = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result: UserCredential = await signInWithPopup(
+        auth,
+        googleProvider
+      );
+      const idToken = await result.user.getIdToken(); // Get Firebase ID Token
+
+      // Step 1: Send Firebase ID token to your backend to get your backend's access_token
+      // Replace `/api/v1/auth/google-login` with your actual backend endpoint for Google auth.
+      const backendAuthResponse = await fetch(
+        `${backendUri}/api/v1/auth/google-login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id_token: idToken }), // Send the Firebase ID token to your backend
+        }
+      );
+
+      if (!backendAuthResponse.ok) {
+        const errorData = await backendAuthResponse.json();
+        throw new Error(
+          errorData.message || "Backend authentication with Google failed."
+        );
+      }
+
+      const backendData = await backendAuthResponse.json();
+      const backendAccessToken = backendData.access_token; // Your backend's access token
+
+      if (!backendAccessToken) {
+        throw new Error("Backend did not return an access token.");
+      }
+
+      localStorage.setItem("token", backendAccessToken);
+
+      // Step 2: Use the backend access token to fetch user profile and redirect
+      await handleAuthSuccessAndRedirect(backendAccessToken);
+    } catch (err: any) {
+      console.error("Google sign-in process failed:", err);
+      setError(
+        err.message || "Failed to sign in with Google. Please try again."
+      );
+      toast({
+        description:
+          err.message || "Failed to sign in with Google. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,25 +150,31 @@ const SignIn = () => {
           password: password,
         }),
       });
+
       if (!response.ok) {
-        // You might want to parse response.json() here to get more specific error messages from your backend
         const errorData = await response.json();
         throw new Error(
           errorData.message ||
-            "Failed to authenticate. Please check your Email or password again"
+            "Failed to authenticate. Please check your Email or password again."
         );
       }
+
       const data = await response.json();
       console.log(data, data.access_token);
-      localStorage.setItem("token", data.access_token);
-      router.push("/onBoarding");
-      toast({
-        description: "Login Successful",
-      });
+
+      const accessToken = data.access_token;
+      if (!accessToken) {
+        throw new Error("Login successful but no access token received.");
+      }
+      localStorage.setItem("token", accessToken);
+
+      // Call the new helper function to fetch user data and redirect
+      await handleAuthSuccessAndRedirect(accessToken);
     } catch (err: any) {
       setError(err.message);
       toast({
-        description: err.message || "An unexpected error occurred.",
+        description:
+          err.message || "An unexpected error occurred during login.",
         variant: "destructive",
       });
     } finally {
@@ -77,16 +183,11 @@ const SignIn = () => {
   };
 
   return (
-    // Main container: full width, min height screen, flex column on small, flex row on large
-    // Centered content both vertically and horizontally
     <div className="w-full min-h-screen flex flex-col lg:flex-row justify-center items-center text-black overflow-hidden relative">
       <div className="flex flex-col lg:flex-row w-full h-full lg:h-screen">
-        {" "}
-        {/* Adjusted height for lg screens */}
-        {/* Left Section (Form): full width on small, 2/3 on large, centered content */}
-        <div className="w-full lg:w-2/3 bg-white flex flex-col justify-center items-center py-8 px-4 sm:px-6 md:px-8 lg:py-0 lg:px-0">
+        <div className="w-full gap-10 lg:w-2/3 bg-white flex flex-col justify-center items-center py-8 px-4 sm:px-6 md:px-8 lg:py-0 lg:px-0">
+          <Image src={"/assets/logo.svg"} alt="logo" width={60} height={30} />
           <div className="flex flex-col items-center justify-center w-full">
-            {/* Form Card: flexible width, max-width to prevent stretching, responsive padding */}
             <div className="card-morph p-6 sm:p-10 w-full max-w-md md:max-w-lg lg:max-w-[539px] bg-[#FDFCFC] rounded-[12px] border border-transparent">
               <div className="flex flex-col space-y-5">
                 <h1 className="text-[28px] sm:text-[36px] font-inter font-semibold text-center leading-[36px] sm:leading-[43.57px]">
@@ -97,19 +198,18 @@ const SignIn = () => {
                     <div>
                       <label htmlFor="email">Email Address</label>
                       <Input
-                        id="email" // Added id for accessibility
+                        id="email"
                         disabled={loading}
-                        type="email" // Changed to type="email" for better validation
+                        type="email"
                         value={emailAddress}
                         placeholder="@gmail.com"
                         onChange={(e) => setEmailAddress(e.target.value)}
                         required
-                        className="shadow-lg rounded-[8px]" // Changed to 8px for consistency with other inputs
+                        className="shadow-lg rounded-[8px]"
                       />
                     </div>
                     <div>
-                      <label htmlFor="password">Password</label>{" "}
-                      {/* Added id for accessibility */}
+                      <label htmlFor="password">Password</label>
                       <Input
                         id="password"
                         disabled={loading}
@@ -136,8 +236,7 @@ const SignIn = () => {
                       type="submit"
                       size={"sm"}
                       disabled={loading}
-                      // Reduced margin on mobile, kept large on desktop
-                      className="bg-[#5C5CE9] mt-8 mb-4 rounded-[8px] w-full py-2" // Full width button
+                      className="bg-[#5C5CE9] mt-8 mb-4 rounded-[8px] w-full py-2"
                     >
                       {loading ? <h1>Logging In....</h1> : <h1>Sign In</h1>}
                     </Button>
@@ -146,25 +245,13 @@ const SignIn = () => {
               </div>
             </div>
           </div>
-          {/* Google Sign-in Button: flexible width, centered */}
-          <div className="mt-8 relative w-full px-4 sm:px-0">
-            {" "}
-            {/* Added padding for small screens */}
-            <Button
-              onClick={SignInWithGoogle}
-              className="w-full max-w-xs sm:max-w-[400px] mx-auto flex justify-center text-black space-x-3 border rounded-md border-slate-200 bg-[#CACACA33] py-2"
-            >
-              <Image src={Google} width={20} height={20} alt="google icon" />
-              <h1>Sign In with Google</h1>
-            </Button>
-          </div>
+          <div className="mt-8 relative w-full px-4 sm:px-0"></div>
         </div>
-        {/* Right Section (Image): Hidden on small/medium screens, visible on large */}
         <div className="hidden lg:block lg:w-1/3">
           <Image
             src={huddleLogo}
-            alt="Huddle Logo - Collaborative Workspace" // Descriptive alt text
-            className="w-full h-full object-cover rounded-t-[12px] rounded-bl-[12px]" // Ensure image covers its container
+            alt="Huddle Logo - Collaborative Workspace"
+            className="w-full h-full object-cover rounded-t-[12px] rounded-bl-[12px]"
           />
         </div>
       </div>

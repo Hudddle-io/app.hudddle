@@ -95,7 +95,8 @@ const SignUp = () => {
         {" "}
         {/* Adjusted height for lg screens */}
         {/* Left Section (Form): full width on small, 3/4 on large, centered content */}
-        <div className="w-full lg:w-3/4 bg-white flex flex-col justify-center items-center py-8 px-4 sm:px-6 md:px-8 lg:py-0 lg:px-0">
+        <div className="w-full lg:w-3/4 bg-white flex flex-col justify-center gap-10 items-center py-8 px-4 sm:px-6 md:px-8 lg:py-0 lg:px-0">
+          <Image src={"/assets/logo.svg"} alt="logo" width={60} height={30} />
           <div className="flex flex-col items-center justify-center w-full">
             {/* Form Card: flexible width, max-width to prevent stretching, responsive padding */}
             <div className="card-morph p-6 sm:p-10 w-full max-w-md md:max-w-lg lg:max-w-[539px] bg-[#ffffff] rounded-[5px] border border-transparent">
@@ -166,15 +167,6 @@ const SignUp = () => {
           <div className="mt-8 relative w-full px-4 sm:px-0">
             {" "}
             {/* Adjusted margin-top and added padding */}
-            <Button
-              onClick={SignInWithGoogle}
-              className="w-full max-w-xs sm:max-w-[400px] mx-auto flex justify-center text-black space-x-3 border rounded-md border-slate-200 bg-[#CACACA33] py-2"
-            >
-              <Image src={Google} width={20} height={20} alt="Google icon" />{" "}
-              {/* Added alt text */}
-              <h1>Sign Up with Google</h1>{" "}
-              {/* Changed text for sign up context */}
-            </Button>
           </div>
         </div>
         {/* Right Section (Image): Hidden on small/medium screens, visible on large */}
