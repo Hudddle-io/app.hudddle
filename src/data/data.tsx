@@ -1,6 +1,12 @@
-import { LayoutDashboard, WorkflowIcon, Group, Star, Joystick, LogOut } from 'lucide-react';
+import {
+  LayoutDashboard,
+  WorkflowIcon,
+  Group,
+  Star,
+  Joystick,
+  LogOut,
+} from "lucide-react";
 import { StatsCardProps, TaskTodayProps, TopRanksProps } from "../lib/@types";
-
 
 export const sideLinks = [
   {
@@ -35,61 +41,28 @@ export const statsCardsData: StatsCardProps[] = [
     title: "Leader",
     description: "2hr per task",
     progressValue: 60,
-    progressColor: '#F18D4B'
+    progressColor: "#F18D4B",
   },
   {
     image: "/assets/teamplayer.svg",
     title: "Team Player",
     description: "10/50 Drop-ins this week",
     progressValue: 20,
-    progressColor: '#6FAEFC'
+    progressColor: "#6FAEFC",
   },
   {
     image: "/assets/workaholic.svg",
     title: "Workaholic",
     description: "2hr per task",
     progressValue: 80,
-    progressColor: '#ADD359'
+    progressColor: "#ADD359",
   },
   {
     image: "/assets/slacker.svg",
     title: "Slacker",
     description: "2hr per task",
     progressValue: 60,
-    progressColor: '#DE6EC6'
-  }
-];
-
-export const tasksData: TaskTodayProps[] = [
-  {
-    title: "Create UI Screens for multiple components",
-    time: "8:00am",
-    points: 10,
-  },
-  {
-    title: "Fix bugs in the authentication module",
-    time: "9:00am",
-    points: 8,
-  },
-  {
-    title: "Optimize database queries",
-    time: "10:30am",
-    points: 15,
-  },
-  {
-    title: "Write unit tests for new features",
-    time: "12:00pm",
-    points: 12,
-  },
-  {
-    title: "Update project documentation",
-    time: "1:00pm",
-    points: 5,
-  },
-  {
-    title: "Code review and merge pull requests",
-    time: "3:00pm",
-    points: 7,
+    progressColor: "#DE6EC6",
   },
 ];
 

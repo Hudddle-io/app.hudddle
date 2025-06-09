@@ -8,7 +8,7 @@ import { SlidersHorizontal } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import TodaysTask from "./todays-task";
 import { Metadata } from "next";
-import { TaskTodayProps } from "@/lib/@types";
+import { TaskTodayProps } from "@/lib/@types"; // Your combined TaskTodayProps interface
 import { backendUri } from "@/lib/config";
 import DashboardLoader from "@/components/loaders/dashboard";
 
@@ -43,6 +43,32 @@ interface UserData {
   friends: any[];
 }
 
+// Interface for a single friend object
+export interface FriendData {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  auth_provider: string;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  password_hash: string;
+  role: string;
+  xp: number;
+  level: number;
+  avatar_url: string;
+  is_verified: boolean;
+  is_user_onboarded: boolean;
+  productivity: number;
+  average_task_time: number;
+  user_type: string;
+  find_us: string;
+  daily_active_minutes: number;
+  teamwork_collaborations: number;
+  software_used: string[];
+}
+
 const levelDescriptions: Record<UserLevelData["category"], string> = {
   Leader:
     "Create more tasks and delegate effectively to boost your leadership score.",
@@ -63,6 +89,7 @@ const PageDashboard: React.FC = () => {
   const [todaysTasks, setTodaysTasks] = useState<TaskTodayProps[]>([]);
   const [userStreak, setUserStreak] = useState<UserStreakData | null>(null);
   const [userLevels, setUserLevels] = useState<UserLevelData[]>([]);
+  const [friends, setFriends] = useState<FriendData[]>([]); // New state for friends
   const [loading, setLoading] = useState(true);
 
   const filteredTasks = todaysTasks.filter((task) =>
@@ -90,102 +117,161 @@ const PageDashboard: React.FC = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${backendUri}/api/v1/dashboard`, {
+        // --- Fetch User Data, Streak, and Levels from dashboard endpoint ---
+        const dashboardResponse = await fetch(
+          `${backendUri}/api/v1/dashboard`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${storedToken}`,
+            },
+          }
+        );
+
+        if (!dashboardResponse.ok) {
+          console.error(
+            "Failed to fetch dashboard data:",
+            dashboardResponse.status
+          );
+          // Don't stop loading if dashboard fails, but handle the error
+        } else {
+          const data = await dashboardResponse.json();
+          localStorage.setItem("user", JSON.stringify(data));
+
+          const user: UserData = {
+            id: data.id || 0,
+            username: data.username || null,
+            first_name: data.first_name || "Guest",
+            last_name: data.last_name || "",
+            email: data.email || "",
+            productivity_percentage: data.productivity_percentage || 0,
+            average_task_time_hours: data.average_task_time_hours || 0,
+            xp: data.xp || 0,
+            daily_active_minutes: data.daily_active_minutes || 0,
+            teamwork_collaborations: data.teamwork_collaborations || 0,
+            avatar_url: data.avatar_url || null,
+            friends: data.friends || [],
+          };
+          setCurrentUser(user);
+
+          const streak = {
+            current_streak: data.streaks || 0,
+            highest_streak: data.highest_streak || 0,
+            last_active_date: data.last_active_date || null,
+          };
+          setUserStreak(streak);
+
+          const levels = (data.levels || []).map(
+            (level: Partial<UserLevelData>) => ({
+              category: level.category || "Slacker",
+              tier: level.tier || "Beginner",
+              points: level.points || 0,
+            })
+          );
+          setUserLevels(levels);
+        }
+
+        // --- Fetch Tasks from a separate endpoint ---
+        const tasksResponse = await fetch(`${backendUri}/api/v1/tasks`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${storedToken}`,
           },
         });
 
-        if (!response.ok) {
-          console.error("Failed to fetch dashboard data:", response.status);
-          setLoading(false); // Stop loading on error
-          return;
+        if (!tasksResponse.ok) {
+          console.error("Failed to fetch tasks:", tasksResponse.status);
+          // If tasks fetch fails, todaysTasks will remain an empty array, which is handled
+        } else {
+          const tasksData = await tasksResponse.json();
+          const allTasks = Array.isArray(tasksData) ? tasksData : [];
+
+          const today = new Date();
+          const todayYear = today.getFullYear();
+          const todayMonth = today.getMonth();
+          const todayDay = today.getDate();
+
+          const todaysFilteredAndSortedTasks: TaskTodayProps[] = allTasks
+            .filter((task: any) => {
+              if (!task.due_by) return false;
+              const taskDueDate = new Date(task.due_by);
+              return (
+                taskDueDate.getFullYear() === todayYear &&
+                taskDueDate.getMonth() === todayMonth &&
+                taskDueDate.getDate() === todayDay
+              );
+            })
+            .sort((a: any, b: any) => {
+              const dateA = new Date(a.due_by);
+              const dateB = new Date(b.due_by);
+              return dateA.getTime() - dateB.getTime();
+            })
+            .map((task: any) => ({
+              // IMPORTANT: Populate ALL properties required by TaskTodayProps (including those from 'Task' interface)
+              // These are based on common properties and the errors you've reported.
+              // YOU MUST VERIFY these against your actual 'Task' interface definition in @/lib/@types.ts
+              id: task.id || "",
+              created_at: task.created_at || "",
+              updated_at: task.updated_at || "",
+              user_id: task.user_id || "",
+              workroom_id: task.workroom_id || null,
+              due_by: task.due_by, // Explicitly used by TodaysTasks component
+              description: task.description || "",
+              status: task.status || "pending",
+              priority: task.priority || "medium",
+              comments: task.comments || [],
+              assigned_to: task.assigned_to || [],
+              category: task.category || "General",
+              duration: task.duration || null,
+              is_recurring: task.is_recurring || false,
+              task_tools: task.task_tools || [],
+              deadline: task.deadline || null,
+              attachments: task.attachments || [],
+              sub_tasks: task.sub_tasks || [],
+              comments_count: task.comments_count || 0,
+
+              // --- Properties explicitly listed as missing in the *latest* error ---
+              task_point: task.task_point || 0, // This is likely where 'points' comes from
+              completed_at: task.completed_at || null, // Assuming it can be null if not completed
+              created_by_id: task.created_by_id || "", // Assuming this is an ID string
+
+              // Properties specific to TaskTodayProps (which you manually add/format)
+              title: task.title, // Assumed to be present and correct
+              time: task.due_by
+                ? new Date(task.due_by).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "N/A",
+              points: task.task_point, // Still used for display, derived from task_point
+            }));
+          setTodaysTasks(todaysFilteredAndSortedTasks);
         }
 
-        const data = await response.json();
-        localStorage.setItem("user", JSON.stringify(data));
-
-        // Safely handle undefined user fields
-        const user: UserData = {
-          id: data.id || 0,
-          username: data.username || null,
-          first_name: data.first_name || "Guest",
-          last_name: data.last_name || "",
-          email: data.email || "",
-          productivity_percentage: data.productivity_percentage || 0,
-          average_task_time_hours: data.average_task_time_hours || 0,
-          xp: data.xp || 0,
-          daily_active_minutes: data.daily_active_minutes || 0,
-          teamwork_collaborations: data.teamwork_collaborations || 0,
-          avatar_url: data.avatar_url || null,
-          friends: data.friends || [],
-        };
-        setCurrentUser(user);
-
-        // --- Crucial Changes for Tasks ---
-        let allTasks = [];
-        if (data.tasks && Array.isArray(data.tasks)) {
-          allTasks = data.tasks;
-        } else if (
-          data.workroom_data?.tasks &&
-          Array.isArray(data.workroom_data.tasks)
-        ) {
-          allTasks = data.workroom_data.tasks;
-        }
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize today's date to start of day
-
-        const todaysFilteredAndSortedTasks = allTasks
-          .filter((task: any) => {
-            if (!task.due_by) return false; // Exclude tasks without a due_by date
-            const taskDueDate = new Date(task.due_by);
-            taskDueDate.setHours(0, 0, 0, 0); // Normalize task due date to start of day for comparison
-            return (
-              taskDueDate.toISOString().split("T")[0] ===
-              today.toISOString().split("T")[0]
-            );
-          })
-          .sort((a: any, b: any) => {
-            // Sort by due_by: tasks with earlier due_by come first
-            const dateA = new Date(a.due_by);
-            const dateB = new Date(b.due_by);
-            return dateA.getTime() - dateB.getTime();
-          })
-          .map((task: any) => ({
-            title: task.title,
-            time: task.due_by
-              ? new Date(task.due_by).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "N/A",
-            points: task.task_point,
-          }));
-        setTodaysTasks(todaysFilteredAndSortedTasks);
-
-        // Safely handle undefined streak fields
-        const streak = {
-          current_streak: data.streaks || 0,
-          highest_streak: data.highest_streak || 0,
-          last_active_date: data.last_active_date || null,
-        };
-        setUserStreak(streak);
-
-        // Safely handle undefined levels and populate missing fields
-        const levels = (data.levels || []).map(
-          (level: Partial<UserLevelData>) => ({
-            category: level.category || "Slacker", // Default to "Slacker" if category is missing
-            tier: level.tier || "Beginner", // Default tier if missing
-            points: level.points || 0, // Default points to 0 if missing
-          })
+        // --- Fetch friends data ---
+        const friendsResponse = await fetch(
+          `${backendUri}/api/v1/friends/friends`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${storedToken}`,
+            },
+          }
         );
-        setUserLevels(levels);
+
+        if (!friendsResponse.ok) {
+          console.error(
+            "Failed to fetch friends data:",
+            friendsResponse.status
+          );
+        } else {
+          const friendsData: FriendData[] = await friendsResponse.json();
+          setFriends(friendsData);
+        }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
-        setLoading(false);
+        setLoading(false); // Ensure loading is stopped regardless of success or failure
       }
     };
 
@@ -210,8 +296,9 @@ const PageDashboard: React.FC = () => {
   };
 
   return (
-    <section className="pt-8 pb-10 px-12">
+    <section className="pt-8 pb-10 px-12 overflow-y-scroll">
       <Header
+        friends={friends}
         name={currentUser?.first_name || "Guest"}
         isInWorkroom={false}
         teamName="Design Team"
@@ -278,8 +365,9 @@ const PageDashboard: React.FC = () => {
         </div>
         <Card className="mt-5 p-4 border-none max-h-60 overflow-y-auto neo-effect">
           {currentTasks.length > 0 ? (
-            currentTasks.map((task, index) => (
-              <TodaysTask key={index} task={task} />
+            currentTasks.map((task) => (
+              // Ensure task.id is stable and unique for the key
+              <TodaysTask key={task.id || task.title} task={task} />
             ))
           ) : (
             <p className="text-center text-gray-500">No tasks for today!</p>

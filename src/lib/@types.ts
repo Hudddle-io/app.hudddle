@@ -1,3 +1,4 @@
+import { Task } from "@/app/(tasks)/your-tasks/my-task";
 import { LucideIcon } from "lucide-react";
 import { StaticImageData } from "next/image";
 
@@ -28,7 +29,7 @@ export interface TimeLogCardContentProps {
   border?: string;
 }
 
-export interface TaskTodayProps {
+export interface TaskTodayProps extends Task {
   title: string;
   time: string;
   points: number;
@@ -46,4 +47,4 @@ export interface TopRanksProps {
   name: string;
   tools: string;
   timeSpent: string;
-};
+}

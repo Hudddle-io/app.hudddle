@@ -108,7 +108,7 @@ const CreateRoom = ({
           type="submit"
           className="bg-[#956FD6] mt-2 w-[clamp(12.5rem,_8.547vw,_18.75rem)] h-[clamp(2.rem,_1.7094vh,_2.5rem)] text-[clamp(0.6rem,_0.5128vw,_0.875rem)] gap-2"
         >
-          Create workroom
+          {isCreating ? "Adding ..." : "Add Room Name"}
           {isCreating && <Loader2 className="animate-spin h-3 w-3" />}
         </Button>
       </form>
