@@ -1,4 +1,5 @@
 "use client";
+
 import { toast } from "sonner"; // Assuming sonner toast is used here
 import { cn } from "@/lib/utils";
 import { cva } from "class-variance-authority";
@@ -14,10 +15,12 @@ import pinterest from "../../../public/assets/pinterest.svg";
 import dribble from "../../../public/assets/dribble.svg";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { backendUri } from "@/lib/config";
+import { Skeleton } from "@/components/ui/skeleton"; // Import Skeleton component
 
 interface UserOnlineStatusProps extends HTMLAttributes<HTMLDivElement> {
   isOnline: boolean;
   statusText?: boolean | string;
+  isLoading?: boolean; // Add isLoading prop for skeleton
 }
 
 const onlinestatusstyles = cva("flex items-center gap-2");
@@ -26,7 +29,17 @@ export const UserOnlineStatus: FC<UserOnlineStatusProps> = ({
   isOnline,
   statusText,
   className,
+  isLoading,
 }) => {
+  if (isLoading) {
+    return (
+      <div className={cn(onlinestatusstyles({ className }))}>
+        <Skeleton className="w-2 h-2 rounded-full" />
+        <Skeleton className="w-16 h-3" />
+      </div>
+    );
+  }
+
   return (
     <div className={cn(onlinestatusstyles({ className }))}>
       {!isOnline ? (
@@ -51,6 +64,7 @@ const Sidebar = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null); // State for local preview
+  const [isUserOnline, setIsUserOnline] = useState(false); // State for user online status
 
   const router = useRouter();
   const pathname = usePathname();
@@ -59,8 +73,8 @@ const Sidebar = () => {
     error,
     currentUser,
     logout: logoutContext,
-    refreshUser, // Destructure refreshUser from useUserSession
-  } = useUserSession(); // Using useUserSession directly as per your provided context structure
+    refreshUser,
+  } = useUserSession();
 
   useEffect(() => {
     // Set preview image from currentUser's avatar_url
@@ -70,6 +84,37 @@ const Sidebar = () => {
       setPreviewImage(null);
     }
   }, [currentUser]); // Re-run when currentUser changes
+
+  // Polling for online status
+  useEffect(() => {
+    const checkOnlineStatus = async () => {
+      try {
+        const response = await fetch("https://fedarlight.com/", {
+          method: "GET",
+          mode: "no-cors", // Use no-cors for external health checks if no specific data is needed
+        });
+        // For 'no-cors' requests, response.ok will always be true
+        // and response.status will be 0.
+        // A common practice for health checks in 'no-cors' is to just ensure
+        // the fetch doesn't throw an error.
+        // If your backend endpoint for status check supports CORS and
+        // returns actual status codes, remove 'no-cors' and check response.status === 200.
+        setIsUserOnline(true);
+      } catch (error) {
+        console.error("Failed to check online status:", error);
+        setIsUserOnline(false);
+      }
+    };
+
+    // Run immediately on mount
+    checkOnlineStatus();
+
+    // Set up interval to run every 5 minutes (300,000 milliseconds)
+    const intervalId = setInterval(checkOnlineStatus, 300000);
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []); // Empty dependency array means this runs once on mount and cleans up on unmount
 
   const getInitials = (
     firstName: string | undefined,
@@ -224,7 +269,11 @@ const Sidebar = () => {
                   alt={`@${currentUser?.first_name}`}
                 />
                 <AvatarFallback>
-                  {getInitials(currentUser?.first_name, currentUser?.last_name)}
+                  {loading ? ( // Skeleton for AvatarFallback during loading
+                    <Skeleton className="w-full h-full rounded-full" />
+                  ) : (
+                    getInitials(currentUser?.first_name, currentUser?.last_name)
+                  )}
                 </AvatarFallback>
               </Avatar>
             </div>
@@ -251,9 +300,6 @@ const Sidebar = () => {
                       accept="image/*"
                       className="hidden"
                       placeholder="upload"
-                      // onChange is now handled by handleUploadButtonClick's fileInput.onchange
-                      // You can remove this onChange if you strictly use the button click flow
-                      // or keep it if you want the local preview to update immediately when a file is selected
                       onChange={handleImageLocalPreview}
                     />
                   </label>
@@ -262,13 +308,25 @@ const Sidebar = () => {
             )}
           </div>
           <header className="w-full -translate-y-[20%] flex flex-col -mt-9 items-center gap-[4px] px-8">
-            <UserOnlineStatus isOnline statusText />{" "}
-            {/* isOnline is hardcoded here */}
+            {/* Pass isLoading prop to UserOnlineStatus */}
+            <UserOnlineStatus
+              isOnline={isUserOnline}
+              statusText={true}
+              isLoading={loading}
+            />
             <h1 className="text-[#FFFFFF] text-[clamp(0.9375rem,_0.5128vw,_1.3125rem)] font-semibold text-center">
-              {currentUser?.first_name} {currentUser?.last_name}
+              {loading ? (
+                <Skeleton className="w-32 h-5 mx-auto" />
+              ) : (
+                `${currentUser?.first_name} ${currentUser?.last_name}`
+              )}
             </h1>
             <p className="font-normal text-[clamp(0.5rem,_0.3419vw,_0.75rem)] leading-[16px] text-white text-center truncate text-wrap">
-              {currentUser?.email}
+              {loading ? (
+                <Skeleton className="w-48 h-3 mx-auto" />
+              ) : (
+                currentUser?.email
+              )}
             </p>
           </header>
           {/* links */}

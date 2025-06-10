@@ -8,8 +8,10 @@ import { backendUri } from "@/lib/config";
 import { Loader2 } from "lucide-react";
 import axios from "axios";
 import React, { useEffect } from "react";
+import { useParams } from "next/navigation"; // Import useParams
 
 interface Props {
+  type: "create" | "edit";
   roomName: string;
   setRoomName: React.Dispatch<React.SetStateAction<string>>;
   stepsData: any;
@@ -18,6 +20,7 @@ interface Props {
 }
 
 const CreateRoom = ({
+  type,
   roomName,
   setRoomName,
   stepsData,
@@ -25,10 +28,37 @@ const CreateRoom = ({
   onWorkroomCreated,
 }: Props) => {
   const [isCreating, setIsCreating] = React.useState(false);
+  const params = useParams(); // Get URL parameters
+
+  // Determine workroomId based on the 'type' prop
+  const currentWorkroomId = React.useMemo(() => {
+    if (type === "edit") {
+      // For 'edit' type, get the ID from URL params
+      return params.roomId as string | undefined;
+    } else {
+      // For 'create' type, get the ID from localStorage
+      return localStorage.getItem("roomId");
+    }
+  }, [type, params.roomId]); // Re-calculate if type or URL roomId changes
+
+  // Log to check the workroomId when the component loads or type/params change
+  useEffect(() => {
+    console.log(
+      "CreateRoom component loaded. Determined Workroom ID:",
+      currentWorkroomId
+    );
+  }, [currentWorkroomId]); // Log whenever currentWorkroomId changes
+
+  useEffect(() => {
+    if (roomName) {
+      setStepsData((prev: any) => ({ ...prev, name: roomName }));
+    }
+  }, [roomName, setStepsData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsCreating(true);
+
     const token = localStorage.getItem("token");
     if (!token) {
       toast({
@@ -38,12 +68,13 @@ const CreateRoom = ({
       return;
     }
 
-    const workroomId = localStorage.getItem("roomId");
-    if (!workroomId) {
+    // Use the dynamically determined workroomId
+    if (!currentWorkroomId) {
       toast({
-        description: "Workroom ID not found. Please create a workroom first.",
+        description: `Workroom ID not found. Cannot ${type} workroom.`,
         variant: "destructive",
       });
+      setIsCreating(false); // Ensure loading state is reset
       return;
     }
 
@@ -53,7 +84,7 @@ const CreateRoom = ({
 
     try {
       const response = await axios.patch(
-        `${backendUri}/api/v1/workrooms/${workroomId}`,
+        `${backendUri}/api/v1/workrooms/${currentWorkroomId}`, // Use currentWorkroomId here
         workroomData,
         {
           headers: {
@@ -61,26 +92,23 @@ const CreateRoom = ({
           },
         }
       );
-      setIsCreating(false);
+
       if (response.status === 200) {
         toast({
           description: "Workroom updated successfully!",
         });
+        setRoomName(stepsData.name || "Untitled Room"); // Update local state for roomName
       }
-      setRoomName(stepsData.name || "Untitled Room");
     } catch (error) {
+      console.error("Error updating workroom:", error); // Log the actual error
       toast({
         description: "Failed to update workroom. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsCreating(false);
     }
   };
-
-  useEffect(() => {
-    if (roomName) {
-      setStepsData((prev: any) => ({ ...prev, name: roomName }));
-    }
-  }, [roomName, setStepsData]);
 
   return (
     <div className="w-full h-[clamp(22.25rem,_19.0598vh,_36.1875rem)] rounded-[16px] flex items-center justify-center">
@@ -108,7 +136,13 @@ const CreateRoom = ({
           type="submit"
           className="bg-[#956FD6] mt-2 w-[clamp(12.5rem,_8.547vw,_18.75rem)] h-[clamp(2.rem,_1.7094vh,_2.5rem)] text-[clamp(0.6rem,_0.5128vw,_0.875rem)] gap-2"
         >
-          {isCreating ? "Adding ..." : "Add Room Name"}
+          {isCreating
+            ? type === "create"
+              ? "Adding ..."
+              : "Editing"
+            : type === "create"
+            ? "Add Room Name"
+            : "Edit Room Name"}
           {isCreating && <Loader2 className="animate-spin h-3 w-3" />}
         </Button>
       </form>

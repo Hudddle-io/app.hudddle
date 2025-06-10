@@ -10,12 +10,14 @@ import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 
 interface WorkroomHeader {
+  type: "create" | "edit";
   headerTitle: string;
   header_steps: string[];
   current_step: number;
 }
 
 const WorkroomHeader: FC<WorkroomHeader> = ({
+  type,
   header_steps,
   current_step,
   headerTitle,
@@ -24,16 +26,25 @@ const WorkroomHeader: FC<WorkroomHeader> = ({
     <Header>
       <HeaderTexts>
         <div className="flex items-center">
-          <Button variant={"ghost"}>
-            <Link href={"/workroom"}>
-              <MoveLeft className="stroke-[1px] text-[#4D4D4D]" />
-            </Link>
+          <Button
+            onClick={() => {
+              window.history.back();
+            }}
+            variant={"ghost"}
+          >
+            <MoveLeft className="stroke-[1px] text-[#4D4D4D]" />
           </Button>
           <h3 className="font-semibold text-[clamp(1.2rem,_1.2vw,_1.8rem)] text-[#4D4D4D]">
             {headerTitle} :{" "}
-            <span className="font-light text-[clamp(0.5rem,_0.6838vw,_1rem)] leading-[22px]">
-              Add teams, Tasks, Kpi&apos;s to properly manage your Results
-            </span>
+            {type === "create" ? (
+              <span className="font-light text-[clamp(0.5rem,_0.6838vw,_1rem)] leading-[22px]">
+                Add teams, Tasks, Kpi&apos;s to properly manage your Results
+              </span>
+            ) : (
+              <span className="font-light text-[clamp(0.5rem,_0.6838vw,_1rem)] leading-[22px]">
+                Edit teams, Tasks, Kpi&apos;s to properly manage your Results
+              </span>
+            )}
           </h3>
         </div>
 

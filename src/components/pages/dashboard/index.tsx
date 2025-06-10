@@ -28,7 +28,7 @@ interface UserLevelData {
   points: number;
 }
 
-interface UserData {
+export interface UserData {
   id: number;
   username: string | null;
   first_name: string | null;

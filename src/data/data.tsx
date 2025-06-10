@@ -24,16 +24,6 @@ export const sideLinks = [
     text: "Friends",
     icon: "/assets/friends.svg",
   },
-  {
-    url: "/your-tasks",
-    text: "Your tasks",
-    icon: "/assets/your-task.svg",
-  },
-  // {
-  //   url: "/",
-  //   text: "Clock out",
-  //   icon: "/assets/home.svg",
-  // },
 ];
 export const statsCardsData: StatsCardProps[] = [
   {

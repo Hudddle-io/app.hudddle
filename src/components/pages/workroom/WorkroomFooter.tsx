@@ -12,12 +12,14 @@ import React, { FC } from "react";
 import NavigationLink from "@/components/basics/Navigation-link";
 
 interface WorkroomFooterProps {
+  type: "create" | "edit";
   workroomId: string | null;
   current_step: number;
   set_current_step: any;
 }
 
 const WorkroomFooter: FC<WorkroomFooterProps> = ({
+  type,
   workroomId,
   current_step,
   set_current_step,
@@ -40,13 +42,21 @@ const WorkroomFooter: FC<WorkroomFooterProps> = ({
           {current_step == 1
             ? ""
             : current_step === 2
-            ? "Create Workroom"
+            ? type === "create"
+              ? "Create Workroom"
+              : "Edit Workroom"
             : current_step === 3
-            ? "Create Kpi's"
+            ? type === "create"
+              ? "Create Kpi's"
+              : "Edit Kpi's"
             : current_step === 4
-            ? "Invite Members"
+            ? type === "create"
+              ? "Invite Members"
+              : "Edit Members"
             : current_step === 5
-            ? "Add Task"
+            ? type === "create"
+              ? "Add Tasks"
+              : "Edit Tasks"
             : ""}
         </span>
       </Button>
@@ -81,11 +91,17 @@ const WorkroomFooter: FC<WorkroomFooterProps> = ({
           <span className="flex items-center gap-2 text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[22px]">
             <SkipForward />
             {current_step === 1
-              ? "Create Kpi's"
+              ? type === "create"
+                ? "Create Kpi's"
+                : "Edit Kpi's"
               : current_step === 2
-              ? "Invite Members"
+              ? type === "create"
+                ? "Invite Members"
+                : "Edit Members"
               : current_step === 3
-              ? "Add or Create Task"
+              ? type === "create"
+                ? "Add or Create Task"
+                : "Edit Tasks"
               : current_step === 4
               ? "Go Live"
               : ""}

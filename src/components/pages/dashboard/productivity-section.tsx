@@ -29,21 +29,27 @@ const TimeLogCardContent: React.FC<TimeLogCardContentProps> = ({
 }) => (
   <CardContent className={`rounded-none ${border}`}>
     <CardDescription>{description}</CardDescription>
-    <h1 className="text-custom-yellow font-bold gap-1 text-lg flex items-center">
+    <h1 className="text-[#E27522] font-bold gap-1 text-lg flex items-center">
       {description === "Your points" ? (
         <>
-          {value} {Icon && <Icon size={18} color="#EEAE05" fill="#EEAE05" />}
+          {value}{" "}
+          {Icon && (
+            <Image src={Icon} alt={Icon + " value"} width={18} height={18} />
+          )}
         </>
       ) : (
         <>
-          {Icon && <Icon size={18} color="#EEAE05" />} {value}
+          {Icon && (
+            <Image src={Icon} alt={Icon + " value"} width={18} height={18} />
+          )}{" "}
+          {value}
         </>
       )}
     </h1>
   </CardContent>
 );
 
-const DailyTimeLog: React.FC<{
+export const DailyTimeLog: React.FC<{
   currentUser: ProductivitySectionProps["currentUser"];
   updateDailyActiveMinutes: ProductivitySectionProps["updateDailyActiveMinutes"];
 }> = ({ currentUser, updateDailyActiveMinutes }) => {
@@ -164,18 +170,18 @@ const DailyTimeLog: React.FC<{
     <Card className="border-none rounded-md p-4 grid grid-cols-3 h-full neo-effect">
       <TimeLogCardContent
         description="Your points"
-        icon={Zap}
+        icon={"/assets/strike-full.svg"}
         value={`${currentUser?.xp || 0}`}
       />
       <TimeLogCardContent
         description="Total hours today"
-        icon={Clock4}
+        icon={"/assets/clock.svg"}
         value={displayedTime}
         border="border-x-[1px] border-slate-200"
       />
       <TimeLogCardContent
         description="Teamwork"
-        icon={Clock4}
+        icon={"/assets/clock.svg"}
         value={`${currentUser?.teamwork_collaborations || 0} drop-ins`}
       />
     </Card>

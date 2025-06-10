@@ -77,7 +77,7 @@ const CreateWorkroom = () => {
       case 1:
         return (
           <CreateRoom
-            type="create"
+            type="edit"
             setRoomName={setRoomName}
             roomName={roomName}
             stepsData={stepsData}
@@ -131,7 +131,7 @@ const CreateWorkroom = () => {
   return (
     <div className="p-[clamp(1.75rem,_1.0256vw,_2.5rem)] flex flex-col gap-[clamp(1.25rem,_1.0256vw,_2rem)]">
       <WorkroomHeader
-        type={"create"}
+        type={"edit"}
         current_step={currentStep}
         header_steps={steps}
         headerTitle={roomName}
@@ -140,7 +140,7 @@ const CreateWorkroom = () => {
       <div className="flex flex-col neo-effect px-4 py-[clamp(1.375rem,_1.3675vw,_2.375rem)] items-center w-full h-fit mt-[clamp(1.25rem,_1.0256vw,_2rem)] gap-8">
         {renderStepComponent()}
         <WorkroomFooter
-          type={"create"}
+          type="edit"
           workroomId={workroomId}
           current_step={currentStep}
           set_current_step={setCurrentStep}

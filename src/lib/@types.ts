@@ -24,7 +24,7 @@ export interface StatsCardProps {
 
 export interface TimeLogCardContentProps {
   description: string;
-  icon?: LucideIcon;
+  icon?: string;
   value: string;
   border?: string;
 }

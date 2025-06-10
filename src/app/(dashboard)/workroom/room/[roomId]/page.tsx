@@ -11,17 +11,16 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import WeeklyChart from "@/components/shared/demo-chart";
 import KpiChart from "@/components/shared/kpi-chart";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"; // Corrected import for Input
 import { Plus } from "lucide-react";
 import MyTask from "@/app/(tasks)/your-tasks/my-task"; // Assuming MyTask is a display component
 import Image from "next/image";
-import { Progress } from "@/components/ui/progress";
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useState, useMemo } from "react"; // Added useMemo
 import { useRouter } from "next/navigation";
 import NavigationLink from "@/components/basics/Navigation-link";
 import { MoveLeft } from "lucide-react";
-import { MetricChart } from "@/components/shared/mertic-chart";
+import { MetricChart } from "@/components/shared/mertic-chart"; // Corrected import statement
 import RoomLoader from "@/components/loaders/room";
 import { backendUri } from "@/lib/config";
 
@@ -38,54 +37,70 @@ const clock = "/assets/clock.svg";
 // Reusing TaskTodayProps for task data consistency
 import { TaskTodayProps } from "@/lib/@types";
 import { toast } from "@/components/ui/use-toast";
+// Import DailyTimeLog and UserData. Assuming UserData is from dashboard/index.ts
+import { DailyTimeLog } from "@/components/pages/dashboard/productivity-section";
+
+// Import ProgressBar and Tooltip components
+import ProgressBar from "@/components/shared/progress-bar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+// Define a comprehensive interface for members within a room, compatible with UserData
+interface RoomMemberData {
+  id?: number | string; // Assuming members might have an ID similar to UserData
+  name: string;
+  xp: number; // Experience points, used for level calculation
+  productivity: number; // Number of tasks completed
+  avatar_url: string;
+  teamwork_collaborations: number;
+  level?: number; // General level or overall tier
+  kpiAlignment?: string;
+  kpi?: { kpiName: string; kpiMetric: string }; // Existing single KPI object
+  roomKpis?: string[];
+  aiSummary?: string;
+  keyInsights?: string[];
+  Recommendations?: string[];
+  daily_active_minutes?: number; // Added to match UserData and display requirement
+  username?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string;
+  average_task_time_hours?: number;
+  // Added metrics array based on user's provided example
+  metrics?: Array<{
+    kpi_name: string;
+    metric_value: number;
+    weight: number;
+  }>;
+}
 
 // Define WorkroomDetails interface if not already in fetch-workroom or @types
-// If fetchWorkroomDetails already exports WorkroomDetails, this is redundant.
 interface WorkroomDetails {
   name?: string;
   performance_metrics?: Array<{
     kpi_name: string;
     weight: number;
   }>;
-  members?: Array<{
-    name: string;
-    xp: number;
-    productivity: number;
-    avatar_url: string;
-    teamwork_collaborations: number;
-    level?: number;
-    kpiAlignment?: string;
-    kpi?: { kpiName: string; kpiMetric: string };
-    roomKpis?: string[];
-    aiSummary?: string;
-  }>;
+  members?: RoomMemberData[]; // Use the new RoomMemberData interface
   completed_task_count?: number;
   pending_task_count?: number;
   tasks?: TaskTodayProps[];
 }
 
 interface RoomData {
-  // This is the interface for the current component's state
   name?: string;
   performance_metrics?: Array<{
     kpi_name: string;
     weight: number;
   }>;
-  members?: Array<{
-    name: string;
-    xp: number;
-    productivity: number;
-    avatar_url: string;
-    teamwork_collaborations: number;
-    level?: number;
-    kpiAlignment?: string;
-    kpi?: { kpiName: string; kpiMetric: string };
-    roomKpis?: string[];
-    aiSummary?: string;
-  }>;
+  members?: RoomMemberData[];
   completed_task_count?: number;
   pending_task_count?: number;
-  tasks?: TaskTodayProps[]; // Ensure tasks are typed as TaskTodayProps[]
+  tasks?: TaskTodayProps[];
 }
 
 interface AiSummary {
@@ -94,23 +109,80 @@ interface AiSummary {
   Recommendations: string[];
 }
 
+// Define UserLevelCategory and the calculation function
+type UserLevelCategory = "Leader" | "Workaholic" | "Team Player" | "Slacker";
+
+const calculateProgressPercentage = (
+  points: number,
+  category: UserLevelCategory
+): number => {
+  const thresholds = {
+    Leader: { Beginner: 0, Intermediate: 50, Advanced: 150, Expert: 300 },
+    Workaholic: { Beginner: 0, Intermediate: 50, Advanced: 150, Expert: 300 },
+    "Team Player": {
+      Beginner: 0,
+      Intermediate: 50,
+      Advanced: 150,
+      Expert: 300,
+    },
+    Slacker: { Beginner: 0, Intermediate: 50, Advanced: 150, Expert: 300 },
+  };
+
+  const currentCategoryThresholds = thresholds[category];
+  if (!currentCategoryThresholds) return 0;
+
+  let lowerBound = 0;
+  let upperBound = Infinity;
+
+  if (points < currentCategoryThresholds.Intermediate) {
+    upperBound = currentCategoryThresholds.Intermediate;
+  } else if (points < currentCategoryThresholds.Advanced) {
+    lowerBound = currentCategoryThresholds.Intermediate;
+    upperBound = currentCategoryThresholds.Advanced;
+  } else if (points < currentCategoryThresholds.Expert) {
+    lowerBound = currentCategoryThresholds.Advanced;
+    upperBound = currentCategoryThresholds.Expert;
+  } else {
+    return 100; // Beyond expert level
+  }
+
+  // Ensure points are within bounds for calculation
+  const clampedPoints = Math.max(lowerBound, Math.min(upperBound, points));
+
+  const progress =
+    ((clampedPoints - lowerBound) / (upperBound - lowerBound)) * 100;
+  return Math.max(0, Math.min(100, progress));
+};
+
+const levelDescriptions: Record<UserLevelCategory, string> = {
+  Leader:
+    "Create more tasks and delegate effectively to boost your leadership score.",
+  Workaholic:
+    "Complete tasks on time and consistently to increase your workaholic level.",
+  "Team Player":
+    "Collaborate on tasks and accept invites to enhance your team player status.",
+  Slacker:
+    "Improve your task completion rate and stay active daily to avoid being a slacker.",
+};
+
 export default function RoomPage({ params }: { params: { roomId: string } }) {
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [activeTab, setActiveTab] = useState("team-pulse");
-  const [selectedMember, setSelectedMember] = useState<any | null>(null);
+  const [selectedMember, setSelectedMember] = useState<RoomMemberData | null>(
+    null
+  );
   const [aiSummary, setAiSummary] = useState<AiSummary | null>(null);
   const router = useRouter();
 
-  // State for search and pagination for tasks tab
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const tasksPerPage = 3; // Changed from 5 to 3 tasks per page
+  const [tasksPerPage, setTasksPerPage] = useState(2); // Changed to 2 tasks per page
 
-  // State to hold all tasks, regardless of filtering or pagination
   const [allRoomTasks, setAllRoomTasks] = useState<TaskTodayProps[]>([]);
-
-  // State for Create Task Sheet
   const [isCreateTaskSheetOpen, setIsCreateTaskSheetOpen] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<
+    "ALL" | "PENDING" | "COMPLETED"
+  >("ALL"); // New state for task filtering
 
   const [extensionStatus, setExtensionStatus] = useState({
     isInstalled: false,
@@ -120,7 +192,6 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
 
   const EXTENSION_ID = "bfmaemghdgdgllmphhdeapoeceicnaji";
 
-  // Function to re-fetch room data and update tasks (used after task creation)
   const refreshRoomData = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -141,12 +212,18 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         throw new Error("Failed to fetch room data during refresh");
       }
 
-      const data: WorkroomDetails = await response.json(); // Cast to WorkroomDetails
+      const data: WorkroomDetails = await response.json();
       setRoomData(data);
-      setAllRoomTasks(data.tasks || []);
-      // Reset search and pagination to show newly created tasks
+      // Sort tasks by updated_at or created_at in descending order (most recent first)
+      const sortedTasks = (data.tasks || []).sort((a, b) => {
+        const dateA = new Date(a.updated_at || a.created_at).getTime();
+        const dateB = new Date(b.updated_at || b.created_at).getTime();
+        return dateB - dateA; // Descending order
+      });
+      setAllRoomTasks(sortedTasks);
       setSearchTerm("");
       setCurrentPage(1);
+      setFilterStatus("ALL"); // Reset filter when data refreshes
     } catch (error) {
       console.error("Error refreshing room data:", error);
       toast({
@@ -180,12 +257,27 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         const data = await response.json();
         console.log("Fetched room data:", data);
         setRoomData(data);
-        // Set all tasks from the fetched room data
-        setAllRoomTasks(data.tasks || []);
+        // Sort tasks by updated_at or created_at in descending order (most recent first)
+        interface SortableTask {
+          updated_at?: string;
+          created_at: string;
+        }
+        const sortedTasks = (data.tasks || []).sort(
+          (a: SortableTask, b: SortableTask) => {
+            const dateA: number = new Date(
+              a.updated_at || a.created_at
+            ).getTime();
+            const dateB: number = new Date(
+              b.updated_at || b.created_at
+            ).getTime();
+            return dateB - dateA; // Descending order
+          }
+        );
+        setAllRoomTasks(sortedTasks);
       } catch (error) {
         console.error("Error fetching room data:", error);
-        setRoomData(null); // Clear room data on error
-        setAllRoomTasks([]); // Clear tasks on error
+        setRoomData(null);
+        setAllRoomTasks([]);
       }
     }
 
@@ -249,33 +341,49 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
       }
     }
 
-    fetchInitialRoomData(); // Call this on mount
+    fetchInitialRoomData();
     checkExtensionStatus();
   }, [params.roomId]);
 
-  // Reset currentPage to 1 when searchTerm changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, filterStatus]); // Reset page when search or filter changes
 
-  // Filter tasks based on searchTerm
-  const filteredTasks = useMemo(() => {
-    if (!searchTerm) {
-      return allRoomTasks;
+  // Filter tasks based on searchTerm and filterStatus
+  const filteredAndSortedTasks = useMemo(() => {
+    let tempTasks = [...allRoomTasks]; // Start with the sorted full list
+
+    // Apply search term filter
+    if (searchTerm) {
+      tempTasks = tempTasks.filter((task) =>
+        task.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
-    return allRoomTasks.filter((task) =>
-      task.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [allRoomTasks, searchTerm]);
 
-  // Calculate pagination values
+    // Apply status filter (case-insensitive)
+    if (filterStatus === "PENDING") {
+      tempTasks = tempTasks.filter(
+        (task) => task.status?.toLowerCase() === "pending"
+      );
+    } else if (filterStatus === "COMPLETED") {
+      tempTasks = tempTasks.filter(
+        (task) => task.status?.toLowerCase() === "completed"
+      );
+    }
+
+    return tempTasks;
+  }, [allRoomTasks, searchTerm, filterStatus]);
+
   const indexOfLastTask = currentPage * tasksPerPage;
   const indexOfFirstTask = indexOfLastTask - tasksPerPage;
-  const currentTasks = filteredTasks.slice(indexOfFirstTask, indexOfLastTask);
-  const totalPages = Math.ceil(filteredTasks.length / tasksPerPage);
+  const currentTasks = filteredAndSortedTasks.slice(
+    indexOfFirstTask,
+    indexOfLastTask
+  );
+  const totalPages = Math.ceil(filteredAndSortedTasks.length / tasksPerPage);
 
   const paginate = (pageNumber: number) => {
-    if (pageNumber < 1 || pageNumber > totalPages) return; // Prevent invalid page numbers
+    if (pageNumber < 1 || pageNumber > totalPages) return;
     setCurrentPage(pageNumber);
   };
 
@@ -286,13 +394,27 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
     Recommendations: [],
   };
 
-  const handleMemberClick = (member: any) => {
+  const handleMemberClick = (member: RoomMemberData) => {
     setSelectedMember(member);
-    setActiveTab("participants"); // Switch to participants tab when a member is clicked
+    setActiveTab("participants");
   };
 
   const handleBack = () => {
     setSelectedMember(null);
+  };
+
+  // Toggle Pending Tasks Filter
+  const togglePendingTasks = () => {
+    setFilterStatus((prevStatus) =>
+      prevStatus === "PENDING" ? "ALL" : "PENDING"
+    );
+  };
+
+  // Toggle Completed Tasks Filter
+  const toggleCompletedTasks = () => {
+    setFilterStatus((prevStatus) =>
+      prevStatus === "COMPLETED" ? "ALL" : "COMPLETED"
+    );
   };
 
   const handleUseInRoomClick = () => {
@@ -304,7 +426,6 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
       window.chrome?.runtime?.sendMessage(EXTENSION_ID, { action: "useRoom" });
       console.log(`sent action to : ${EXTENSION_ID}`);
     } else {
-      // Replaced alert with a toast message for better UX
       toast({
         description:
           "Please use Chrome browser with the 'Huddle In Room' extension installed and pinned.",
@@ -320,10 +441,19 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   const isUseInRoomButtonDisabled =
     !extensionStatus.isInstalled || !extensionStatus.isPinned;
 
+  // Define the level categories for iteration
+  const levelCategories: UserLevelCategory[] = [
+    "Leader",
+    "Workaholic",
+    "Team Player",
+    "Slacker",
+  ];
+
   return (
     <main className="w-full flex flex-col gap-4 px-12 py-8">
-      {/* CSS for custom scrollbar */}
+      {/* CSS for custom scrollbar - Removed as per request, but keeping the style tag if needed for other global styles */}
       <style jsx>{`
+        /* Custom scrollbar styles are now potentially redundant for tasks tab but kept for general app use */
         .custom-scrollbar::-webkit-scrollbar {
           width: 12px; /* width of the entire scrollbar */
         }
@@ -354,7 +484,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
               icon_position: "left",
             }}
             variant={"ghost"}
-            href={"/workroom"}
+           onClick={()=>{window.history.back()}}
             className="text-[9px]"
           >
             back
@@ -521,11 +651,13 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                 <h3 className="text-[#211451] text-[clamp(0.875rem,_0.8066rem+0.3419vw,_1.125rem)] font-inria mb-[clamp(0.625rem,_0.5566rem+0.3419vw,_0.875rem)]">
                   KPI Pulse Monitor
                 </h3>
-                <section className="flex items-center flex-wrap gap-4">
+                {/* Metric cards layout: 3 per row */}
+                <section className="grid grid-cols-3 gap-4 w-full">
                   {(roomData?.performance_metrics ?? []).map((metric, i) => (
                     <div
                       key={i}
-                      className="h-[250px] w-[200px] ring-1 rounded-md ring-[#956FD6] bg-[#956fd670]"
+                      // Metric cards now use flex-basis to ensure 3 cards per row
+                      className="h-[250px] w-[200px] ring-1 rounded-md ring-[#956FD6] bg-[#956fd670] flex flex-col justify-center items-center p-2"
                     >
                       <MetricChart
                         kpiName={metric.kpi_name}
@@ -589,7 +721,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           </TabsContent>
           <TabsContent
             value="tasks"
-            className="w-[90%] mx-auto max-h-[70vh] overflow-y-auto flex flex-col gap-10 custom-scrollbar"
+            className="w-[90%] mx-auto flex flex-col gap-10" // Removed overflow-y-auto and custom-scrollbar
           >
             <header className="w-full flex items-center justify-between">
               {/* Search Input for Tasks */}
@@ -604,7 +736,12 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
               <div className="flex gap-4 items-center">
                 <Button
                   variant="outline"
-                  className="flex space-x-2 h-[clamp(2.125rem,_2.0395rem+0.4274vw,_2.4375rem)]"
+                  className={`flex space-x-2 h-[clamp(2.125rem,_2.0395rem+0.4274vw,_2.4375rem)] ${
+                    filterStatus === "COMPLETED"
+                      ? "bg-[#211451] text-white hover:bg-[#211451]/90"
+                      : ""
+                  }`}
+                  onClick={toggleCompletedTasks}
                 >
                   <Image src={building} alt="" width={20} height={20} />
                   <h1>
@@ -619,7 +756,12 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex space-x-2 h-[clamp(2.125rem,_2.0395rem+0.4274vw,_2.4375rem)]"
+                  className={`flex space-x-2 h-[clamp(2.125rem,_2.0395rem+0.4274vw,_2.4375rem)] ${
+                    filterStatus === "PENDING"
+                      ? "bg-[#956FD6] text-white hover:bg-[#956FD6]/90"
+                      : ""
+                  }`}
+                  onClick={togglePendingTasks}
                 >
                   <h1 className="text-[#956FD6]">
                     {roomData.pending_task_count || 0} Pending tasks
@@ -705,7 +847,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           >
             {selectedMember ? (
               <section className="w-full flex gap-6">
-                <header className="w-[clamp(15rem,_14.265rem+3.6752vw,_17.6875rem)] rounded-[25px] bg-[#956fd610] px-[clamp(1.5625rem,_1.4428rem+0.5983vw,_2rem)] py-[clamp(1.25rem,_1.0962rem+0.7692vw,_1.8125rem)]">
+                <header className="w-[clamp(15rem,_14.265rem+3.6752vw,_17.6875rem)] h-fit rounded-[25px] bg-[#956fd610] px-[clamp(1.5625rem,_1.4428rem+0.5983vw,_2rem)] py-[clamp(1.25rem,_1.0962rem+0.7692vw,_1.8125rem)]">
                   <Button variant="ghost" onClick={handleBack} className="mb-4">
                     <ArrowLeft className="mr-2" size={16} /> Back to
                     Participants
@@ -727,100 +869,79 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     </p>
                   </div>
 
-                  <div className="w-full flex flex-col gap-2" id="leaderboards">
-                    <div className="flex flex-col gap-2">
-                      <span className="flex items-center gap-3">
-                        <Image
-                          src={chess}
-                          alt="chess"
-                          height={23}
-                          width={12.09}
-                        />
-                        <h3 className="text-[clamp(0.625rem,_0.5566rem+0.3419vw,_0.875rem)] text-[#211451] font-bold">
-                          Leader
-                        </h3>
-                      </span>
-                      <Progress className="w-full h-[clamp(0.8125rem,_00.7783rem+0.1709vh,_0.9375rem)] bg-[#D9D9D9]" />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <span className="flex items-center gap-3">
-                        <Image
-                          src={chess}
-                          alt="chess"
-                          height={23}
-                          width={12.09}
-                        />
-                        <h3 className="text-[clamp(0.625rem,_0.5566rem+0.3419vw,_0.875rem)] text-[#211451] font-bold">
-                          Workaholic
-                        </h3>
-                      </span>
-                      <Progress className="w-full h-[clamp(0.8125rem,_00.7783rem+0.1709vh,_0.9375rem)] bg-[#D9D9D9]" />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <span className="flex items-center gap-3">
-                        <Image
-                          src={chess}
-                          alt="chess"
-                          height={23}
-                          width={12.09}
-                        />
-                        <h3 className="text-[clamp(0.625rem,_0.5566rem+0.3419vw,_0.875rem)] text-[#211451] font-bold">
-                          Team Player
-                        </h3>
-                      </span>
-                      <Progress className="w-full h-[clamp(0.8125rem,_00.7783rem+0.1709vh,_0.9375rem)] bg-[#D9D9D9]" />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <span className="flex items-center gap-3">
-                        <Image
-                          src={chess}
-                          alt="chess"
-                          height={23}
-                          width={12.09}
-                        />
-                        <h3 className="text-[clamp(0.625rem,_0.5566rem+0.3419vw,_0.875rem)] text-[#211451] font-bold">
-                          Slacker
-                        </h3>
-                      </span>
-                      <Progress className="w-full h-[clamp(0.8125rem,_00.7783rem+0.1709vh,_0.9375rem)] bg-[#D9D9D9]" />
-                    </div>
+                  {/* Level Leaderboards section */}
+                  <div
+                    className="w-full flex flex-col gap-2"
+                    id="level-leaderboards"
+                  >
+                    {levelCategories.map((category) => {
+                      // Use xp as points for progress calculation
+                      const progressValue = calculateProgressPercentage(
+                        selectedMember.xp,
+                        category
+                      );
+                      // Determine progress bar color based on category
+                      const progressColor =
+                        category === "Leader"
+                          ? "#F97316"
+                          : category === "Workaholic"
+                          ? "#84CC16"
+                          : category === "Team Player"
+                          ? "#2563EB"
+                          : "#EC4899"; // Default for Slacker or other
+                      return (
+                        <div key={category} className="flex flex-col gap-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="flex items-center gap-3 cursor-pointer">
+                                  <Image
+                                    src={chess} // Keep the existing chess image
+                                    alt={category}
+                                    height={23}
+                                    width={12.09}
+                                  />
+                                  <h3 className="text-[clamp(0.625rem,_0.5566rem+0.3419vw,_0.875rem)] text-[#211451] font-bold">
+                                    {category}
+                                  </h3>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{levelDescriptions[category]}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <ProgressBar
+                                  className="w-full h-[clamp(0.8125rem,_00.7783rem+0.1709vh,_0.9375rem)] bg-[#D9D9D9] cursor-pointer"
+                                  progressValue={progressValue} // Set the calculated progress
+                                  progressColor={progressColor} // Pass the dynamic color
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{Math.round(progressValue)}%</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      );
+                    })}
                   </div>
                 </header>
-                <div className="w-full flex flex-col gap-2">
-                  <section className="w-full grid grid-cols-3 grid-rows-1 card-morph h-fit min-h-[58px] rounded-[16px] mb-10">
-                    <div className="flex flex-col h-fit gap-[2px] border-r border-[#999999] px-2 py-1 items-center">
-                      <span className="text-[clamp(0.5rem,_0.4316rem+0.3419vw,_0.75rem)] text-[#707070]">
-                        points
-                      </span>
-                      <h3 className="text-[clamp(1.25rem,_1.1816rem+0.3419vw,_1.5rem)] flex gap-1 text-[#E27522] font-bold">
-                        {selectedMember.xp}
-                        <Image
-                          src={strike}
-                          width={14}
-                          height={16}
-                          alt="thunder"
-                        />
-                      </h3>
-                    </div>
-                    <div className="flex flex-col h-fit gap-[2px] border-r border-[#999999] px-2 py-1 items-center">
-                      <span className="text-[clamp(0.5rem,_0.4316rem+0.3419vw,_0.75rem)] text-[#707070]">
-                        Total hours today
-                      </span>
-                      <h3 className="text-[clamp(1.25rem,_1.1816rem+0.3419vw,_1.5rem)] text-[#E27522] font-bold flex items-center gap-[2px]">
-                        <Image src={clock} alt="clock" width={14} height={14} />
-                        2 hours : 30 mins
-                      </h3>
-                    </div>
-                    <div className="flex flex-col h-fit gap-[2px] border-r px-2 py-1 items-center">
-                      <span className="text-[clamp(0.5rem,_0.4316rem+0.3419vw,_0.75rem)] text-[#707070]">
-                        Teamwork
-                      </span>
-                      <h3 className="text-[clamp(1.25rem,_1.1816rem+0.3419vw,_1.5rem)] text-[#E27522] font-bold flex items-center gap-1">
-                        <Image src={clock} alt="clock" width={14} height={14} />
-                        {selectedMember.teamwork_collaborations} Drop-ins
-                      </h3>
-                    </div>
-                  </section>
+                <div className="w-full flex flex-col gap-14">
+                  {/* Pass selectedMember to DailyTimeLog for its daily_active_minutes */}
+                  {selectedMember.daily_active_minutes !== undefined ? (
+                    <DailyTimeLog
+                      currentUser={selectedMember as any} // Cast to any to satisfy UserData if exact match isn't there
+                      updateDailyActiveMinutes={() => {}} // No-op as RoomPage isn't updating it
+                    />
+                  ) : (
+                    // Fallback if daily_active_minutes is not available
+                    "N/A mins"
+                  )}
 
                   <section className="w-full h-[clamp(12.1875rem,_11.9482rem+1.1966vw,_13.0625rem)] flex items-center gap-4 mb-6">
                     <KpiChart />
@@ -830,10 +951,30 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                     <h3 className="text-[#211451] text-[clamp(0.875rem,_0.8066rem+0.3419vw,_1.125rem)] font-inria mb-[clamp(0.625rem,_0.5566rem+0.3419vw,_0.875rem)]">
                       KPI Pulse Monitor
                     </h3>
-                    <section className="flex items-center flex-wrap gap-4">
-                      <div className="h-[200px] w-[200px] ring-1 rounded-md ring-[#956FD6] bg-[#956fd670]"></div>
-                      <div className="h-[200px] w-[200px] ring-1 rounded-md ring-[#956FD6] bg-[#956fd670]"></div>
-                      <div className="h-[200px] w-[200px] ring-1 rounded-md ring-[#956FD6] bg-[#956fd670]"></div>
+                    {/* Metric cards layout for selected member: 3 per row */}
+                    <section className="grid grid-cols-3 gap-4 w-full">
+                      {/* Check if selectedMember and its metrics array exist and have content */}
+                      {selectedMember.metrics &&
+                      selectedMember.metrics.length > 0 ? (
+                        selectedMember.metrics.map((metric, i) => (
+                          <div
+                            key={i} // Use a unique key
+                            className="h-[250px] w-[200px] ring-1 rounded-md ring-[#956FD6] bg-[#956fd670] flex flex-col justify-center items-center p-2"
+                          >
+                            <MetricChart
+                              kpiName={metric.kpi_name}
+                              weight={metric.weight}
+                            />
+                            <span className="text-center w-full text-sm mt-2">
+                              {metric.kpi_name}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
+                          No KPI metrics available for this member.
+                        </div>
+                      )}
                     </section>
                   </div>
 
@@ -891,8 +1032,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                       </div>
                     </article>
                   </div>
-                  <p>Points: {selectedMember.points}</p>
-                  <p>Tasks Done: {selectedMember.tasksDone}</p>
+                  <p>Points: {selectedMember.xp}</p>
+                  <p>Tasks Done: {selectedMember.productivity}</p>
                   <p>KPI Alignment: {selectedMember.kpiAlignment}</p>
                   <div>
                     <h3 className="font-semibold mt-2">Room KPIs:</h3>

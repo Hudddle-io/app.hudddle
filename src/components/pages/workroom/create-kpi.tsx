@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { backendUri } from "@/lib/config";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation"; // Import useParams
 import {
   Form,
   FormControl,
@@ -112,7 +112,7 @@ const RatingScale: React.FC<RatingScaleProps> = ({
               </motion.div>
               <motion.div
                 className={cn(
-                  "w-[81px] h-[44px]  ring-1 ring-[#091e421f] rounded-full transition-colors duration-200",
+                  "w-[81px] h-[44px]  ring-1 ring-[#091e421f] rounded-full transition-colors duration-200",
                   bgColorClass,
                   textColorClass,
                   "cursor-pointer select-none",
@@ -147,7 +147,7 @@ const RatingScale: React.FC<RatingScaleProps> = ({
 };
 
 interface CreateKpiProps {
-  workroomId: string | null;
+  workroomId: string | null; // This prop can still be passed
 }
 
 const formSchema = z.object({
@@ -156,6 +156,7 @@ const formSchema = z.object({
   }),
   rating: z.number().min(1, { message: "Rating must be greater than 0" }),
 });
+
 const fetchWorkroomDetails = async (
   workroomId: string | null,
   backendUri: string | undefined
@@ -175,9 +176,9 @@ const fetchWorkroomDetails = async (
   try {
     const token = localStorage.getItem("token");
     if (!token) {
-      const errorMessage = "No authentication token found.  Please log in.";
+      const errorMessage = "No authentication token found. Please log in.";
       console.error(errorMessage);
-      throw new Error(errorMessage); //  Explicitly throw error
+      throw new Error(errorMessage); // Explicitly throw error
     }
 
     const response = await fetch(
@@ -189,16 +190,15 @@ const fetchWorkroomDetails = async (
 
     if (!response.ok) {
       const errorText = await response.text(); // Get the error message from the response
-      const errorMessage = `Failed to fetch workroom details. Status: ${response.status},  Body: ${errorText}`;
+      const errorMessage = `Failed to fetch workroom details. Status: ${response.status}, Body: ${errorText}`;
       console.error(errorMessage);
       throw new Error(errorMessage); // Include status and body in error
     }
 
     const data: WorkroomDetails = await response.json();
     return data; // Return the entire data object
-    console.log(data);
   } catch (error) {
-    //  IMPORTANT:  Don't just log.  RETHROW the error.
+    // IMPORTANT: Don't just log. RETHROW the error.
     console.error("Error fetching workroom details:", error);
     throw error; // Re-throw to allow caller to handle it.
   }
@@ -257,6 +257,27 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const params = useParams(); // Get URL parameters
+
+  // Determine the effective workroomId for this component
+  const effectiveWorkroomId = useMemo(() => {
+    // Prioritize ID from URL params if available (for routes like /workroom/edit/[roomId]/kpi)
+    if (params.roomId && typeof params.roomId === "string") {
+      return params.roomId;
+    }
+    // Fallback to the prop if params.roomId is not available
+    return workroomId;
+  }, [params.roomId, workroomId]); // Re-calculate if URL param or the prop changes
+
+  // Log to check the effective workroomId when the component loads or its dependencies change
+  useEffect(() => {
+    console.log(
+      "CreateKpi component loaded. Effective Workroom ID:",
+      effectiveWorkroomId
+    );
+    // You might also want to fetch existing KPIs here based on effectiveWorkroomId
+    // if this component is responsible for displaying and editing existing KPIs.
+  }, [effectiveWorkroomId]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -269,8 +290,9 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
   const { handleSubmit, control, reset, formState } = form;
 
   const handleAddKpi = async (data: z.infer<typeof formSchema>) => {
-    if (!workroomId) {
-      setError("No room id is found");
+    // Use the effective workroomId here
+    if (!effectiveWorkroomId) {
+      setError("No room id is found from URL or props.");
       return;
     }
     setLoading(true);
@@ -290,7 +312,7 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
       }
 
       const response = await fetch(
-        `${backendUri}/api/v1/workrooms/${workroomId}`,
+        `${backendUri}/api/v1/workrooms/${effectiveWorkroomId}`, // Use effectiveWorkroomId here
         {
           method: "PATCH",
           headers: {
@@ -314,7 +336,11 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
       }
       reset();
 
-      const updatedData = await fetchWorkroomDetails(workroomId, backendUri);
+      // Fetch updated data using the effective workroomId
+      const updatedData = await fetchWorkroomDetails(
+        effectiveWorkroomId,
+        backendUri
+      );
       if (updatedData && updatedData.performance_metrics) {
         setKpiList(updatedData.performance_metrics); // Update KPI list
       }
@@ -380,7 +406,7 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
                     <Button
                       type="submit"
                       className="h-[clamp(2.375rem,_1.8803vh,_3.75rem)] ring-purple-500 text-white hover:ring-purple-600 disabled:bg-gray-400
-                                                        transition-all duration-200 hover:scale-105 w-fit"
+                                           transition-all duration-200 hover:scale-105 w-fit"
                       disabled={!formState.isValid}
                     >
                       Add
@@ -434,7 +460,7 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
                 <motion.li
                   key={index}
                   className="text-gray-700 p-3 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors duration-200
-                                                border-l-4 border-purple-400"
+                                         border-l-4 border-purple-400"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}

@@ -1,7 +1,7 @@
 "use client";
 // className="bg-transparent shadow-none ring-0 border-0"
-//    className="aspect-auto h-[160px] w-[600px]"
-//  fill="#956fd670"
+//    className="aspect-auto h-[160px] w-[600px]"
+//  fill="#956fd670"
 import React, { useState, useMemo, useEffect } from "react";
 import { Metadata } from "next";
 import { MainHeading, SubHeading } from "@/components/basics/Heading";
@@ -215,6 +215,11 @@ const WorkroomPage = (props: Props) => {
     }
   };
 
+  // NEW: handleEdit function
+  const handleEditWorkroom = (workroomId: string) => {
+    router.push(`/workroom/edit/${workroomId}`);
+  };
+
   const filteredRooms = useMemo(() => {
     if (!searchQuery) return roomsData;
     return roomsData.filter((room) =>
@@ -260,14 +265,14 @@ const WorkroomPage = (props: Props) => {
                 <MainHeading variant="bigCardTitle">
                   {roomsData[0].name}
                 </MainHeading>
-                <Link href={`/workroom/room/${roomsData[0].id}`}>
-                  <Button
-                    variant="ghost"
-                    className="text-[#956FD6] text-xs p-0 h-0"
-                  >
-                    Edit workroom
-                  </Button>
-                </Link>
+                {/* Updated Link to use handleEditWorkroom */}
+                <Button
+                  variant="ghost"
+                  className="text-[#956FD6] text-xs p-0 h-0"
+                  onClick={() => handleEditWorkroom(roomsData[0].id)}
+                >
+                  Edit workroom
+                </Button>
               </div>
               {roomsData[0].isActive && (
                 <div className="w-4 h-4 bg-[#ADD359] animate-pulse rounded-full" />
@@ -354,14 +359,14 @@ const WorkroomPage = (props: Props) => {
                           {room.name}
                         </MainHeading>
                         {isCreatedByYou ? (
-                          <Link href={`/workroom/room/${room.id}`}>
-                            <Button
-                              variant="ghost"
-                              className="text-[#956FD6] text-xs p-0 h-0"
-                            >
-                              Edit workroom
-                            </Button>
-                          </Link>
+                          // Updated Link to use handleEditWorkroom
+                          <Button
+                            variant="ghost"
+                            className="text-[#956FD6] text-xs p-0 h-0"
+                            onClick={() => handleEditWorkroom(room.id)}
+                          >
+                            Edit workroom
+                          </Button>
                         ) : (
                           <span className="text-sm text-muted-foreground">
                             Created by {room.createdBy?.fullname || "someone"}

@@ -1,6 +1,6 @@
 "use client";
 
-import CreateWorkroom from "@/components/pages/workroom/createWorkroom/CreateWorkroom";
+import EditWorkroom from "@/components/pages/workroom/EditWorkroom/EditWorkroom";
 import React from "react";
 import { useParams } from "next/navigation";
 
@@ -12,7 +12,7 @@ const Page = (props: Props) => {
 
   return (
     <div>
-      <CreateWorkroom></CreateWorkroom>
+      <EditWorkroom />
     </div>
   );
 };
