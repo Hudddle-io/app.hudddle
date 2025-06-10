@@ -378,7 +378,35 @@ const WorkroomPage = (props: Props) => {
                       )}
                     </header>
                     <footer className="w-full flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center">
+                        {" "}
+                        {/* Removed gap-2 here */}
+                        {/* Clustered avatars */}
+                        {room.users && room.users.length > 0 && (
+                          <div className="flex items-center -space-x-2 mr-2">
+                            {" "}
+                            {/* Negative margin for overlap */}
+                            {room.users
+                              .slice(0, 4)
+                              .map((user: any, userIdx: number) => (
+                                <div
+                                  key={userIdx}
+                                  className="w-7 h-7 bg-black rounded-full relative border-2 border-white" // Added border for better overlap visibility
+                                  style={{ zIndex: 4 - userIdx }} // Ensures correct overlap order
+                                >
+                                  <Image
+                                    src={
+                                      user.avatar_url ||
+                                      "https://placehold.co/28x28/cccccc/000000?text=?"
+                                    } // Placeholder if avatar_url is missing
+                                    className="rounded-full object-cover"
+                                    alt={`${user.fullname || "User"}'s avatar`}
+                                    fill
+                                  />
+                                </div>
+                              ))}
+                          </div>
+                        )}
                         <p className="text-sm text-[#999999]">
                           {room.users?.length > 0
                             ? `${room.users.length} people in this workroom`
@@ -387,7 +415,7 @@ const WorkroomPage = (props: Props) => {
                         <NavigationLink
                           href={`/workroom/room/${room.id}`}
                           variant={"outline"}
-                          className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none"
+                          className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none ml-2" // Added ml-2 for spacing
                         >
                           Open Workroom
                         </NavigationLink>
