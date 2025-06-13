@@ -103,6 +103,7 @@ const OnBoarding: React.FC = () => {
           body: JSON.stringify({
             first_name: data.firstName,
             last_name: data.lastName,
+            is_user_onboarded: true,
             user_type: data.occupation,
             find_us: data.awareness,
             software_used: data.software

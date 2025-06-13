@@ -79,61 +79,61 @@ const SignIn = () => {
     }
   };
 
-  const SignInWithGoogle = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result: UserCredential = await signInWithPopup(
-        auth,
-        googleProvider
-      );
-      const idToken = await result.user.getIdToken(); // Get Firebase ID Token
+  // const SignInWithGoogle = async () => {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     const result: UserCredential = await signInWithPopup(
+  //       auth,
+  //       googleProvider
+  //     );
+  //     const idToken = await result.user.getIdToken(); // Get Firebase ID Token
 
-      // Step 1: Send Firebase ID token to your backend to get your backend's access_token
-      // Replace `/api/v1/auth/google-login` with your actual backend endpoint for Google auth.
-      const backendAuthResponse = await fetch(
-        `${backendUri}/api/v1/auth/google-login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id_token: idToken }), // Send the Firebase ID token to your backend
-        }
-      );
+  //     // Step 1: Send Firebase ID token to your backend to get your backend's access_token
+  //     // Replace `/api/v1/auth/google-login` with your actual backend endpoint for Google auth.
+  //     const backendAuthResponse = await fetch(
+  //       `${backendUri}/api/v1/auth/google-login`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({ id_token: idToken }), // Send the Firebase ID token to your backend
+  //       }
+  //     );
 
-      if (!backendAuthResponse.ok) {
-        const errorData = await backendAuthResponse.json();
-        throw new Error(
-          errorData.message || "Backend authentication with Google failed."
-        );
-      }
+  //     if (!backendAuthResponse.ok) {
+  //       const errorData = await backendAuthResponse.json();
+  //       throw new Error(
+  //         errorData.message || "Backend authentication with Google failed."
+  //       );
+  //     }
 
-      const backendData = await backendAuthResponse.json();
-      const backendAccessToken = backendData.access_token; // Your backend's access token
+  //     const backendData = await backendAuthResponse.json();
+  //     const backendAccessToken = backendData.access_token; // Your backend's access token
 
-      if (!backendAccessToken) {
-        throw new Error("Backend did not return an access token.");
-      }
+  //     if (!backendAccessToken) {
+  //       throw new Error("Backend did not return an access token.");
+  //     }
 
-      localStorage.setItem("token", backendAccessToken);
+  //     localStorage.setItem("token", backendAccessToken);
 
-      // Step 2: Use the backend access token to fetch user profile and redirect
-      await handleAuthSuccessAndRedirect(backendAccessToken);
-    } catch (err: any) {
-      console.error("Google sign-in process failed:", err);
-      setError(
-        err.message || "Failed to sign in with Google. Please try again."
-      );
-      toast({
-        description:
-          err.message || "Failed to sign in with Google. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     // Step 2: Use the backend access token to fetch user profile and redirect
+  //     await handleAuthSuccessAndRedirect(backendAccessToken);
+  //   } catch (err: any) {
+  //     console.error("Google sign-in process failed:", err);
+  //     setError(
+  //       err.message || "Failed to sign in with Google. Please try again."
+  //     );
+  //     toast({
+  //       description:
+  //         err.message || "Failed to sign in with Google. Please try again.",
+  //       variant: "destructive",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
