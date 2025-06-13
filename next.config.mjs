@@ -8,9 +8,15 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "placehold.co", // Added configuration for placehold.co
+        port: "",
+        pathname: "/**",
+      },
     ],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
 };
 
-export default nextConfig;
+export default nextConfig; // Correct for .mjs files

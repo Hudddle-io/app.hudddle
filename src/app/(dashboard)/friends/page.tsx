@@ -59,6 +59,7 @@ const Friends = ({ searchParams }: TabProps) => {
     <main>
       {/* Pass tab and page down to the client component */}
       <FriendsPageContent tab={tab} page={page} />
+      
     </main>
   );
 };

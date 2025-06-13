@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import FriendsHeader from "./header";
 import FriendList from "./friend-list";
 import { useUserSession } from "@/contexts/useUserSession"; // Assuming this context is correctly implemented
-import LoadingPage from "@/components/shared/loading-page"; // Assuming you have this component
 import { redirect } from "next/navigation"; // For redirection
 
 interface FriendsPageContentProps {

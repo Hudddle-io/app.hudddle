@@ -3,12 +3,14 @@
 
 import NavigationLink from "@/components/basics/Navigation-link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"; // Corrected path assumption
 import { useToast } from "@/components/ui/use-toast";
 import { backendUri } from "@/lib/config";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+
+import SuggestionBox from "@/components/basics/suggestion-box";
 
 interface FriendsHeaderProps {
   searchPage?: boolean;
@@ -19,9 +21,9 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({
   searchPage,
   onFriendRequestSent,
 }) => {
-  const [searchId, setSearchId] = useState<string>("");
+  const [searchId, setSearchId] = useState<string>(""); // This state controls the main input
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const router = useRouter(); // Not used in this component, can be removed if not needed
+  const router = useRouter(); // If not used, can be removed
   const { toast } = useToast();
 
   const sendFriendRequest = async () => {
@@ -38,7 +40,6 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({
       const storedUser = localStorage.getItem("user");
       if (!storedUser) throw new Error("User not logged in.");
 
-      // const { id: sender_id } = JSON.parse(storedUser); // sender_id is not used in the payload, can be removed
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Authorization token missing.");
 
@@ -77,20 +78,36 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({
     }
   };
 
+  // Callback function to handle suggestion selection
+  const handleSuggestionSelect = (email: string) => {
+    setSearchId(email); // Update the main input's state with the selected email
+    // Optionally, you might want to hide the suggestion box immediately after selection
+    // This is handled internally by SuggestionBox's blur/focus, but you could force it here.
+  };
+
   return (
     <div className="flex justify-between items-center">
       <div className="flex items-center gap-10 w-full">
         <h1 className="text-3xl text-custom-semiBlack font-semibold">
           Friends
         </h1>
+        {/* The main search input for friend requests */}
+        {/* This input is no longer controlling the search for suggestions.
+            It simply displays the 'searchId' state */}
         {!searchPage && (
-          <Input
-            placeholder="Search by email"
-            type="search"
-            className="w-[500px] py-6 placeholder:font-bold focus-visible:ring-custom-purple"
-            value={searchId} // Control the input value with state
-            onChange={(e) => setSearchId(e.target.value)}
-          />
+          <div className="flex flex-col items-center gap-2">
+            <Input
+              placeholder="Search by email"
+              type="search"
+              className="w-[500px] py-6 placeholder:font-bold focus-visible:ring-custom-purple"
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
+            />
+            <SuggestionBox
+              value={searchId} // Pass the current searchId to SuggestionBox
+              onSuggestionSelect={handleSuggestionSelect} // Pass the callback
+            />
+          </div>
         )}
       </div>
       {!searchPage ? (
@@ -105,12 +122,13 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({
           Add a Friend
         </NavigationLink>
       ) : (
-        // This button seems to be for a different flow if searchPage is true,
-        // it doesn't trigger sendFriendRequest.
         <Button className="text-custom-semiBlack font-bold text-lg hover:bg-transparent bg-transparent hover:text-custom-purple">
           Add a Friend
         </Button>
       )}
+      {/* SuggestionBox is now responsible for its own input and fetching.
+          It receives the current searchId value and a callback to update it. */}
+      {/* The `data` prop is still there but remains unused in SuggestionBox based on previous logic */}
     </div>
   );
 };

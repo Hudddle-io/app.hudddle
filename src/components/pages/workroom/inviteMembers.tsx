@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast"; // Import useToast hook
 import { backendUri } from "@/lib/config"; // Import backend URI from config
+import SuggestionBox from "@/components/basics/suggestion-box";
 
 // Assuming backendUri is imported from a config file
 // import { backendUri } from "@/lib/config"; // Uncomment if you have this file
@@ -28,6 +29,12 @@ const InviteMembers = ({
   const [isLoading, setIsLoading] = useState<boolean>(false); // State for loading indicator
 
   const { toast } = useToast(); // Initialize useToast hook
+
+  const handleSuggestionSelect = (email: string) => {
+    setEmail(email); // Update the main input's state with the selected email
+    // Optionally, you might want to hide the suggestion box immediately after selection
+    // This is handled internally by SuggestionBox's blur/focus, but you could force it here.
+  };
 
   const handleAddMember = () => {
     if (email.trim() !== "") {
@@ -122,22 +129,28 @@ const InviteMembers = ({
           Add your friends to <span className="font-bold">{roomName}</span>
         </label>
         <span className="flex gap-[clamp(1.5rem,_0.6838vw,_2rem)] justify-center items-center">
-          <Input
-            className="w-[clamp(18rem,_4.1026vw,_21rem)] h-[clamp(2.25rem,_2.0513vw,_3.75rem)] neo-effect ring-1 ring-[#091E4224] text-[#626F86] text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[20px] font-normal outline-none"
-            placeholder="Email address"
-            name="addTeamMembers"
-            id="addTeamMembers"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => {
-              // Allow adding member on Enter key press
-              if (e.key === "Enter") {
-                e.preventDefault(); // Prevent form submission if this is part of a form
-                handleAddMember();
-              }
-            }}
-          />
+          <div className="flex flex-col items-center gap-2">
+            <Input
+              className="w-[clamp(18rem,_4.1026vw,_21rem)] h-[clamp(2.25rem,_2.0513vw,_3.75rem)] neo-effect ring-1 ring-[#091E4224] text-[#626F86] text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[20px] font-normal outline-none"
+              placeholder="Email address"
+              name="addTeamMembers"
+              id="addTeamMembers"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => {
+                // Allow adding member on Enter key press
+                if (e.key === "Enter") {
+                  e.preventDefault(); // Prevent form submission if this is part of a form
+                  handleAddMember();
+                }
+              }}
+            />
+            <SuggestionBox
+              value={email} // Pass the current searchId to SuggestionBox
+              onSuggestionSelect={handleSuggestionSelect} // Pass the callback
+            />
+          </div>
           <Button id="add" variant="ghost" onClick={handleAddMember}>
             <Plus className="text-[#956FD666] w-[clamp(0.7rem,_0.5128vw,_0.875rem)] h-[clamp(0.7rem,_0.5128vh,_0.875rem)] text-[clamp(0.5rem,_0.5128vw,_0.875rem)]" />
           </Button>

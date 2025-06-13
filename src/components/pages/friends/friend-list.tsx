@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast"; // Added for toast notifications
 import { backendUri } from "@/lib/config";
 import FriendsLoader from "@/components/loaders/friends";
+import Chat from "@/components/basics/chat";
 
 interface Friend {
   id: string;
@@ -80,7 +81,6 @@ const FriendList: React.FC<FriendListProps> = ({
       }
 
       const responseData = await res.json();
-      console.log(responseData); // Debugging line to check the response structure
       // Assuming backend returns an object like { friends: [], total_count: N }
       // Or { pending_requests: [], total_count: N }
       setData(responseData || []);
@@ -105,7 +105,8 @@ const FriendList: React.FC<FriendListProps> = ({
   }, [fetchFriendsData, refreshKey]); // Re-fetch when fetchFriendsData callback changes or refreshKey changes
 
   // Handlers for accepting/declining pending requests
-  const handleAcceptRequest = async (senderEmail: string) => { // Changed parameter to senderEmail
+  const handleAcceptRequest = async (senderEmail: string) => {
+    // Changed parameter to senderEmail
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Authorization token missing.");
@@ -214,7 +215,11 @@ const FriendList: React.FC<FriendListProps> = ({
                 }}
                 key={profile.id}
                 // Pass the sender_email for acceptance. Using profile.sender_email if available, fallback to profile.email
-                onAccept={() => handleAcceptRequest(profile.sender_email || profile.email || '')}
+                onAccept={() =>
+                  handleAcceptRequest(
+                    profile.sender_email || profile.email || ""
+                  )
+                }
                 onDecline={handleDeclineRequest}
               />
             )
