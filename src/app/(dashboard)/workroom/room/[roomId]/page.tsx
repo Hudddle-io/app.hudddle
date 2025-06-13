@@ -49,6 +49,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+const DefaultAvatarPlaceholder =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08c-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
+
 // Define a comprehensive interface for members within a room, compatible with UserData
 interface RoomMemberData {
   id?: number | string; // Assuming members might have an ID similar to UserData
@@ -484,7 +487,9 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
               icon_position: "left",
             }}
             variant={"ghost"}
-           onClick={()=>{window.history.back()}}
+            onClick={() => {
+              window.history.back();
+            }}
             className="text-[9px]"
           >
             back
@@ -510,7 +515,11 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   <div
                     key={index}
                     className={`w-[clamp(1rem,_0.6838vw,_1.5rem)] h-[clamp(1rem,_0.6838vh,_1.5rem)] rounded-full bg-cover bg-center`}
-                    style={{ backgroundImage: `url(${member.avatar_url})` }}
+                    style={{
+                      backgroundImage: `url(${
+                        member.avatar_url || DefaultAvatarPlaceholder
+                      })`,
+                    }}
                   ></div>
                 ))}
           </span>
@@ -596,7 +605,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                           <Image
                             fill
                             className="rounded-full object-cover"
-                            src={m.avatar_url}
+                            src={m.avatar_url || DefaultAvatarPlaceholder}
                             alt={`${m.name}-image`}
                           />
                         </div>
@@ -857,7 +866,9 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                       <Image
                         className="rounded-full object-cover"
                         fill
-                        src={selectedMember.avatar_url}
+                        src={
+                          selectedMember.avatar_url || DefaultAvatarPlaceholder
+                        }
                         alt={selectedMember.name}
                       />
                     </div>
@@ -1065,7 +1076,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   <section className="flex items-center gap-5">
                     <div className="w-[clamp(1.5625rem,_1.477rem+0.4274vw,_1.875rem)] h-[clamp(1.5625rem,_1.477rem+0.4274vw,_1.875rem)] relative">
                       <Image
-                        src={member.avatar_url}
+                        src={member.avatar_url || DefaultAvatarPlaceholder}
                         alt={member.name}
                         fill
                         className=" rounded-full object-cover"

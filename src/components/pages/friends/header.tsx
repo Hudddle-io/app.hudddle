@@ -3,27 +3,28 @@
 
 import NavigationLink from "@/components/basics/Navigation-link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input"; // Corrected path assumption
+// import { Input } from "@/components/ui/input"; // No longer needed directly here
 import { useToast } from "@/components/ui/use-toast";
 import { backendUri } from "@/lib/config";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
-import SuggestionBox from "@/components/basics/suggestion-box";
+import SuggestionBox from "@/components/basics/suggestion-box"; // Make sure path is correct
 
 interface FriendsHeaderProps {
   searchPage?: boolean;
-  onFriendRequestSent?: () => void; // Made optional
+  onFriendRequestSent?: () => void;
 }
 
 const FriendsHeader: React.FC<FriendsHeaderProps> = ({
   searchPage,
   onFriendRequestSent,
 }) => {
-  const [searchId, setSearchId] = useState<string>(""); // This state controls the main input
+  // This state will now directly control the input inside SuggestionBox
+  const [searchId, setSearchId] = useState<string>("");
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const router = useRouter(); // If not used, can be removed
+  const router = useRouter();
   const { toast } = useToast();
 
   const sendFriendRequest = async () => {
@@ -68,7 +69,7 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({
         description: `Request sent to ${searchId}`,
       });
       setSearchId(""); // Clear the input field after successful send
-      onFriendRequestSent?.(); // Conditionally call onFriendRequestSent
+      onFriendRequestSent?.();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -78,11 +79,9 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({
     }
   };
 
-  // Callback function to handle suggestion selection
+  // This callback is now used to update searchId from SuggestionBox
   const handleSuggestionSelect = (email: string) => {
-    setSearchId(email); // Update the main input's state with the selected email
-    // Optionally, you might want to hide the suggestion box immediately after selection
-    // This is handled internally by SuggestionBox's blur/focus, but you could force it here.
+    setSearchId(email);
   };
 
   return (
@@ -91,23 +90,13 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({
         <h1 className="text-3xl text-custom-semiBlack font-semibold">
           Friends
         </h1>
-        {/* The main search input for friend requests */}
-        {/* This input is no longer controlling the search for suggestions.
-            It simply displays the 'searchId' state */}
+        {/* SuggestionBox is now responsible for its own input field */}
         {!searchPage && (
-          <div className="flex flex-col items-center gap-2">
-            <Input
-              placeholder="Search by email"
-              type="search"
-              className="w-[500px] py-6 placeholder:font-bold focus-visible:ring-custom-purple"
-              value={searchId}
-              onChange={(e) => setSearchId(e.target.value)}
-            />
-            <SuggestionBox
-              value={searchId} // Pass the current searchId to SuggestionBox
-              onSuggestionSelect={handleSuggestionSelect} // Pass the callback
-            />
-          </div>
+          <SuggestionBox
+            value={searchId} // Pass the current searchId to SuggestionBox
+            onValueChange={setSearchId} // New prop: callback to update searchId
+            onSuggestionSelect={handleSuggestionSelect} // Existing prop
+          />
         )}
       </div>
       {!searchPage ? (
@@ -126,9 +115,6 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({
           Add a Friend
         </Button>
       )}
-      {/* SuggestionBox is now responsible for its own input and fetching.
-          It receives the current searchId value and a callback to update it. */}
-      {/* The `data` prop is still there but remains unused in SuggestionBox based on previous logic */}
     </div>
   );
 };

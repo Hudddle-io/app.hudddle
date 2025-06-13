@@ -1,20 +1,20 @@
 import React, { useState } from "react";
 
-import { Input } from "@/components/ui/input";
+// Assuming these paths are correct
+import { Input } from "@/components/ui/input"; // This Input is not directly used for user typing anymore, but might be for styling or other purposes.
 import { Chip, ChipImage, ChipTitle } from "@/components/shared/Chip";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast"; // Import useToast hook
-import { backendUri } from "@/lib/config"; // Import backend URI from config
-import SuggestionBox from "@/components/basics/suggestion-box";
+import { useToast } from "@/components/ui/use-toast";
+import { backendUri } from "@/lib/config";
 
-// Assuming backendUri is imported from a config file
-// import { backendUri } from "@/lib/config"; // Uncomment if you have this file
+// Import the SuggestionBox component
+import SuggestionBox from "@/components/basics/suggestion-box"; // Make sure this path is correct
 
 interface Props {
   roomName: string;
-  workroomId?: string | null; // workroomId is now a direct prop
-  stepsData: any; // stepsData remains for other properties
+  workroomId?: string | null;
+  stepsData: any;
   setStepsData: React.Dispatch<any>;
 }
 
@@ -25,31 +25,48 @@ const InviteMembers = ({
   setStepsData,
 }: Props) => {
   const [members, setMembers] = useState<string[]>([]);
-  const [email, setEmail] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false); // State for loading indicator
+  const [email, setEmail] = useState<string>(""); // This state is now managed by InviteMembers
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const { toast } = useToast(); // Initialize useToast hook
+  const { toast } = useToast();
 
-  const handleSuggestionSelect = (email: string) => {
-    setEmail(email); // Update the main input's state with the selected email
-    // Optionally, you might want to hide the suggestion box immediately after selection
-    // This is handled internally by SuggestionBox's blur/focus, but you could force it here.
+  // This function is passed to SuggestionBox
+  // When a suggestion is clicked, SuggestionBox calls this with the selected email
+  const handleSuggestionSelect = (selectedEmail: string) => {
+    setEmail(selectedEmail); // Update the 'email' state in InviteMembers
+  };
+
+  // This function is for handling changes directly in the input field
+  // It's passed to SuggestionBox so that the parent's 'email' state updates
+  // as the user types, which in turn syncs with SuggestionBox's internal input.
+  const handleEmailInputChange = (newEmailValue: string) => {
+    setEmail(newEmailValue);
   };
 
   const handleAddMember = () => {
     if (email.trim() !== "") {
+      // Check if member already exists to prevent duplicates
+      if (members.includes(email.trim())) {
+        toast({
+          title: "Info",
+          description: `${email.trim()} is already in the list.`,
+          variant: "default",
+        });
+        return;
+      }
+
       setMembers((prev) => [...prev, email.trim()]);
-      setEmail("");
+      setEmail(""); // Clear the input after adding
     }
   };
 
   const handleInviteMembers = async () => {
-    console.log(members);
+    console.log("Attempting to invite members:", members); // Log the members array
     if (members.length === 0) {
       toast({
         title: "Info",
         description: "Please add at least one member to invite.",
-        variant: "default", // Default variant for info
+        variant: "default",
       });
       return;
     }
@@ -58,14 +75,13 @@ const InviteMembers = ({
       toast({
         title: "Error",
         description: "Workroom ID is missing. Cannot invite members.",
-        variant: "destructive", // Destructive variant for error
+        variant: "destructive",
       });
       return;
     }
 
-    setIsLoading(true); // Set loading state to true when API call starts
+    setIsLoading(true);
     try {
-      // Fetch token from standard browser localStorage
       const token = localStorage.getItem("token");
 
       if (!token) {
@@ -74,20 +90,20 @@ const InviteMembers = ({
           description: "Authentication token not found. Please log in.",
           variant: "destructive",
         });
-        setIsLoading(false); // Reset loading state
+        setIsLoading(false);
         return;
       }
 
-      // The API expects a list of emails directly, not an array of objects
       const response = await fetch(
-        `${backendUri}/api/v1/workrooms/${workroomId}/members`, // Use the direct workroomId prop
+        `${backendUri}/api/v1/workrooms/${workroomId}/members`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include the authorization token
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ members: members }), // Send the list of email strings under 'members' key
+          // THIS IS THE CRUCIAL CHANGE: Use 'emails' instead of 'members'
+          body: JSON.stringify({ emails: members }), // Corrected to match API spec
         }
       );
 
@@ -102,11 +118,10 @@ const InviteMembers = ({
       toast({
         title: "Success",
         description: "Members invited successfully!",
-        variant: "default", // Default variant for success
+        variant: "default",
       });
       console.log("Invite members response:", data);
-      // Optionally clear members list after successful invitation
-      setMembers([]);
+      setMembers([]); // Clear members list after successful invitation
     } catch (error: any) {
       console.error("Error inviting members:", error);
       toast({
@@ -115,7 +130,7 @@ const InviteMembers = ({
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false); // Always reset loading state after API call
+      setIsLoading(false);
     }
   };
 
@@ -130,25 +145,13 @@ const InviteMembers = ({
         </label>
         <span className="flex gap-[clamp(1.5rem,_0.6838vw,_2rem)] justify-center items-center">
           <div className="flex flex-col items-center gap-2">
-            <Input
-              className="w-[clamp(18rem,_4.1026vw,_21rem)] h-[clamp(2.25rem,_2.0513vw,_3.75rem)] neo-effect ring-1 ring-[#091E4224] text-[#626F86] text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[20px] font-normal outline-none"
-              placeholder="Email address"
-              name="addTeamMembers"
-              id="addTeamMembers"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => {
-                // Allow adding member on Enter key press
-                if (e.key === "Enter") {
-                  e.preventDefault(); // Prevent form submission if this is part of a form
-                  handleAddMember();
-                }
-              }}
-            />
+            {/* SuggestionBox now fully manages the input for searching and selecting friends */}
+            {/* The `className` on SuggestionBox will be applied to its root div (the one wrapping the input) */}
             <SuggestionBox
-              value={email} // Pass the current searchId to SuggestionBox
-              onSuggestionSelect={handleSuggestionSelect} // Pass the callback
+              className="w-[clamp(18rem,_4.1026vw,_21rem)]" // Pass width directly to the SuggestionBox component
+              value={email}
+              onValueChange={handleEmailInputChange}
+              onSuggestionSelect={handleSuggestionSelect}
             />
           </div>
           <Button id="add" variant="ghost" onClick={handleAddMember}>
@@ -162,7 +165,8 @@ const InviteMembers = ({
         ) : (
           members.map((member, index) => (
             <Chip key={index}>
-              <ChipImage src="/assets/images/member1.png" />
+              <ChipImage src="/assets/images/member1.png" />{" "}
+              {/* Placeholder image for now */}
               <ChipTitle>{member}</ChipTitle>
             </Chip>
           ))
@@ -170,11 +174,10 @@ const InviteMembers = ({
       </div>
       <Button
         className="w-full bg-[#956FD699] mt-[clamp(1.875rem,_0.8547vw,_2.5rem)]"
-        onClick={handleInviteMembers} // Attach the new handler
-        disabled={isLoading} // Disable button when loading
+        onClick={handleInviteMembers}
+        disabled={isLoading}
       >
-        {isLoading ? "Inviting..." : "Invite team members"}{" "}
-        {/* Change button text */}
+        {isLoading ? "Inviting..." : "Invite team members"}
       </Button>
     </main>
   );

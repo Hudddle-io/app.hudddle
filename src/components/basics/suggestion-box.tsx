@@ -3,28 +3,40 @@
 import fetchSuggestions from "@/lib/fetch-suggestions";
 import React from "react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
+
+const DefaultAvatarPlaceholder =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08c-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
 
 interface UserSuggestion {
-  id: string; // Or number, depending on your backend
-  full_name: string;
+  id: string;
+  first_name: string; // Changed from full_name
+  last_name: string; // Added last_name
   email: string;
-  avatar_url?: string; // Optional, if not all users have an avatar
+  avatar_url?: string;
 }
 
 interface SuggestionBoxProps {
-  value: string; // The initial value for the input, now controlled by parent
-  onSuggestionSelect: (email: string) => void; // New prop: callback for when a suggestion is selected
+  className?: string;
+  value: string;
+  onValueChange: (value: string) => void;
+  onSuggestionSelect: (email: string) => void;
 }
 
 const SuggestionBox: React.FC<SuggestionBoxProps> = ({
+  className,
   value,
+  onValueChange,
   onSuggestionSelect,
 }) => {
-  const [suggestions, setSuggestions] = React.useState<UserSuggestion[]>([]);
-  // inputValue here acts as the internal state for the SuggestionBox's input field,
-  // which drives the search. It's initialized from the 'value' prop.
+  const [allPossibleSuggestions, setAllPossibleSuggestions] = React.useState<
+    UserSuggestion[]
+  >([]);
+  const [filteredSuggestions, setFilteredSuggestions] = React.useState<
+    UserSuggestion[]
+  >([]);
   const [inputValue, setInputValue] = React.useState(value);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [showSuggestions, setShowSuggestions] = React.useState(false);
 
   // Sync internal inputValue with external 'value' prop
@@ -32,113 +44,137 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
     setInputValue(value);
   }, [value]);
 
-  // Effect for fetching suggestions based on inputValue
+  // Effect to fetch ALL possible suggestions once on component mount
   React.useEffect(() => {
-    const fetchAndSetSuggestions = async () => {
-      if (!inputValue || inputValue.length < 2) {
-        setSuggestions([]);
-        setShowSuggestions(false);
-        return;
-      }
-
+    const fetchAllSuggestions = async () => {
       setIsLoading(true);
-      setShowSuggestions(true);
-
       try {
-        const newSuggestions: UserSuggestion[] = await fetchSuggestions(
-          [inputValue],
+        const allSuggestions: UserSuggestion[] = await fetchSuggestions(
+          [],
           "api/v1/friends/friends"
         );
-        setSuggestions(newSuggestions);
+        setAllPossibleSuggestions(allSuggestions);
       } catch (err) {
-        console.error("Error fetching suggestions:", err);
-        setSuggestions([]);
+        console.error("Error fetching all possible suggestions:", err);
+        setAllPossibleSuggestions([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    const handler = setTimeout(() => {
-      fetchAndSetSuggestions();
-    }, 500);
+    fetchAllSuggestions();
+  }, []);
 
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [inputValue]);
+  // Effect to filter suggestions whenever inputValue or allPossibleSuggestions changes
+  React.useEffect(() => {
+    if (!allPossibleSuggestions.length && !isLoading) {
+      setFilteredSuggestions([]);
+      return;
+    }
+
+    if (!inputValue || inputValue.length < 2) {
+      setFilteredSuggestions([]);
+      return;
+    }
+
+    const lowerCaseInput = inputValue.toLowerCase();
+
+    const newFilteredSuggestions = allPossibleSuggestions.filter(
+      (suggestion) => {
+        // Create a combined full name for filtering
+        const fullName =
+          `${suggestion.first_name} ${suggestion.last_name}`.toLowerCase();
+        const email = suggestion.email.toLowerCase();
+
+        const matchesName = fullName.includes(lowerCaseInput);
+        const matchesEmail = email.includes(lowerCaseInput);
+
+        return matchesName || matchesEmail;
+      }
+    );
+
+    setFilteredSuggestions(newFilteredSuggestions);
+  }, [inputValue, allPossibleSuggestions, isLoading]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    onValueChange(newValue);
+  };
 
   const handleFocus = () => {
-    if (
-      inputValue.length >= 2 ||
-      (suggestions.length > 0 && inputValue.length > 0)
-    ) {
+    if (inputValue.length >= 2 || filteredSuggestions.length > 0 || isLoading) {
       setShowSuggestions(true);
     }
   };
 
   const handleBlur = () => {
-    // Delay hiding to allow click events on suggestions to register
     setTimeout(() => {
       setShowSuggestions(false);
     }, 150);
   };
 
   const handleSuggestionClick = (email: string) => {
-    onSuggestionSelect(email); // Call the parent's callback with the selected email
-    setSuggestions([]); // Clear suggestions
-    setShowSuggestions(false); // Hide the suggestion list immediately
+    onSuggestionSelect(email);
+    setFilteredSuggestions([]);
+    setInputValue(email);
+    setShowSuggestions(false);
   };
 
+  const shouldShowDropdown =
+    showSuggestions &&
+    (isLoading || filteredSuggestions.length > 0 || inputValue.length >= 2);
+
   return (
-    <div className="relative w-full z-50">
+    <div className={cn("relative max-w-[500px] w-full z-50", className)}>
       <input
         type="text"
         value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
+        onChange={handleInputChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        placeholder="Search suggestions..."
-        className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full hidden"
+        placeholder="Search by email or name" // Updated placeholder
+        className="px-2 h-[36px] input-morph border rounded-lg w-full placeholder:font-bold"
       />
 
-      {showSuggestions &&
-        (isLoading || suggestions.length > 0 || inputValue.length >= 2) && ( // Show if loading, or if there are suggestions, or if input is long enough to have searched
-          <ul className="absolute z-10 w-full border border-gray-300 rounded-lg mt-1 max-h-64 overflow-y-auto bg-white shadow-lg">
-            {isLoading ? (
-              <li className="p-4 text-center text-gray-500">
-                Loading suggestions...
+      {shouldShowDropdown && (
+        <ul className="absolute z-50 w-full border border-gray-300 rounded-lg mt-1 max-h-64 overflow-y-auto bg-white shadow-lg">
+          {isLoading ? (
+            <li className="p-4 text-center text-gray-500">
+              Loading all possible friends...
+            </li>
+          ) : filteredSuggestions.length > 0 ? (
+            filteredSuggestions.map((suggestion) => (
+              <li
+                key={suggestion.id}
+                className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
+                onClick={() => handleSuggestionClick(suggestion.email)}
+              >
+                <Image
+                  src={suggestion.avatar_url || DefaultAvatarPlaceholder}
+                  alt={`${suggestion.first_name} ${suggestion.last_name}`} // Updated alt text
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <p className="font-semibold text-gray-800">
+                    {`${suggestion.first_name} ${suggestion.last_name}`}
+                  </p>
+                  <p className="text-sm text-gray-500">{suggestion.email}</p>
+                </div>
               </li>
-            ) : suggestions.length > 0 ? (
-              suggestions.map((suggestion) => (
-                <li
-                  key={suggestion.id}
-                  className="flex items-center gap-3 p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
-                  onClick={() => handleSuggestionClick(suggestion.email)} // Attach click handler
-                >
-                  <Image
-                    src={suggestion.avatar_url || suggestion.full_name}
-                    alt={suggestion.full_name}
-                    className="w-10 h-10 rounded-full object-cover"
-                    width={40}
-                    height={40}
-                  />
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      {suggestion.full_name}
-                    </p>
-                    <p className="text-sm text-gray-500">{suggestion.email}</p>
-                  </div>
-                </li>
-              ))
-            ) : (
-              inputValue.length >= 2 && (
-                <li className="p-4 text-center text-gray-500">
-                  No suggestions found.
-                </li>
-              )
-            )}
-          </ul>
-        )}
+            ))
+          ) : (
+            inputValue.length >= 2 &&
+            !isLoading && (
+              <li className="p-4 text-center text-gray-500">
+                No matching friends found.
+              </li>
+            )
+          )}
+        </ul>
+      )}
     </div>
   );
 };

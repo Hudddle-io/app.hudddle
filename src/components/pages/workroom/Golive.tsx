@@ -36,6 +36,8 @@ interface MembersListModalProps {
   onClose: () => void;
   members: Member[];
 }
+const DefaultAvatarPlaceholder =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08c-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
 
 const MembersListModal: React.FC<MembersListModalProps> = ({
   isOpen,
@@ -94,10 +96,7 @@ const MembersListModal: React.FC<MembersListModalProps> = ({
               {members.map((member, index) => (
                 <Chip key={index}>
                   <ChipImage
-                    src={
-                      member.avatar_url ||
-                      "https://placehold.co/24x24/CCCCCC/000000?text=M"
-                    }
+                    src={member.avatar_url || DefaultAvatarPlaceholder}
                   />{" "}
                   {/* Fallback image */}
                   <ChipTitle>{member.name}</ChipTitle>
@@ -134,10 +133,7 @@ const Golive = ({ stepsData, workroomId, data, setStepsData }: Props) => {
                   {" "}
                   {/* Use index as key if member.name is not unique */}
                   <ChipImage
-                    src={
-                      member.avatar_url ||
-                      "https://placehold.co/24x24/CCCCCC/000000?text=M"
-                    }
+                    src={member.avatar_url || DefaultAvatarPlaceholder}
                   />{" "}
                   {/* Fallback image */}
                   <ChipTitle>{member.name}</ChipTitle>
