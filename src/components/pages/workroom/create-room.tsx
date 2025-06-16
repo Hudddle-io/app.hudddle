@@ -8,7 +8,8 @@ import { backendUri } from "@/lib/config";
 import { Loader2 } from "lucide-react";
 import axios from "axios";
 import React, { useEffect } from "react";
-import { useParams } from "next/navigation"; // Import useParams
+import { useParams } from "next/navigation";
+import { WorkroomDetails } from "@/lib/fetch-workroom"; // Import WorkroomDetails type
 
 interface Props {
   type: "create" | "edit";
@@ -17,6 +18,7 @@ interface Props {
   stepsData: any;
   setStepsData: React.Dispatch<any>;
   onWorkroomCreated?: (id: string) => void;
+  workroomData?: WorkroomDetails | null; // Added workroomData prop
 }
 
 const CreateRoom = ({
@@ -26,29 +28,42 @@ const CreateRoom = ({
   stepsData,
   setStepsData,
   onWorkroomCreated,
+  workroomData, // Destructure workroomData here
 }: Props) => {
   const [isCreating, setIsCreating] = React.useState(false);
-  const params = useParams(); // Get URL parameters
+  const params = useParams();
 
-  // Determine workroomId based on the 'type' prop
+  // Safely determine workroomId by checking if 'window' is defined
+  // This ensures localStorage is only accessed on the client-side
   const currentWorkroomId = React.useMemo(() => {
     if (type === "edit") {
-      // For 'edit' type, get the ID from URL params
       return params.roomId as string | undefined;
     } else {
-      // For 'create' type, get the ID from localStorage
-      return localStorage.getItem("roomId");
+      // Check if window is defined before accessing localStorage
+      if (typeof window !== "undefined") {
+        return localStorage.getItem("roomId");
+      }
+      return undefined; // Return undefined if localStorage is not available (server-side)
     }
-  }, [type, params.roomId]); // Re-calculate if type or URL roomId changes
+  }, [type, params.roomId]);
 
-  // Log to check the workroomId when the component loads or type/params change
   useEffect(() => {
     console.log(
       "CreateRoom component loaded. Determined Workroom ID:",
       currentWorkroomId
     );
-  }, [currentWorkroomId]); // Log whenever currentWorkroomId changes
+  }, [currentWorkroomId]);
 
+  // Effect to initialize roomName from workroomData
+  useEffect(() => {
+    if (workroomData && workroomData.name) {
+      setRoomName(workroomData.name);
+      // Ensure stepsData also reflects the fetched name
+      setStepsData((prev: any) => ({ ...prev, name: workroomData.name }));
+    }
+  }, [workroomData, setRoomName, setStepsData]); // Re-run when workroomData changes
+
+  // Original effect, now potentially overridden by the new useEffect if workroomData.name exists
   useEffect(() => {
     if (roomName) {
       setStepsData((prev: any) => ({ ...prev, name: roomName }));
@@ -59,33 +74,34 @@ const CreateRoom = ({
     e.preventDefault();
     setIsCreating(true);
 
-    const token = localStorage.getItem("token");
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
     if (!token) {
       toast({
         description: "Authorization token not found. Please log in.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Use the dynamically determined workroomId
-    if (!currentWorkroomId) {
-      toast({
-        description: `Workroom ID not found. Cannot ${type} workroom.`,
         variant: "destructive",
       });
       setIsCreating(false); // Ensure loading state is reset
       return;
     }
 
-    const workroomData = {
+    if (!currentWorkroomId) {
+      toast({
+        description: `Workroom ID not found. Cannot ${type} workroom.`,
+        variant: "destructive",
+      });
+      setIsCreating(false);
+      return;
+    }
+
+    const dataToUpdate = {
       name: stepsData.name || "Untitled Room",
     };
 
     try {
       const response = await axios.patch(
-        `${backendUri}/api/v1/workrooms/${currentWorkroomId}`, // Use currentWorkroomId here
-        workroomData,
+        `${backendUri}/api/v1/workrooms/${currentWorkroomId}`,
+        dataToUpdate,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -97,10 +113,10 @@ const CreateRoom = ({
         toast({
           description: "Workroom updated successfully!",
         });
-        setRoomName(stepsData.name || "Untitled Room"); // Update local state for roomName
+        setRoomName(stepsData.name);
       }
     } catch (error) {
-      console.error("Error updating workroom:", error); // Log the actual error
+      console.error("Error updating workroom:", error);
       toast({
         description: "Failed to update workroom. Please try again.",
         variant: "destructive",
@@ -126,7 +142,7 @@ const CreateRoom = ({
           type="text"
           placeholder="Workroom Test 1"
           className="w-[60%] h-[clamp(2.375rem,_1.8803vh,_3.75rem)]"
-          value={stepsData.name || ""}
+          value={stepsData.name || ""} // Display value from stepsData
           onChange={(e) =>
             setStepsData((prev: any) => ({ ...prev, name: e.target.value }))
           }

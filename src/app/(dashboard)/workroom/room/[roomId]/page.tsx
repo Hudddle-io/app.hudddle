@@ -48,12 +48,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Chat from "@/components/basics/chat";
 
 const DefaultAvatarPlaceholder =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08c-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
 
 // Define a comprehensive interface for members within a room, compatible with UserData
-interface RoomMemberData {
+export interface RoomMemberData {
   id?: number | string; // Assuming members might have an ID similar to UserData
   name: string;
   xp: number; // Experience points, used for level calculation
@@ -72,7 +73,7 @@ interface RoomMemberData {
   first_name?: string | null;
   last_name?: string | null;
   email?: string;
-  average_task_time_hours?: number;
+  average_task_time?: number;
   // Added metrics array based on user's provided example
   metrics?: Array<{
     kpi_name: string;
@@ -193,7 +194,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
     isLoading: true,
   });
 
-  const EXTENSION_ID = "bfmaemghdgdgllmphhdeapoeceicnaji";
+  const EXTENSION_ID = " bfmaemghdgdgllmphhdeapoeceicnaji";
 
   const refreshRoomData = async () => {
     try {
@@ -509,19 +510,17 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-1">
             {roomData.members &&
-              roomData.members
-                .slice(0, 3)
-                .map((member, index) => (
-                  <div
-                    key={index}
-                    className={`w-[clamp(1rem,_0.6838vw,_1.5rem)] h-[clamp(1rem,_0.6838vh,_1.5rem)] rounded-full bg-cover bg-center`}
-                    style={{
-                      backgroundImage: `url(${
-                        member.avatar_url || DefaultAvatarPlaceholder
-                      })`,
-                    }}
-                  ></div>
-                ))}
+              roomData.members.slice(0, 3).map((member, index) => (
+                <div
+                  key={index}
+                  className={`w-[clamp(1rem,_0.6838vw,_1.5rem)] h-[clamp(1rem,_0.6838vh,_1.5rem)] rounded-full bg-cover bg-center`}
+                  style={{
+                    backgroundImage: `url(${
+                      member.avatar_url || DefaultAvatarPlaceholder
+                    })`,
+                  }}
+                ></div>
+              ))}
           </span>
           <p className="text-[clamp(0.625rem,_0.1709vw,_0.75rem)] text-[#999999]">
             {roomData.members && roomData.members.length > 0
@@ -636,7 +635,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                       >
                         <Image
                           src={"/assets/ai.svg"}
-                          alt="strike"
+                          alt="ai"
                           width={9}
                           height={9}
                         />
@@ -946,8 +945,13 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   {/* Pass selectedMember to DailyTimeLog for its daily_active_minutes */}
                   {selectedMember.daily_active_minutes !== undefined ? (
                     <DailyTimeLog
-                      currentUser={selectedMember as any} // Cast to any to satisfy UserData if exact match isn't there
-                      updateDailyActiveMinutes={() => {}} // No-op as RoomPage isn't updating it
+                      currentUser={selectedMember as RoomMemberData}
+                      onUpdateUserData={async (
+                        _data: Partial<RoomMemberData>
+                      ) => {
+                        // No-op as RoomPage isn't updating it
+                        return;
+                      }}
                     />
                   ) : (
                     // Fallback if daily_active_minutes is not available
@@ -1099,6 +1103,8 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           </TabsContent>
         </Tabs>
       </section>
+      {/* Pass the members prop to the Chat component */}
+      <Chat members={roomData.members || []} />
     </main>
   );
 }

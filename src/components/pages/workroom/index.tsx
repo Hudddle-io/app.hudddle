@@ -3,7 +3,6 @@
 //    className="aspect-auto h-[160px] w-[600px]"
 //  fill="#956fd670"
 import React, { useState, useMemo, useEffect } from "react";
-import { Metadata } from "next";
 import { MainHeading, SubHeading } from "@/components/basics/Heading";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus } from "lucide-react";
@@ -11,9 +10,8 @@ import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import NavigationLink from "@/components/basics/Navigation-link";
-import { getToken } from "@/utils";
+import { getToken } from "@/utils"; // Assumes getToken safely handles localStorage
 import { backendUri } from "@/lib/config";
 import WorkroomsLoader, {
   RecentWorkroomsLoader,
@@ -26,9 +24,13 @@ const Trash = "/assets/trash.svg";
 
 type Props = {};
 
-export const metadata: Metadata = {
-  title: "Hudddle | Workrooms",
-};
+// Note: Metadata should typically be exported from a layout.tsx or page.tsx,
+// not directly within a component file like this for Next.js App Router.
+// export const metadata: Metadata = {
+//   title: "Hudddle | Workrooms",
+// };
+const DefaultAvatarPlaceholder =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08c-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
 
 const WorkroomPage = (props: Props) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,20 +45,27 @@ const WorkroomPage = (props: Props) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = getToken();
+    // Safely get token on client side
+    const token = typeof window !== "undefined" ? getToken() : null;
 
     const fetchUserIdFromToken = async () => {
       if (!token) return;
 
-      // Example: decode token to get user id
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setCurrentUserId(payload.userId); // assuming your token contains this
+      try {
+        // Example: decode token to get user id
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setCurrentUserId(payload.userId); // assuming your token contains this
+      } catch (e) {
+        console.error("Error decoding token:", e);
+        setCurrentUserId(null);
+      }
     };
 
     const fetchWorkrooms = async () => {
       try {
         if (!token) {
           console.error("No token found");
+          setLoading(false); // Ensure loading state is reset
           return;
         }
 
@@ -71,6 +80,7 @@ const WorkroomPage = (props: Props) => {
 
         if (!response.ok) {
           console.error("Failed to fetch workrooms", response.status);
+          setLoading(false); // Ensure loading state is reset
           return;
         }
 
@@ -95,10 +105,12 @@ const WorkroomPage = (props: Props) => {
 
     fetchUserIdFromToken();
     fetchWorkrooms();
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount (client-side)
 
   const handleCreateRoom = async () => {
-    const token = localStorage.getItem("token");
+    // Safely get token on client side
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
     if (!token) {
       toast({
         description: "Authorization token not found. Please log in.",
@@ -126,21 +138,21 @@ const WorkroomPage = (props: Props) => {
       );
 
       if (response.status === 201) {
-        // Clear any existing room ID in localStorage
-        localStorage.removeItem("roomId");
-
-        // Store the new room ID in localStorage
-        const roomId = response.data.id;
-        localStorage.setItem("roomId", roomId);
-        setNewRoomId(roomId);
+        // Safely access localStorage on client side
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("roomId");
+          const roomId = response.data.id;
+          localStorage.setItem("roomId", roomId);
+          setNewRoomId(roomId);
+        }
         toast({
           description: "Workroom created successfully!",
         });
 
-        // Route to the /create/{roomId} page
-        router.push(`/workroom/create/${roomId}`);
+        router.push(`/workroom/create/${response.data.id}`);
       }
     } catch (error) {
+      console.error("Error creating workroom:", error);
       toast({
         description: "Failed to create workroom. Please try again.",
         variant: "destructive",
@@ -149,13 +161,15 @@ const WorkroomPage = (props: Props) => {
   };
 
   const handleDeleteWorkroom = async (workroomId: string) => {
-    const token = getToken();
+    // Safely get token on client side
+    const token = typeof window !== "undefined" ? getToken() : null;
     setDeleting(true);
     if (!token) {
       toast({
         description: "Authorization token not found. Please log in.",
         variant: "destructive",
       });
+      setDeleting(false); // Ensure loading state is reset
       return;
     }
 
@@ -178,33 +192,27 @@ const WorkroomPage = (props: Props) => {
         description: "Workroom deleted successfully!",
       });
 
-      // Refresh the workrooms
-      const fetchWorkrooms = async () => {
-        const response = await fetch(`${backendUri}/api/v1/workrooms/all`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+      // Refresh the workrooms data after deletion
+      await fetch(`${backendUri}/api/v1/workrooms/all`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const workrooms = (data.workrooms || []).map((room: any) => ({
+            id: room.id,
+            name: room.title || "Untitled Room",
+            createdBy: room.created_by || "Unknown",
+            users: room.members || [],
+            isActive: false,
+          }));
+          setRoomsData(workrooms);
+        })
+        .catch((err) => console.error("Error re-fetching workrooms:", err));
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch workrooms");
-        }
-
-        const data = await response.json();
-        const workrooms = (data.workrooms || []).map((room: any) => ({
-          id: room.id,
-          name: room.title || "Untitled Room",
-          createdBy: room.created_by || "Unknown",
-          users: room.members || [],
-          isActive: false,
-        }));
-
-        setRoomsData(workrooms);
-      };
-
-      await fetchWorkrooms();
-      router.refresh();
+      router.refresh(); // Triggers a re-render of the current route
       setDeleting(false);
     } catch (error) {
       console.error("Error deleting workroom:", error);
@@ -212,12 +220,13 @@ const WorkroomPage = (props: Props) => {
         description: "Failed to delete workroom. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setDeleting(false);
     }
   };
 
-  // NEW: handleEdit function
   const handleEditWorkroom = (workroomId: string) => {
-    router.push(`/workroom/edit/${workroomId}`);
+    router.push(`/workroom/create/${workroomId}`); // Use /workroom/create/[roomId] for editing, as per your structure
   };
 
   const filteredRooms = useMemo(() => {
@@ -258,14 +267,15 @@ const WorkroomPage = (props: Props) => {
           </Button>
         </header>
 
-        {roomsData[0] ? (
+        {loading ? (
+          <RecentWorkroomsLoader />
+        ) : roomsData[0] ? (
           <div className="w-full h-[clamp(6.25rem,_3.6752vh,_8.9375rem)] rounded-[16px] card-morph border border-[#956FD6] py-1 px-4 flex flex-col justify-between">
             <section className="flex justify-between">
               <div className="flex items-start flex-col gap-1">
                 <MainHeading variant="bigCardTitle">
                   {roomsData[0].name}
                 </MainHeading>
-                {/* Updated Link to use handleEditWorkroom */}
                 <Button
                   variant="ghost"
                   className="text-[#956FD6] text-xs p-0 h-0"
@@ -286,10 +296,10 @@ const WorkroomPage = (props: Props) => {
                     .map((user: any, idx: number) => (
                       <div
                         key={idx}
-                        className="w-6 h-6 bg-black rounded-full relative"
+                        className="w-6 h-6 bg-black rounded-full relative" // Added relative for fill prop
                       >
                         <Image
-                          src={user.avatar_url}
+                          src={user.avatar_url || DefaultAvatarPlaceholder}
                           className="rounded-full object-cover"
                           alt="user-img"
                           fill
@@ -359,7 +369,6 @@ const WorkroomPage = (props: Props) => {
                           {room.name}
                         </MainHeading>
                         {isCreatedByYou ? (
-                          // Updated Link to use handleEditWorkroom
                           <Button
                             variant="ghost"
                             className="text-[#956FD6] text-xs p-0 h-0"
@@ -379,26 +388,22 @@ const WorkroomPage = (props: Props) => {
                     </header>
                     <footer className="w-full flex items-center justify-between">
                       <div className="flex items-center">
-                        {" "}
-                        {/* Removed gap-2 here */}
                         {/* Clustered avatars */}
                         {room.users && room.users.length > 0 && (
                           <div className="flex items-center -space-x-2 mr-2">
-                            {" "}
-                            {/* Negative margin for overlap */}
                             {room.users
                               .slice(0, 4)
                               .map((user: any, userIdx: number) => (
                                 <div
                                   key={userIdx}
-                                  className="w-7 h-7 bg-black rounded-full relative border-2 border-white" // Added border for better overlap visibility
+                                  className="w-7 h-7 bg-black rounded-full relative border-2 border-white" // Added relative for fill prop and border for visibility
                                   style={{ zIndex: 4 - userIdx }} // Ensures correct overlap order
                                 >
                                   <Image
                                     src={
                                       user.avatar_url ||
-                                      "https://placehold.co/28x28/cccccc/000000?text=?"
-                                    } // Placeholder if avatar_url is missing
+                                      DefaultAvatarPlaceholder
+                                    }
                                     className="rounded-full object-cover"
                                     alt={`${user.fullname || "User"}'s avatar`}
                                     fill
@@ -415,7 +420,7 @@ const WorkroomPage = (props: Props) => {
                         <NavigationLink
                           href={`/workroom/room/${room.id}`}
                           variant={"outline"}
-                          className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none ml-2" // Added ml-2 for spacing
+                          className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none ml-2"
                         >
                           Open Workroom
                         </NavigationLink>

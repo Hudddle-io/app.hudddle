@@ -5,12 +5,13 @@ import InviteMembers from "../inviteMembers";
 import AddTask from "../AddTask";
 import Golive from "../Golive";
 import WorkroomHeader from "../workroomHeader";
-import WorkroomFooter from "../WorkroomFooter";
 import CreateRoom from "../create-room";
 import { backendUri } from "@/lib/config";
-import fetchWorkroomDetails, { WorkroomDetails } from "@/lib/fetch-workroom"; // Import the interface
+import fetchWorkroomDetails from "@/lib/fetch-workroom";
+import { WorkroomDetails } from "@/lib/fetch-workroom";
 import CreateKpi from "../create-kpi";
 import CreateWorkroomLoader from "@/components/loaders/create-workroom";
+import WorkroomFooter from "../WorkroomFooter";
 
 const CreateWorkroom = () => {
   const router = useRouter();
@@ -19,14 +20,14 @@ const CreateWorkroom = () => {
 
   const workroomIdFromUrl = params?.roomId as string | undefined;
 
-  const [currentStep, setCurrentStep] = useState<number>(1); // Default to step 1
-  const [stepsData, setStepsData] = useState<any>({}); // Default to empty object
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [stepsData, setStepsData] = useState<any>({});
 
   const [workroomId, setWorkroomId] = useState<string | null>(null);
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]); // This might be redundant if AddTask fetches its own tasks or receives them via workroomData
   const [workroomData, setWorkroomData] = useState<WorkroomDetails | null>(
     null
-  ); // State for workroom data
+  );
   const [roomName, setRoomName] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
@@ -46,7 +47,7 @@ const CreateWorkroom = () => {
     }
   }, [workroomIdFromUrl]);
 
-  // Fetch workroom details (tasks)
+  // Fetch workroom details (tasks, members, KPIs)
   useEffect(() => {
     const getWorkroomData = async () => {
       if (workroomId && backendUri) {
@@ -59,8 +60,12 @@ const CreateWorkroom = () => {
           );
           console.log("Data from fetchWorkroomDetails:", data);
           setWorkroomData(data); // Store the fetched data
-          setRoomName(data?.name || ""); // Set room name, added nullish check
-          setTasks(data?.tasks || []); //  set tasks, added nullish check
+          // Initialize roomName from fetched data, if it's the first step or we're editing
+          if (data?.name) {
+            setRoomName(data.name);
+          }
+          // Optionally, you could also set currentStep based on fetched data completeness
+          // e.g., if data.kpis is empty, stay on step 2, etc.
         } catch (err: any) {
           setError(err.message);
         } finally {
@@ -69,7 +74,7 @@ const CreateWorkroom = () => {
       }
     };
     getWorkroomData();
-  }, [workroomId]);
+  }, [workroomId]); // Depend on workroomId to refetch data when it changes
 
   // Step-based component rendering
   const renderStepComponent = () => {
@@ -77,21 +82,31 @@ const CreateWorkroom = () => {
       case 1:
         return (
           <CreateRoom
-            type="create"
+            type="create" // Or "edit" based on your routing logic
             setRoomName={setRoomName}
             roomName={roomName}
             stepsData={stepsData}
             setStepsData={setStepsData}
             onWorkroomCreated={setWorkroomId}
+            workroomData={workroomData} // Pass workroomData here
           />
         );
+      // Inside renderStepComponent in CreateWorkroom.tsx
       case 2:
-        return <CreateKpi workroomId={workroomId && workroomId} />;
+        return (
+          <CreateKpi
+            workroomData={workroomData} // Already passed
+            workroomId={workroomId} // Already passed
+            setWorkroomData={setWorkroomData} // <-- Ensure this is passed
+          />
+        );
       case 3:
         return (
           <InviteMembers
+            workroomData={workroomData} // Pass workroomData
+            setWorkroomData={setWorkroomData}
             roomName={roomName}
-            workroomId={workroomId && workroomId}
+            workroomId={workroomId}
             stepsData={stepsData}
             setStepsData={setStepsData}
           />
@@ -99,17 +114,17 @@ const CreateWorkroom = () => {
       case 4:
         return (
           <AddTask
-            tasks={tasks}
             setWorkroomData={setWorkroomData}
             stepsData={stepsData}
             setStepsData={setStepsData}
-            workroomId={workroomId && workroomId}
+            workroomId={workroomId}
+            tasks={tasks} // Keep tasks if AddTask still explicitly needs it, otherwise remove
           />
         );
       case 5:
         return (
           <Golive
-            data={workroomData}
+            data={workroomData} // Already passing data as 'data' prop
             workroomId={workroomId}
             stepsData={stepsData}
             setStepsData={setStepsData}
@@ -121,11 +136,11 @@ const CreateWorkroom = () => {
   };
 
   if (loading) {
-    return <CreateWorkroomLoader />; // Or use your LoadingPage component
+    return <CreateWorkroomLoader />;
   }
 
   if (error) {
-    return <div>Error: {error}</div>; // Display the error to the user
+    return <div>Error: {error}</div>;
   }
 
   return (

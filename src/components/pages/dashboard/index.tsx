@@ -315,6 +315,8 @@ const PageDashboard: React.FC = () => {
           currentUser={
             currentUser
               ? {
+                  name: currentUser.first_name ?? "Guest",
+                  avatar_url: currentUser.avatar_url ?? "",
                   productivity: currentUser.productivity_percentage,
                   average_task_time: currentUser.average_task_time_hours,
                   xp: currentUser.xp,
@@ -323,11 +325,6 @@ const PageDashboard: React.FC = () => {
                 }
               : null
           }
-          updateDailyActiveMinutes={(minutes) => {
-            if (currentUser) {
-              setCurrentUser({ ...currentUser, daily_active_minutes: minutes });
-            }
-          }}
         />
         <div className="w-full grid grid-cols-2 gap-x-10 gap-y-5 mt-10">
           {userLevels.map((level) => (

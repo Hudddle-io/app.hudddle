@@ -13,9 +13,10 @@ import {
   TaskDueTime,
   TaskTitle,
 } from "./Task";
-import fetchWorkroomDetails, { WorkroomDetails } from "@/lib/fetch-workroom"; // Import
+import fetchWorkroomDetails, { WorkroomDetails } from "@/lib/fetch-workroom";
 import { backendUri } from "@/lib/config";
 import LoadingPage from "@/components/shared/loading-page";
+
 interface Props {
   stepsData: any;
   setStepsData: React.Dispatch<any>;
@@ -48,15 +49,15 @@ const AddTask = ({
           backendUri
         );
         if (data) {
-          setWorkroomData(data);
-          setWorkroomTasks(data.tasks || []);
+          setWorkroomData(data); // Update parent's workroomData
+          setWorkroomTasks(data.tasks || []); // Update local task list
         }
       } catch (err: any) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
-      router.refresh();
+      router.refresh(); // Consider if this is strictly necessary given state updates
     }
   };
 
@@ -71,7 +72,7 @@ const AddTask = ({
             backendUri
           );
           if (data) {
-            setWorkroomTasks(data.tasks || []);
+            setWorkroomTasks(data.tasks || []); // Initialize tasks from fetched data
           }
         } catch (err: any) {
           setError(err.message);
@@ -81,10 +82,10 @@ const AddTask = ({
       }
     };
     getWorkroomData();
-  }, [workroomId]);
+  }, [workroomId]); // Depend on workroomId to refetch tasks when it changes
 
   if (loading) {
-    return <LoadingPage loadingText="Fetching Workroom Tasks .." />; // Or use your LoadingPage component
+    return <LoadingPage loadingText="Fetching Workroom Tasks .." />;
   }
 
   if (error) {

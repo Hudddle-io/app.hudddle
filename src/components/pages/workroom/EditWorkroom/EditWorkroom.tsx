@@ -86,12 +86,20 @@ const CreateWorkroom = () => {
           />
         );
       case 2:
-        return <CreateKpi workroomId={workroomId && workroomId} />;
+        return (
+          <CreateKpi
+            workroomData={workroomData} // Already passed
+            workroomId={workroomId} // Already passed
+            setWorkroomData={setWorkroomData} // <-- Ensure this is passed
+          />
+        );
       case 3:
         return (
           <InviteMembers
+            workroomData={workroomData} // Pass workroomData
+            setWorkroomData={setWorkroomData}
             roomName={roomName}
-            workroomId={workroomId && workroomId}
+            workroomId={workroomId}
             stepsData={stepsData}
             setStepsData={setStepsData}
           />

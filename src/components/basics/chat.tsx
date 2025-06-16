@@ -1,6 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { RoomMemberData } from "@/app/(dashboard)/workroom/room/[roomId]/page";
 
 // Helper function to format timestamps for display
 const formatTimestamp = (isoString: string) => {
@@ -8,90 +15,23 @@ const formatTimestamp = (isoString: string) => {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-interface Viewer {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-}
+// Removed Viewer interface, as IMember will be used directly or mapped from
 
-// Mock data for all possible users
-const allUsers = [
-  {
-    id: "olivia",
-    name: "Olivia Martin",
-    email: "olivia@example.com",
-    avatar: "https://placehold.co/40x40/E2E8F0/1F2937?text=OM",
-  },
-  {
-    id: "isabella",
-    name: "Isabella Nguyen",
-    email: "isabella.nguyen@example.com",
-    avatar: "https://placehold.co/40x40/E2E8F0/1F2937?text=IN",
-  },
-  {
-    id: "emma",
-    name: "Emma Wilson",
-    email: "emma@example.com",
-    avatar: "https://placehold.co/40x40/E2E8F0/1F2937?text=EW",
-  },
-  {
-    id: "jackson",
-    name: "Jackson Lee",
-    email: "jackson@example.com",
-    avatar: "https://placehold.co/40x40/E2E8F0/1F2937?text=JL",
-  },
-  {
-    id: "william",
-    name: "William Kim",
-    email: "will@example.com",
-    avatar: "https://placehold.co/40x40/E2E8F0/1F2937?text=WK",
-  },
-  {
-    id: "sophia",
-    name: "Sophia Brown",
-    email: "sophia@example.com",
-    avatar: "https://placehold.co/40x40/E2E8F0/1F2937?text=SB",
-  },
-  {
-    id: "james",
-    name: "James Miller",
-    email: "james@example.com",
-    avatar: "https://placehold.co/40x40/E2E8F0/1F2937?text=JM",
-  },
-  {
-    id: "david",
-    name: "David Garcia",
-    email: "david@example.com",
-    avatar: "https://placehold.co/40x40/E2E8F0/1F2937?text=DG",
-  },
-  {
-    id: "amara",
-    name: "Amara Khan",
-    email: "amara@example.com",
-    avatar: "https://placehold.co/40x40/E2E8F0/1F2937?text=AK",
-  },
-  {
-    id: "ben",
-    name: "Ben Carter",
-    email: "ben@example.com",
-    avatar: "https://placehold.co/40x40/E2E8F0/1F2937?text=BC",
-  },
-];
-
-// Mock data for initial messages, now with 'viewedBy' arrays and optional 'attachment' field for each message
+// Mock data for initial messages. The 'sender' and 'viewedBy' IDs here
+// would ideally come from a backend or consistent user data. For this example,
+// they are illustrative and assume some matching IDs with generated chatUsers.
 const initialMessages = [
   {
     id: 1,
-    sender: "Sofia Davis",
+    sender: "Sofia Davis", // This could be replaced by a real member name
     text: "Hi, how can I help you today?",
     isUser: false,
     timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-    viewedBy: ["olivia", "emma"],
+    viewedBy: ["olivia", "emma"], // These should ideally be member IDs
   },
   {
     id: 2,
-    sender: "User",
+    sender: "User", // This represents the current user
     text: "Hey, I'm having trouble with my account.",
     isUser: true,
     timestamp: new Date(Date.now() - 4 * 60 * 1000).toISOString(),
@@ -131,7 +71,36 @@ type AttachedFile = {
   url: string;
 };
 
-export default function Chat() {
+// Define the shape of a chat user for internal consistency, derived from IMember
+interface ChatUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string; // avatar_url from IMember
+}
+
+interface ChatProps {
+  members: RoomMemberData[]; // Prop to receive members from page.tsx
+}
+
+const DefaultAvatarPlaceholder =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08c-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
+
+export default function Chat({ members }: ChatProps) {
+  // Derive chatUsers from the members prop
+  const chatUsers: ChatUser[] = useMemo(() => {
+    return members.map((member) => ({
+      id: String(member.id), // Ensure ID is a string
+      name:
+        member.username ||
+        `${member.first_name ?? ""} ${member.last_name ?? ""}`.trim() ||
+        member.email ||
+        "Unknown User",
+      email: member.email || "unknown@example.com",
+      avatar: member.avatar_url || DefaultAvatarPlaceholder, // Use default if avatar_url is missing
+    }));
+  }, [members]);
+
   const [messages, setMessages] = useState(initialMessages);
   const [attachedFile, setAttachedFile] = useState<AttachedFile | null>(null);
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
@@ -139,18 +108,27 @@ export default function Chat() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [hoveredMessageId, setHoveredMessageId] = useState<number | null>(null);
-  const [viewersToDisplayInModal, setViewersToDisplayInModal] =
-    useState<any>(null);
+  const [viewersToDisplayInModal, setViewersToDisplayInModal] = useState<
+    ChatUser[] | null
+  >(null); // Type for viewers in modal
 
   // States for @mention feature
   const [showMentions, setShowMentions] = useState(false);
   const [mentionSearchTerm, setMentionSearchTerm] = useState("");
-  const [mentionStartIndex, setMentionStartIndex] = useState(-1); // Index where '@' was typed
-  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0); // Index of selected user in suggestion list
+  const [mentionStartIndex, setMentionStartIndex] = useState(-1);
+  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const chatInputRef = useRef<HTMLDivElement>(null); // Ref for the contenteditable div
+  const chatInputRef = useRef<HTMLDivElement>(null);
+
+  // Helper to get viewer details from chatUsers
+  const getChatUserDetails = useCallback(
+    (userId: string): ChatUser | undefined => {
+      return chatUsers.find((u) => u.id === userId);
+    },
+    [chatUsers]
+  );
 
   // Scroll to the latest message whenever messages update or chat expands
   useEffect(() => {
@@ -199,7 +177,7 @@ export default function Chat() {
   /**
    * Clears the currently attached file.
    */
-  const clearAttachedFile = () => {
+  const clearAttachedFile = useCallback(() => {
     if (attachedFile?.url) {
       URL.revokeObjectURL(attachedFile.url);
     }
@@ -207,13 +185,13 @@ export default function Chat() {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
+  }, [attachedFile, fileInputRef]);
 
   /**
    * Cleans the contenteditable div's HTML for sending.
    * Extracts text and replaces mention bubbles with "@username".
    */
-  const getCleanMessageContent = () => {
+  const getCleanMessageContent = useCallback(() => {
     if (!chatInputRef.current) return "";
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = chatInputRef.current.innerHTML;
@@ -224,28 +202,33 @@ export default function Chat() {
     });
 
     return tempDiv.textContent || tempDiv.innerText || "";
-  };
+  }, [chatInputRef]);
 
   /**
    * Handles sending a new message.
    * Includes attached file data if present.
    */
-  const handleSendMessage = () => {
+  const handleSendMessage = useCallback(() => {
     const messageContent = getCleanMessageContent().trim();
 
     if (messageContent || attachedFile) {
+      // Assuming the first member in chatUsers is the current user
+      const currentUser = chatUsers[0] || {
+        id: "user",
+        name: "User",
+        email: "user@example.com",
+        avatar: DefaultAvatarPlaceholder,
+      };
+
       const newMsg = {
         id: messages.length + 1,
-        sender: "User",
+        sender: currentUser.name,
         text: messageContent,
         isUser: true,
         timestamp: new Date().toISOString(),
-        viewedBy: [
-          allUsers[0].id,
-          allUsers[1].id,
-          allUsers[2].id,
-          allUsers[3].id,
-        ], // Always add some viewers for new messages for preview
+        viewedBy: chatUsers
+          .slice(0, Math.min(4, chatUsers.length))
+          .map((u) => u.id), // Use actual chatUsers IDs
         ...(attachedFile ? { attachment: attachedFile } : {}),
       };
       setMessages((prevMessages) => [...prevMessages, newMsg]);
@@ -257,22 +240,36 @@ export default function Chat() {
       clearAttachedFile();
       setShowMentions(false); // Hide mentions on send
 
-      // Simulate a response
+      // Simulate a response from a random chat user (not the current "User")
       setTimeout(() => {
-        const botResponse = {
-          id: messages.length + 2,
-          sender: "Sofia Davis",
-          text: `Okay, regarding "${
-            newMsg.text || newMsg.attachment?.name || "your message"
-          }", I received that.`,
-          isUser: false,
-          timestamp: new Date().toISOString(),
-          viewedBy: [allUsers[Math.floor(Math.random() * allUsers.length)].id],
-        };
-        setMessages((prevMessages) => [...prevMessages, botResponse]);
+        const otherChatUsers = chatUsers.filter((u) => u.id !== currentUser.id);
+        const randomChatUser =
+          otherChatUsers[Math.floor(Math.random() * otherChatUsers.length)];
+        if (randomChatUser) {
+          const botResponse = {
+            id: messages.length + 2,
+            sender: randomChatUser.name,
+            text: `Okay, regarding "${
+              newMsg.text || newMsg.attachment?.name || "your message"
+            }", I received that.`,
+            isUser: false,
+            timestamp: new Date().toISOString(),
+            viewedBy: [randomChatUser.id],
+          };
+          setMessages((prevMessages) => [...prevMessages, botResponse]);
+        }
       }, 1000);
     }
-  };
+  }, [
+    attachedFile,
+    chatInputRef,
+    chatUsers,
+    clearAttachedFile,
+    getCleanMessageContent,
+    messages.length,
+    setShowMentions,
+    setMessages,
+  ]);
 
   /**
    * Handles input changes in the contenteditable div for mention detection.
@@ -307,87 +304,124 @@ export default function Chat() {
     }
   };
 
-  const filteredMentions = showMentions
-    ? allUsers
-        .filter(
-          (user) =>
-            user.name.toLowerCase().includes(mentionSearchTerm.toLowerCase()) &&
-            // Ensure the mention isn't already in the current message content as a bubble or plain text
-            !getCleanMessageContent().includes(`@${user.name}`) &&
-            !(
-              chatInputRef.current &&
-              chatInputRef.current.querySelector(`[data-user-id="${user.id}"]`)
-            ) // Check if bubble already exists
-        )
-        .slice(0, 5) // Limit to first 5 suggestions
-    : [];
+  const filteredMentions = useMemo(() => {
+    if (!showMentions) return [];
+    return chatUsers
+      .filter(
+        (user) =>
+          user.name.toLowerCase().includes(mentionSearchTerm.toLowerCase()) &&
+          !getCleanMessageContent().includes(`@${user.name}`) &&
+          !(
+            chatInputRef.current &&
+            chatInputRef.current.querySelector(`[data-user-id="${user.id}"]`)
+          )
+      )
+      .slice(0, 5);
+  }, [
+    showMentions,
+    chatUsers,
+    mentionSearchTerm,
+    getCleanMessageContent,
+    chatInputRef,
+  ]);
 
   /**
    * Inserts a mention bubble into the contenteditable div at the caret position.
    */
-  interface MentionUser {
-    id: string;
-    name: string;
-    email: string;
-    avatar: string;
-  }
-
-  const insertMention = useCallback((user: MentionUser) => {
+  const insertMention = useCallback((user: ChatUser) => {
+    // Changed type to ChatUser
     const selection = window.getSelection();
-    if (!selection || !selection.rangeCount) return; // Add null check for selection
+    if (!selection || !selection.rangeCount) return;
 
     const range = selection.getRangeAt(0);
     const textNode = range.startContainer;
 
     if (textNode.nodeType === Node.TEXT_NODE) {
-      const textContent: string = textNode.textContent || ""; // Ensure textContent is not null
+      const textContent: string = textNode.textContent || "";
       const caretOffset: number = range.startOffset;
-      const textBeforeCaret: string = textContent.substring(0, caretOffset);
+      // Find the start of the mention term (after the '@')
+      const currentMentionStart = textContent
+        .substring(0, caretOffset)
+        .lastIndexOf("@");
+      if (currentMentionStart === -1) return; // Should not happen if logic is correct, but for safety
 
-      // Insert mention
+      // Create a new text node for the part before the mention
+      const preMentionText = textContent.substring(0, currentMentionStart);
+      const newTextNode = document.createTextNode(preMentionText);
+      textNode.parentNode?.replaceChild(newTextNode, textNode); // Replace old text node with new one
+
+      // Set cursor immediately after the new text node
+      selection.removeAllRanges();
+      const tempRange = document.createRange();
+      tempRange.setStart(newTextNode, newTextNode.length);
+      tempRange.collapse(true);
+      selection.addRange(tempRange);
+
       const mentionSpan: HTMLSpanElement = document.createElement("span");
-      mentionSpan.textContent = `@${user.name}`;
+      mentionSpan.textContent = `@${user.name}`; // Use user.name for display
       mentionSpan.dataset.userId = user.id;
-      mentionSpan.className = "mention";
+      mentionSpan.className = "mention-bubble";
+      mentionSpan.contentEditable = "false";
 
       const spaceNode: Text = document.createTextNode(" ");
-      const remainingText: Text = (textNode as Text).splitText(caretOffset);
 
-      textNode.parentNode?.insertBefore(mentionSpan, remainingText); // Add null check for parentNode
-      textNode.parentNode?.insertBefore(spaceNode, remainingText); // Add null check for parentNode
+      // Insert the mention and a space after it
+      selection.getRangeAt(0).insertNode(mentionSpan);
+      selection.getRangeAt(0).insertNode(spaceNode);
 
       selection.removeAllRanges();
-      const newRange: Range = document.createRange();
-      newRange.setStartAfter(spaceNode);
-      newRange.collapse(true);
-      selection.addRange(newRange);
+      const finalRange: Range = document.createRange();
+      finalRange.setStartAfter(spaceNode);
+      finalRange.collapse(true);
+      selection.addRange(finalRange);
+
+      setShowMentions(false);
+      setMentionSearchTerm("");
+      setMentionStartIndex(-1);
     }
-  }, []); // Dependencies are important. Removed mentionStartIndex dependency here.
+  }, []); // dependency array is empty because mentionStartIndex is not used
 
   /**
    * Handles key presses in the contenteditable div, especially for mentions.
    */
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
-      const selection = window.getSelection();
-      if (!selection || !selection.rangeCount) return; // Add null check for selection
-
-      const range = selection.getRangeAt(0);
-      const textNode = range.startContainer;
-
-      if (textNode.nodeType === Node.TEXT_NODE) {
-        const textContent = textNode.textContent || ""; // Ensure textContent is not null
-        const caretOffset = range.startOffset;
-        const textBeforeCaret = textContent.substring(0, caretOffset);
-
-        // Handle mentions
-        if (textBeforeCaret.endsWith("@")) {
+      // Logic for handling Enter, ArrowUp, ArrowDown for mentions
+      if (showMentions && filteredMentions.length > 0) {
+        if (e.key === "ArrowDown") {
           e.preventDefault();
-          setShowMentions(true);
+          setSelectedMentionIndex(
+            (prev) => (prev + 1) % filteredMentions.length
+          );
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          setSelectedMentionIndex(
+            (prev) =>
+              (prev - 1 + filteredMentions.length) % filteredMentions.length
+          );
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          insertMention(filteredMentions[selectedMentionIndex]); // Use the selected filtered mention
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          setShowMentions(false);
+          setMentionSearchTerm(""); // Clear search on escape
         }
       }
+      // If not handling a mention, and it's Enter, send message
+      else if (e.key === "Enter" && !e.shiftKey) {
+        // Allow shift+enter for new line
+        e.preventDefault();
+        handleSendMessage();
+      }
     },
-    [setShowMentions]
+    [
+      showMentions,
+      filteredMentions,
+      selectedMentionIndex,
+      insertMention,
+      handleSendMessage,
+    ]
   );
 
   /**
@@ -499,7 +533,7 @@ export default function Chat() {
   };
 
   // Filter users for the "New message" modal based on searchTerm
-  const filteredUsers = allUsers.filter(
+  const filteredUsers = chatUsers.filter(
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -512,15 +546,11 @@ export default function Chat() {
   }
 
   function handleContinueChat(): void {
-    // Only proceed if at least one user is selected
     if (selectedUsers.length === 0) return;
 
-    // Here you would typically create a new chat thread with the selected users.
-    // For this mock/demo, we'll just close the modal and clear the selection.
     setIsNewChatModalOpen(false);
     setSelectedUsers([]);
     setSearchTerm("");
-    // Optionally, you could also expand the chat window if not already open
     setIsChatExpanded(true);
   }
 
@@ -572,18 +602,23 @@ export default function Chat() {
             {/* Chat Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white z-10">
               <div className="flex items-center space-x-3">
-                <Image
-                  src="https://placehold.co/40x40/E2E8F0/1F2937?text=SD"
-                  alt="Sofia Davis Avatar"
-                  className="w-10 h-10 rounded-full border border-gray-200"
-                  width={40}
-                  height={40}
-                />
+                {/* Dynamically display an avatar for the chat sender (e.g., the first available user) */}
+                {chatUsers.length > 0 && (
+                  <Image
+                    src={chatUsers[0].avatar || DefaultAvatarPlaceholder}
+                    alt={`${chatUsers[0].name} Avatar`}
+                    className="w-10 h-10 rounded-full border border-gray-200"
+                    width={40}
+                    height={40}
+                  />
+                )}
                 <div>
                   <p className="font-semibold text-gray-800 text-base">
-                    Sofia Davis
+                    {chatUsers.length > 0 ? chatUsers[0].name : "Chat User"}
                   </p>
-                  <p className="text-gray-500 text-sm">m@example.com</p>
+                  <p className="text-gray-500 text-sm">
+                    {chatUsers.length > 0 ? chatUsers[0].email : "N/A"}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -633,7 +668,6 @@ export default function Chat() {
             </div>
 
             {/* Messages Area */}
-            {/* Increased space-y from 4 to 6 for more space between bubbles */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50 custom-scrollbar">
               {messages.map((msg, index) => (
                 <motion.div
@@ -641,7 +675,6 @@ export default function Chat() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  // Only apply hover effects if it's NOT the last message (for preview visibility)
                   onMouseEnter={() =>
                     index !== messages.length - 1 && setHoveredMessageId(msg.id)
                   }
@@ -655,7 +688,7 @@ export default function Chat() {
                   <div
                     className={`max-w-[75%] px-4 py-2 rounded-lg shadow-sm text-base flex flex-col ${
                       msg.isUser
-                        ? "bg-custom-user-bubble text-gray-900 rounded-br-none" // Custom user bubble color
+                        ? "bg-custom-user-bubble text-gray-900 rounded-br-none"
                         : "bg-white text-gray-800 rounded-bl-none border border-gray-100"
                     }`}
                   >
@@ -695,7 +728,7 @@ export default function Chat() {
                               href={msg.attachment.url || "#"}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-custom-primary hover:underline" // Link color changed
+                              className="text-custom-primary hover:underline"
                               aria-label={`Download ${msg.attachment.name}`}
                             >
                               <svg
@@ -719,7 +752,7 @@ export default function Chat() {
                     )}
                     <span
                       className={`text-xs mt-1 ${
-                        msg.isUser ? "text-gray-700" : "text-gray-500" // Adjusted timestamp color for user bubble
+                        msg.isUser ? "text-gray-700" : "text-gray-500"
                       } self-end`}
                     >
                       {formatTimestamp(msg.timestamp)}
@@ -746,10 +779,7 @@ export default function Chat() {
                             {msg.viewedBy
                               .slice(0, 3)
                               .map((viewerId, vIndex) => {
-                                // Use vIndex for key
-                                const viewer = allUsers.find(
-                                  (u) => u.id === viewerId
-                                );
+                                const viewer = getChatUserDetails(viewerId);
                                 return viewer ? (
                                   <motion.img
                                     key={viewer.id}
@@ -768,12 +798,12 @@ export default function Chat() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setViewersToDisplayInModal(
-                                  msg.viewedBy.map((id) =>
-                                    allUsers.find((u) => u.id === id)
-                                  )
+                                  msg.viewedBy
+                                    .map((id) => getChatUserDetails(id))
+                                    .filter(Boolean) as ChatUser[]
                                 );
                               }}
-                              className="ml-1 text-custom-primary hover:underline focus:outline-none focus:ring-2 focus:ring-custom-primary-light rounded-md px-1 py-0.5 text-[0.6rem]" // Link color changed
+                              className="ml-1 text-custom-primary hover:underline focus:outline-none focus:ring-2 focus:ring-custom-primary-light rounded-md px-1 py-0.5 text-[0.6rem]"
                             >
                               +{msg.viewedBy.length - 3} more
                             </button>
@@ -899,7 +929,7 @@ export default function Chat() {
                           className={`flex items-center space-x-3 p-2 cursor-pointer hover:bg-gray-100 ${
                             index === selectedMentionIndex
                               ? "bg-custom-primary-lightest"
-                              : "" // Lightest custom primary for highlight
+                              : ""
                           }`}
                           onClick={() => insertMention(user)}
                         >
@@ -1015,7 +1045,7 @@ export default function Chat() {
                 <input
                   type="text"
                   placeholder="Search user..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-primary-light text-gray-700" // Custom focus ring
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-primary-light text-gray-700"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -1041,7 +1071,7 @@ export default function Chat() {
                           <p className="font-medium text-gray-800 text-sm">
                             {user.name}
                           </p>
-                          <p className="text-gray-500 text-xs">{user.email}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
                         </div>
                       </div>
                       {selectedUsers.includes(user.id) && (
@@ -1049,7 +1079,7 @@ export default function Chat() {
                           initial={{ scale: 0.5, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           exit={{ scale: 0.5, opacity: 0 }}
-                          className="w-5 h-5 flex items-center justify-center rounded-full bg-custom-primary text-white" // Custom background
+                          className="w-5 h-5 flex items-center justify-center rounded-full bg-custom-primary text-white"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -1079,7 +1109,7 @@ export default function Chat() {
               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                 <div className="flex -space-x-2 overflow-hidden">
                   {selectedUsers.slice(0, 3).map((userId) => {
-                    const user = allUsers.find((u) => u.id === userId);
+                    const user = getChatUserDetails(userId);
                     return user ? (
                       <motion.img
                         key={user.id}
@@ -1100,7 +1130,7 @@ export default function Chat() {
                 </div>
                 <button
                   onClick={() => handleContinueChat()}
-                  className="px-6 py-2 bg-custom-primary text-white font-semibold rounded-lg hover:bg-custom-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-custom-primary-light" // Custom button colors
+                  className="px-6 py-2 bg-custom-primary text-white font-semibold rounded-lg hover:bg-custom-primary-dark transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-custom-primary-light"
                 >
                   Continue
                 </button>
@@ -1155,29 +1185,35 @@ export default function Chat() {
               <div className="flex-1 overflow-y-auto max-h-80 space-y-3 py-2 custom-scrollbar">
                 {viewersToDisplayInModal &&
                 viewersToDisplayInModal.length > 0 ? (
-                  viewersToDisplayInModal.map((viewer: Viewer) => (
-                    <motion.div
-                      key={viewer.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2, delay: 0.05 }}
-                      className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50"
-                    >
-                      <Image
-                        src={viewer.avatar}
-                        alt={`${viewer.name} Avatar`}
-                        className="w-10 h-10 rounded-full border border-gray-100"
-                        width={40}
-                        height={40}
-                      />
-                      <div>
-                        <p className="font-medium text-gray-800">
-                          {viewer.name}
-                        </p>
-                        <p className="text-gray-500 text-sm">{viewer.email}</p>
-                      </div>
-                    </motion.div>
-                  ))
+                  viewersToDisplayInModal.map(
+                    (
+                      viewer: ChatUser // Type can be ChatUser
+                    ) => (
+                      <motion.div
+                        key={viewer.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.2, delay: 0.05 }}
+                        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50"
+                      >
+                        <Image
+                          src={viewer.avatar}
+                          alt={`${viewer.name} Avatar`}
+                          className="w-10 h-10 rounded-full border border-gray-100"
+                          width={40}
+                          height={40}
+                        />
+                        <div>
+                          <p className="font-medium text-gray-800">
+                            {viewer.name}
+                          </p>
+                          <p className="text-gray-500 text-sm">
+                            {viewer.email}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )
+                  )
                 ) : (
                   <p className="text-center text-gray-500 py-4">
                     No one has viewed this message yet.

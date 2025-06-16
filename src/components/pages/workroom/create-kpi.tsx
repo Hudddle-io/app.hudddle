@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import { backendUri } from "@/lib/config";
-import { useRouter, useParams } from "next/navigation"; // Import useParams
+import { useRouter, useParams } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -27,7 +27,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import LoadingPage from "@/components/shared/loading-page";
-import { Task } from "@/app/(tasks)/your-tasks/my-task";
+import { WorkroomDetails } from "@/lib/fetch-workroom"; // Importing WorkroomDetails
 
 interface RatingScaleProps {
   minLabel?: string;
@@ -112,7 +112,7 @@ const RatingScale: React.FC<RatingScaleProps> = ({
               </motion.div>
               <motion.div
                 className={cn(
-                  "w-[81px] h-[44px]  ring-1 ring-[#091e421f] rounded-full transition-colors duration-200",
+                  "w-[81px] h-[44px] ring-1 ring-[#091e421f] rounded-full transition-colors duration-200",
                   bgColorClass,
                   textColorClass,
                   "cursor-pointer select-none",
@@ -139,15 +139,14 @@ const RatingScale: React.FC<RatingScaleProps> = ({
           );
         })}
       </div>
-      {/* <div className="mt-4 text-sm text-gray-600">
-        Selected Value: {selectedValue}
-      </div> */}
     </div>
   );
 };
 
 interface CreateKpiProps {
-  workroomId: string | null; // This prop can still be passed
+  workroomId: string | null;
+  workroomData: WorkroomDetails | null;
+  setWorkroomData: React.Dispatch<React.SetStateAction<WorkroomDetails | null>>;
 }
 
 const formSchema = z.object({
@@ -163,22 +162,23 @@ const fetchWorkroomDetails = async (
 ) => {
   if (!workroomId) {
     console.warn("Workroom ID is null or undefined. Cannot fetch details.");
-    return null; // Or throw an error, depending on your error handling policy
+    return null;
   }
 
   if (!backendUri) {
     const errorMessage =
       "Backend URI is not defined. Cannot fetch workroom details.";
     console.error(errorMessage);
-    throw new Error(errorMessage); // Explicitly throw error to stop execution
+    throw new Error(errorMessage);
   }
 
   try {
-    const token = localStorage.getItem("token");
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
     if (!token) {
       const errorMessage = "No authentication token found. Please log in.";
       console.error(errorMessage);
-      throw new Error(errorMessage); // Explicitly throw error
+      throw new Error(errorMessage);
     }
 
     const response = await fetch(
@@ -189,67 +189,28 @@ const fetchWorkroomDetails = async (
     );
 
     if (!response.ok) {
-      const errorText = await response.text(); // Get the error message from the response
+      const errorText = await response.text();
       const errorMessage = `Failed to fetch workroom details. Status: ${response.status}, Body: ${errorText}`;
       console.error(errorMessage);
-      throw new Error(errorMessage); // Include status and body in error
+      throw new Error(errorMessage);
     }
 
     const data: WorkroomDetails = await response.json();
-    return data; // Return the entire data object
+    return data;
   } catch (error) {
-    // IMPORTANT: Don't just log. RETHROW the error.
     console.error("Error fetching workroom details:", error);
-    throw error; // Re-throw to allow caller to handle it.
+    throw error;
   }
 };
 
-interface Member {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  auth_provider: string;
-  username: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  password_hash: string;
-  role: string;
-  xp: number;
-  level: number;
-  avatar_url: string;
-  is_verified: boolean;
-  is_user_onboarded: boolean;
-  productivity: number;
-  average_task_time: number;
-  user_type: string;
-  find_us: string;
-  daily_active_minutes: number;
-  teamwork_collaborations: number;
-  software_used: string[];
-}
+// Removed local interface definitions for Member, Metric, and WorkroomDetails
+// Relying on WorkroomDetails imported from '@/lib/fetch-workroom'
 
-interface Metric {
-  metric_name: string;
-  metric_value: number;
-}
-
-interface WorkroomDetails {
-  id: string;
-  name: string;
-  created_by: string;
-  kpis: string;
-  metrics: Metric[];
-  tasks: Task[];
-  performance_metrics: {
-    kpi_name: string;
-    metric_value: number;
-    weight: number;
-  }[];
-  members: Member[];
-}
-
-const CreateKpi = ({ workroomId }: CreateKpiProps) => {
+const CreateKpi = ({
+  workroomId,
+  workroomData,
+  setWorkroomData,
+}: CreateKpiProps) => {
   const [kpiList, setKpiList] = useState<
     { kpi_name: string; metric_value: number; weight: number }[]
   >([]);
@@ -257,27 +218,26 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const params = useParams(); // Get URL parameters
+  const params = useParams();
 
-  // Determine the effective workroomId for this component
   const effectiveWorkroomId = useMemo(() => {
-    // Prioritize ID from URL params if available (for routes like /workroom/edit/[roomId]/kpi)
     if (params.roomId && typeof params.roomId === "string") {
       return params.roomId;
     }
-    // Fallback to the prop if params.roomId is not available
     return workroomId;
-  }, [params.roomId, workroomId]); // Re-calculate if URL param or the prop changes
+  }, [params.roomId, workroomId]);
 
-  // Log to check the effective workroomId when the component loads or its dependencies change
   useEffect(() => {
     console.log(
       "CreateKpi component loaded. Effective Workroom ID:",
-      effectiveWorkroomId
+      effectiveWorkroomId,
+      "WorkroomData KPIs:",
+      workroomData?.performance_metrics
     );
-    // You might also want to fetch existing KPIs here based on effectiveWorkroomId
-    // if this component is responsible for displaying and editing existing KPIs.
-  }, [effectiveWorkroomId]);
+    if (workroomData?.performance_metrics) {
+      setKpiList(workroomData.performance_metrics);
+    }
+  }, [effectiveWorkroomId, workroomData]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -290,7 +250,6 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
   const { handleSubmit, control, reset, formState } = form;
 
   const handleAddKpi = async (data: z.infer<typeof formSchema>) => {
-    // Use the effective workroomId here
     if (!effectiveWorkroomId) {
       setError("No room id is found from URL or props.");
       return;
@@ -301,18 +260,23 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
     try {
       const newKpi = {
         kpi_name: data.kpiName,
-        metric_value: data.rating, // Use rating for both value and weight
+        metric_value: data.rating,
         weight: data.rating,
       };
-      const token = localStorage.getItem("token");
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
       if (!token) {
         setError("Authentication token is missing.");
+        setLoading(false);
         return;
       }
 
+      const updatedKpiList = [...kpiList, newKpi];
+      setKpiList(updatedKpiList);
+
       const response = await fetch(
-        `${backendUri}/api/v1/workrooms/${effectiveWorkroomId}`, // Use effectiveWorkroomId here
+        `${backendUri}/api/v1/workrooms/${effectiveWorkroomId}`,
         {
           method: "PATCH",
           headers: {
@@ -320,33 +284,39 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            performance_metrics: [...kpiList, newKpi],
+            performance_metrics: updatedKpiList,
           }),
         }
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
+        setKpiList(kpiList);
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Unknown error updating KPIs" }));
         setError(
           `Failed to update KPIs: ${response.status} - ${
             errorData.message || "Unknown error"
           }`
         );
+        setLoading(false);
         return;
       }
       reset();
 
-      // Fetch updated data using the effective workroomId
-      const updatedData = await fetchWorkroomDetails(
+      const latestWorkroomData = await fetchWorkroomDetails(
         effectiveWorkroomId,
         backendUri
       );
-      if (updatedData && updatedData.performance_metrics) {
-        setKpiList(updatedData.performance_metrics); // Update KPI list
+      if (latestWorkroomData) {
+        setWorkroomData(latestWorkroomData);
+        setKpiList(latestWorkroomData.performance_metrics || []);
       }
 
       router.refresh();
     } catch (error: any) {
+      console.error("Error updating KPIs:", error);
+      setKpiList(kpiList);
       setError(error.message || "An error occurred while updating KPIs.");
     } finally {
       setLoading(false);
@@ -395,7 +365,6 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
                   </FormLabel>
                   <div className="flex items-center gap-4">
                     {" "}
-                    {/* Added div for layout */}
                     <FormControl className="flex-1">
                       <Input
                         placeholder="Enter your Kpi Name here"
@@ -406,7 +375,7 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
                     <Button
                       type="submit"
                       className="h-[clamp(2.375rem,_1.8803vh,_3.75rem)] ring-purple-500 text-white hover:ring-purple-600 disabled:bg-gray-400
-                                           transition-all duration-200 hover:scale-105 w-fit"
+                                             transition-all duration-200 hover:scale-105 w-fit"
                       disabled={!formState.isValid}
                     >
                       Add
@@ -425,7 +394,7 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
                   <FormLabel>Rating</FormLabel>
                   <FormControl>
                     <RatingScale
-                      initialValue={3}
+                      initialValue={field.value || 3}
                       numSegments={10}
                       onChange={(value) => field.onChange(value)}
                       minLabel="Not Important"
@@ -460,7 +429,7 @@ const CreateKpi = ({ workroomId }: CreateKpiProps) => {
                 <motion.li
                   key={index}
                   className="text-gray-700 p-3 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors duration-200
-                                         border-l-4 border-purple-400"
+                                     border-l-4 border-purple-400"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.1 }}

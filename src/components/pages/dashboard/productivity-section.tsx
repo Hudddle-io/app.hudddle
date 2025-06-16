@@ -9,16 +9,15 @@ import {
 import Image from "next/image";
 import { Clock4, Zap } from "lucide-react";
 import { TimeLogCardContentProps } from "@/lib/@types";
+import { backendUri } from "@/lib/config"; // Import backendUri
+import { toast } from "@/components/ui/use-toast"; // Assuming you have toast
+import { RoomMemberData } from "@/app/(dashboard)/workroom/room/[roomId]/page";
+
+// Reuse RoomMemberData interface from page.tsx for consistency
 
 interface ProductivitySectionProps {
-  currentUser: {
-    productivity: number;
-    average_task_time: number;
-    xp: number;
-    daily_active_minutes: number; // This will now primarily be the value from the backend on initial load
-    teamwork_collaborations: number;
-  } | null;
-  updateDailyActiveMinutes: (minutes: number) => void; // Function to send updated time to the backend
+  currentUser: RoomMemberData | null; // Use RoomMemberData
+  // Removed onUpdateUserData from ProductivitySectionProps, as it defines and passes it down
 }
 
 const TimeLogCardContent: React.FC<TimeLogCardContentProps> = ({
@@ -51,8 +50,9 @@ const TimeLogCardContent: React.FC<TimeLogCardContentProps> = ({
 
 export const DailyTimeLog: React.FC<{
   currentUser: ProductivitySectionProps["currentUser"];
-  updateDailyActiveMinutes: ProductivitySectionProps["updateDailyActiveMinutes"];
-}> = ({ currentUser, updateDailyActiveMinutes }) => {
+  // Explicitly define the type for onUpdateUserData here for DailyTimeLog
+  onUpdateUserData: (data: Partial<RoomMemberData>) => Promise<void>;
+}> = ({ currentUser, onUpdateUserData }) => {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState<number>(0); // In milliseconds
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -61,22 +61,21 @@ export const DailyTimeLog: React.FC<{
   const lastActiveDayKey = "lastActiveDay";
 
   useEffect(() => {
-    // Load previous session data if it's the same day
-    const storedStartTime = localStorage.getItem(localStorageKey);
-    const storedLastActiveDay = localStorage.getItem(lastActiveDayKey);
-    const today = new Date().toDateString();
+    if (typeof window !== "undefined") {
+      const storedStartTime = localStorage.getItem(localStorageKey);
+      const storedLastActiveDay = localStorage.getItem(lastActiveDayKey);
+      const today = new Date().toDateString();
 
-    if (storedStartTime && storedLastActiveDay === today) {
-      setStartTime(parseInt(storedStartTime, 10));
-    } else {
-      // Start new tracking
-      setStartTime(Date.now());
-      localStorage.setItem(lastActiveDayKey, today);
-      localStorage.removeItem(localStorageKey); // Clear any old start time
+      if (storedStartTime && storedLastActiveDay === today) {
+        setStartTime(parseInt(storedStartTime, 10));
+      } else {
+        setStartTime(Date.now());
+        localStorage.setItem(lastActiveDayKey, today);
+        localStorage.removeItem(localStorageKey);
+      }
     }
 
     return () => {
-      // Cleanup on unmount (though logout handling is more important)
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
@@ -89,7 +88,9 @@ export const DailyTimeLog: React.FC<{
         const now = Date.now();
         const currentElapsedTime = now - startTime;
         setElapsedTime(currentElapsedTime);
-        localStorage.setItem(localStorageKey, startTime.toString());
+        if (typeof window !== "undefined") {
+          localStorage.setItem(localStorageKey, startTime.toString());
+        }
       }, 1000); // Update every second
     } else {
       if (intervalRef.current) {
@@ -102,58 +103,54 @@ export const DailyTimeLog: React.FC<{
   useEffect(() => {
     // Send updated time to backend periodically (e.g., every 5 minutes)
     const interval = setInterval(() => {
-      if (elapsedTime > 0) {
-        // Calculate total active minutes including previously recorded minutes from backend
+      if (elapsedTime > 0 && currentUser) {
         const totalActiveMinutes = Math.floor(
-          (elapsedTime + (currentUser?.daily_active_minutes || 0) * 60 * 1000) /
+          (elapsedTime + (currentUser.daily_active_minutes || 0) * 60 * 1000) /
             (1000 * 60)
         );
-        updateDailyActiveMinutes(totalActiveMinutes);
+
+        onUpdateUserData({
+          daily_active_minutes: totalActiveMinutes, // Send daily_active_minutes
+        });
       }
     }, 5 * 60 * 1000); // 5 minutes
 
     return () => clearInterval(interval);
-  }, [
-    elapsedTime,
-    currentUser?.daily_active_minutes,
-    updateDailyActiveMinutes,
-  ]);
+  }, [elapsedTime, currentUser, onUpdateUserData]);
 
-  // Wrap handleLogout in useCallback
   const handleLogout = useCallback(() => {
-    if (startTime) {
-      clearInterval(intervalRef.current!);
+    if (startTime && currentUser) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
       const now = Date.now();
       const finalElapsedTime = now - startTime;
       const totalActiveMinutes = Math.floor(
         (finalElapsedTime +
-          (currentUser?.daily_active_minutes || 0) * 60 * 1000) /
+          (currentUser.daily_active_minutes || 0) * 60 * 1000) /
           (1000 * 60)
       );
-      updateDailyActiveMinutes(totalActiveMinutes);
-      localStorage.removeItem(localStorageKey);
+
+      onUpdateUserData({
+        daily_active_minutes: totalActiveMinutes, // Send daily_active_minutes
+      });
+
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(localStorageKey);
+      }
       setStartTime(null);
       setElapsedTime(0);
     }
-  }, [startTime, currentUser?.daily_active_minutes, updateDailyActiveMinutes]); // Add dependencies
+  }, [startTime, currentUser, onUpdateUserData]);
 
-  // Attach logout handler (you might need to adjust this based on your actual logout mechanism)
   useEffect(() => {
-    // Example: Assuming you have a global logout event or function
-    const handleGlobalLogout = () => {
-      handleLogout();
-    };
-
-    // You might need to listen to a specific event or call handleLogout directly
-    // For instance, if you have a logout button, call handleLogout on its click.
-
-    // This is a placeholder - adapt to your actual logout logic
-    // window.addEventListener('beforeunload', handleLogout); // Consider this carefully, it might not always be reliable
-
+    // This is a placeholder for actual logout integration.
+    // You would typically trigger handleLogout from your application's logout button or event.
+    // Example: window.addEventListener('beforeunload', handleLogout); // Use with caution.
     return () => {
       // window.removeEventListener('beforeunload', handleLogout);
     };
-  }, [handleLogout]); // Now depends on the memoized handleLogout
+  }, [handleLogout]);
 
   const formatElapsedTime = (ms: number): string => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -201,7 +198,11 @@ const ProductivityBadge: React.FC<{
             <span className="font-bold">productive</span>
           </CardTitle>
           <CardDescription>
-            {`${currentUser?.average_task_time || 0} hrs per task`}
+            {/* Note: currentUser?.average_task_time is not passed to ProductivityBadge's currentUser prop.
+                It would need to be part of RoomMemberData directly if it's meant to be displayed here from the parent. */}
+            {`${
+              (currentUser as any)?.average_task_time_hours || 0
+            } hrs per task`}
           </CardDescription>
         </div>
       </CardContent>
@@ -211,8 +212,63 @@ const ProductivityBadge: React.FC<{
 
 const ProductivitySection: React.FC<ProductivitySectionProps> = ({
   currentUser,
-  updateDailyActiveMinutes,
 }) => {
+  const updateUserProfileData = useCallback(
+    async (data: Partial<RoomMemberData>) => {
+      try {
+        if (typeof window === "undefined") return; // Ensure client-side only
+        const token = localStorage.getItem("token");
+        if (!token) {
+          toast({
+            description: "Authentication token not found. Please log in.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Filter out undefined values to ensure only relevant fields are sent
+        const payload: { [key: string]: any } = {};
+        for (const key in data) {
+          if (data[key as keyof Partial<RoomMemberData>] !== undefined) {
+            payload[key] = data[key as keyof Partial<RoomMemberData>];
+          }
+        }
+
+        const response = await fetch(
+          `${backendUri}/api/v1/auth/update-profile-data`,
+          {
+            method: "PUT", // Changed method from PATCH to PUT as requested
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message ||
+              `Failed to update user profile data: ${response.status}`
+          );
+        }
+
+        const result = await response.json();
+        console.log("User profile data updated successfully:", result);
+        // You might want to refresh currentUser state in parent if this component doesn't re-fetch it
+        // toast({ description: "Profile updated successfully!", variant: "default" });
+      } catch (error: any) {
+        console.error("Error updating user profile data:", error);
+        toast({
+          description: `Failed to update profile: ${error.message}`,
+          variant: "destructive",
+        });
+      }
+    },
+    [] // Dependencies for useCallback - none needed if `backendUri` and `toast` are stable
+  );
+
   return (
     <Card className="grid gap-6 grid-cols-9 mt-3 rounded-none border-none shadow-none">
       <div className="col-span-3">
@@ -221,7 +277,7 @@ const ProductivitySection: React.FC<ProductivitySectionProps> = ({
       <div className="col-span-6">
         <DailyTimeLog
           currentUser={currentUser}
-          updateDailyActiveMinutes={updateDailyActiveMinutes}
+          onUpdateUserData={updateUserProfileData}
         />
       </div>
     </Card>
