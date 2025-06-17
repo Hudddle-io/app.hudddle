@@ -596,7 +596,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   .map((m, i) => (
                     <div
                       key={i}
-                      className="h-[clamp(3.75rem,_3.6303rem+0.5983vh,_4.1875rem)] rounded-[12px] bg-[#956fd634] p-[clamp(0.625rem,_0.5224rem+0.5128vw,_1rem)] flex justify-between items-end cursor-pointer"
+                      className="h-auto min-h-[clamp(3.75rem,_3.6303rem+0.5983vh,_4.1875rem)] rounded-[12px] bg-[#956fd634] p-[clamp(0.625rem,_0.5224rem+0.5128vw,_1rem)] flex justify-between items-end cursor-pointer"
                       onClick={() => handleMemberClick(m)}
                     >
                       <section className="flex items-center h-full gap-1">

@@ -24,11 +24,14 @@ const Trash = "/assets/trash.svg";
 
 type Props = {};
 
-// Note: Metadata should typically be exported from a layout.tsx or page.tsx,
-// not directly within a component file like this for Next.js App Router.
-// export const metadata: Metadata = {
-//   title: "Hudddle | Workrooms",
-// };
+// Interface for workroom data from "created by me" and "shared" endpoints
+interface WorkroomSummary {
+  id: string;
+  title: string;
+  created_by: string;
+  members: { name: string; avatar_url: string | null }[];
+}
+
 const DefaultAvatarPlaceholder =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236B7280'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08s5.97 1.09 6 3.08c-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
 
@@ -43,6 +46,15 @@ const WorkroomPage = (props: Props) => {
 
   // Simulated current user ID from token
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // New states for "Created by You" and "Shared Workrooms" data
+  const [createdWorkrooms, setCreatedWorkrooms] = useState<WorkroomSummary[]>(
+    []
+  );
+  const [sharedWorkrooms, setSharedWorkrooms] = useState<WorkroomSummary[]>([]);
+  const [loadingCreated, setLoadingCreated] = useState(true);
+  const [loadingShared, setLoadingShared] = useState(true);
+  const [activeTab, setActiveTab] = useState("workroom"); // State to manage active tab
 
   useEffect(() => {
     // Safely get token on client side
@@ -106,6 +118,89 @@ const WorkroomPage = (props: Props) => {
     fetchUserIdFromToken();
     fetchWorkrooms();
   }, []); // Empty dependency array means this runs once on mount (client-side)
+
+  // Function to fetch "Created by You" workrooms
+  const fetchCreatedWorkrooms = async () => {
+    setLoadingCreated(true);
+    try {
+      const token = typeof window !== "undefined" ? getToken() : null;
+      if (!token) {
+        throw new Error("Authorization token is missing");
+      }
+      const response = await fetch(
+        `${backendUri}/api/v1/workrooms/created-by-me`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch created workrooms");
+      }
+      const data = await response.json();
+      setCreatedWorkrooms(data.workrooms || []);
+    } catch (error) {
+      console.error("Error fetching created workrooms:", error);
+      toast({
+        description: "Failed to load your created workrooms.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingCreated(false);
+    }
+  };
+
+  // Function to fetch "Shared Workrooms"
+  const fetchSharedWorkrooms = async () => {
+    setLoadingShared(true);
+    try {
+      const token = typeof window !== "undefined" ? getToken() : null;
+      if (!token) {
+        throw new Error("Authorization token is missing");
+      }
+      const response = await fetch(`${backendUri}/api/v1/workrooms/shared`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch shared workrooms");
+      }
+      const data = await response.json();
+      setSharedWorkrooms(data.workrooms || []);
+    } catch (error) {
+      console.error("Error fetching shared workrooms:", error);
+      toast({
+        description: "Failed to load shared workrooms.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingShared(false);
+    }
+  };
+
+  // useEffect to fetch "Created by You" workrooms when the tab becomes active
+  useEffect(() => {
+    if (
+      activeTab === "created" &&
+      createdWorkrooms.length === 0 &&
+      loadingCreated
+    ) {
+      fetchCreatedWorkrooms();
+    }
+  }, [activeTab, createdWorkrooms.length, loadingCreated]);
+
+  // useEffect to fetch "Shared Workrooms" when the tab becomes active
+  useEffect(() => {
+    if (
+      activeTab === "shared" &&
+      sharedWorkrooms.length === 0 &&
+      loadingShared
+    ) {
+      fetchSharedWorkrooms();
+    }
+  }, [activeTab, sharedWorkrooms.length, loadingShared]);
 
   const handleCreateRoom = async () => {
     // Safely get token on client side
@@ -236,6 +331,22 @@ const WorkroomPage = (props: Props) => {
     );
   }, [searchQuery, roomsData]);
 
+  // Filter created workrooms
+  const filteredCreatedWorkrooms = useMemo(() => {
+    if (!searchQuery) return createdWorkrooms;
+    return createdWorkrooms.filter((room) =>
+      room.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, createdWorkrooms]);
+
+  // Filter shared workrooms
+  const filteredSharedWorkrooms = useMemo(() => {
+    if (!searchQuery) return sharedWorkrooms;
+    return sharedWorkrooms.filter((room) =>
+      room.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, sharedWorkrooms]);
+
   return (
     <main className="py-12 px-10 flex flex-col gap-4">
       <header className="flex w-full justify-between items-center">
@@ -332,7 +443,12 @@ const WorkroomPage = (props: Props) => {
       </section>
 
       <section className="w-full pt-4">
-        <Tabs defaultValue="workroom" className="w-full">
+        <Tabs
+          defaultValue="workroom"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
           <div className="flex justify-between items-center">
             <TabsList>
               <TabsTrigger value="workroom">workroom</TabsTrigger>
@@ -452,6 +568,144 @@ const WorkroomPage = (props: Props) => {
               })}
             </TabsContent>
           )}
+
+          {/* New TabsContent for "Created by You" */}
+          <TabsContent value="created" className="w-full flex flex-col gap-4">
+            {loadingCreated ? (
+              <p>Loading your created workrooms...</p>
+            ) : filteredCreatedWorkrooms.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredCreatedWorkrooms.map((workroom) => (
+                  <div
+                    key={workroom.id}
+                    className="rounded-[16px] shadow-lg py-1 px-4 h-[clamp(7.5rem,_7.1068rem+1.9658vh,_8.9375rem)] flex flex-col justify-between hover:border hover:border-[#956FD6] cursor-pointer"
+                    onClick={() => router.push(`/workroom/room/${workroom.id}`)}
+                  >
+                    <header className="flex justify-between">
+                      <div className="flex flex-col items-start gap-2">
+                        <MainHeading variant="smallCardTitle">
+                          {workroom.title}
+                        </MainHeading>
+                        <span className="text-sm text-muted-foreground">
+                          Created by: {workroom.created_by}
+                        </span>
+                      </div>
+                    </header>
+                    <footer className="w-full flex items-center justify-between">
+                      <div className="flex items-center">
+                        {workroom.members && workroom.members.length > 0 && (
+                          <div className="flex items-center -space-x-2 mr-2">
+                            {workroom.members.slice(0, 4).map((member, idx) => (
+                              <div
+                                key={idx}
+                                className="w-7 h-7 bg-black rounded-full relative border-2 border-white"
+                                style={{ zIndex: 4 - idx }}
+                              >
+                                <Image
+                                  src={
+                                    member.avatar_url ||
+                                    DefaultAvatarPlaceholder
+                                  }
+                                  className="rounded-full object-cover"
+                                  alt={`${member.name}'s avatar`}
+                                  fill
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-sm text-[#999999]">
+                          {workroom.members.length > 0
+                            ? `${workroom.members.length} people in this workroom`
+                            : "No one is in this workroom"}
+                        </p>
+                        <NavigationLink
+                          href={`/workroom/room/${workroom.id}`}
+                          variant={"outline"}
+                          className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none ml-2"
+                        >
+                          Open Workroom
+                        </NavigationLink>
+                      </div>
+                    </footer>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 py-4">
+                No workrooms created by you found.
+              </p>
+            )}
+          </TabsContent>
+
+          {/* New TabsContent for "Shared Workrooms" */}
+          <TabsContent value="shared" className="w-full flex flex-col gap-4">
+            {loadingShared ? (
+              <p>Loading shared workrooms...</p>
+            ) : filteredSharedWorkrooms.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredSharedWorkrooms.map((workroom) => (
+                  <div
+                    key={workroom.id}
+                    className="rounded-[16px] shadow-lg py-1 px-4 h-[clamp(7.5rem,_7.1068rem+1.9658vh,_8.9375rem)] flex flex-col justify-between hover:border hover:border-[#956FD6] cursor-pointer"
+                    onClick={() => router.push(`/workroom/room/${workroom.id}`)}
+                  >
+                    <header className="flex justify-between">
+                      <div className="flex flex-col items-start gap-2">
+                        <MainHeading variant="smallCardTitle">
+                          {workroom.title}
+                        </MainHeading>
+                        <span className="text-sm text-muted-foreground">
+                          Created by: {workroom.created_by}
+                        </span>
+                      </div>
+                    </header>
+                    <footer className="w-full flex items-center justify-between">
+                      <div className="flex items-center">
+                        {workroom.members && workroom.members.length > 0 && (
+                          <div className="flex items-center -space-x-2 mr-2">
+                            {workroom.members.slice(0, 4).map((member, idx) => (
+                              <div
+                                key={idx}
+                                className="w-7 h-7 bg-black rounded-full relative border-2 border-white"
+                                style={{ zIndex: 4 - idx }}
+                              >
+                                <Image
+                                  src={
+                                    member.avatar_url ||
+                                    DefaultAvatarPlaceholder
+                                  }
+                                  className="rounded-full object-cover"
+                                  alt={`${member.name}'s avatar`}
+                                  fill
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-sm text-[#999999]">
+                          {workroom.members.length > 0
+                            ? `${workroom.members.length} people in this workroom`
+                            : "No one is in this workroom"}
+                        </p>
+                        <NavigationLink
+                          href={`/workroom/room/${workroom.id}`}
+                          variant={"outline"}
+                          className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none ml-2"
+                        >
+                          Open Workroom
+                        </NavigationLink>
+                      </div>
+                    </footer>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 py-4">
+                No shared workrooms found.
+              </p>
+            )}
+          </TabsContent>
         </Tabs>
       </section>
     </main>

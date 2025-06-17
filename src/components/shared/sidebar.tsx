@@ -337,7 +337,7 @@ const Sidebar = () => {
                   id="side-link-btn"
                   className={cn(
                     "text-white w-full hover:bg-[#EEAE05] hover:text-[#fff] text-[clamp(0.625rem,_0.3419vw,_0.875rem)] gap-2 font-normal pl-[24px] justify-start",
-                    pathname === link.url && "bg-[#EEAE05]"
+                    pathname.startsWith(link.url) && "bg-[#EEAE05]" // Corrected logic here
                   )}
                   variant={"ghost"}
                 >
