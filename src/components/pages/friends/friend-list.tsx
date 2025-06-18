@@ -232,9 +232,7 @@ const FriendList: React.FC<FriendListProps> = ({
                 : "You have no pending invites"}
             </p>
             {tab === "all-friends" && (
-              <Button className="w-[330px] bg-[#956FD699] mt-8">
-                Invite friend
-              </Button>
+              <h3 className="text-2xl"> Invite a friend</h3>
             )}
           </div>
         )}

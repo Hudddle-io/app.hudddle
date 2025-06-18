@@ -321,7 +321,7 @@ const WorkroomPage = (props: Props) => {
   };
 
   const handleEditWorkroom = (workroomId: string) => {
-    router.push(`/workroom/create/${workroomId}`); // Use /workroom/create/[roomId] for editing, as per your structure
+    router.push(`/workroom/edit/${workroomId}`); // Use /workroom/create/[roomId] for editing, as per your structure
   };
 
   const filteredRooms = useMemo(() => {
