@@ -22,18 +22,16 @@ import {
 interface MetricChartProps {
   kpiName: string;
   weight: number; // Weight is from 0 to 10
+  percentage: number; // Added percentage prop
 }
 
-export function MetricChart({ kpiName, weight }: MetricChartProps) {
-  // Calculate the percentage based on weight (0-10 scale)
-  const percentage = (weight / 10) * 100;
-
+export function MetricChart({ kpiName, weight, percentage }: MetricChartProps) {
   // Define chart data based on the weight
   // The pie chart will show 'achieved' and 'remaining' portions
   // Using specific hex colors to match the provided image
   const chartData = [
-    { name: "Achieved", value: weight, fill: "#6B46C1" }, // Darker purple for achieved part
-    { name: "Remaining", value: 10 - weight, fill: "#A78BFA" }, // Lighter purple/blue for remaining part
+    { name: "Achieved", value: percentage, fill: "#6B46C1" }, // Darker purple for achieved part
+    { name: "Remaining", value: 100 - percentage, fill: "#A78BFA" }, // Lighter purple/blue for remaining part
   ];
 
   // Define chart configuration (colors here are less critical as fill is set directly in chartData)

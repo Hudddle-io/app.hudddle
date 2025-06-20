@@ -1,23 +1,13 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { TrendingUp } from "lucide-react";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -28,89 +18,58 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-interface ChartData {
-  month: string;
-  desktop: number;
+// Interface for the data points passed to the chart
+interface KpiMetricHistoryEntry {
+  kpi_name: string;
+  date: string;
+  alignment_percentage: number;
 }
 
-const initialChartData: ChartData[] = [
-  { month: "January", desktop: 186 },
-  { month: "February", desktop: 305 },
-  { month: "March", desktop: 237 },
-  { month: "April", desktop: 73 },
-  { month: "May", desktop: 209 },
-  { month: "June", desktop: 214 },
-];
+// Props for the WeeklyChart component
+interface WeeklyChartProps {
+  historyData: KpiMetricHistoryEntry[];
+}
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
+  alignment_percentage: {
+    label: "Alignment",
     color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig;
 
-const monthNames = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+export default function WeeklyChart({ historyData = [] }: WeeklyChartProps) {
+  const [chartData, setChartData] = useState<KpiMetricHistoryEntry[]>([]);
 
-export default function WeeklyChart() {
-  const [date, setDate] = useState<
-    { from: Date | undefined; to?: Date | undefined } | undefined
-  >({
-    from: new Date(new Date().getFullYear(), 0, 1), // Start of the year
-    to: new Date(), // Today
-  });
-  const [chartData, setChartData] = useState<ChartData[]>(() => {
-    const today = new Date();
-    const startOfYear = new Date(today.getFullYear(), 0, 1);
-    return initialChartData.filter((item) => {
-      const itemDate = new Date(
-        today.getFullYear(),
-        monthNames.indexOf(item.month),
-        1
+  useEffect(() => {
+    // Process and sort data when the component receives new historyData
+    if (historyData && historyData.length > 0) {
+      const sortedData = [...historyData].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       );
-      return itemDate >= startOfYear && itemDate <= today;
-    });
-  });
+      setChartData(sortedData);
+    } else {
+      setChartData([]);
+    }
+  }, [historyData]);
 
-  const handleDateChange = useCallback(
-    (
-      selectedDate:
-        | { from: Date | undefined; to?: Date | undefined }
-        | undefined
-    ) => {
-      setDate(selectedDate);
+  // Function to generate a formatted date range string for the chart description
+  const getFormattedDateRange = () => {
+    if (chartData.length === 0) {
+      return "No data available";
+    }
+    const firstDate = new Date(chartData[0].date);
+    const lastDate = new Date(chartData[chartData.length - 1].date);
 
-      if (selectedDate?.from) {
-        const fromDate = selectedDate.from;
-        const toDate = selectedDate.to || new Date(); // If 'to' is undefined, use today.
+    // Check if dates are valid before formatting
+    if (isNaN(firstDate.getTime()) || isNaN(lastDate.getTime())) {
+      return "Invalid date range";
+    }
 
-        const filteredData = initialChartData.filter((item) => {
-          const itemDate = new Date(
-            fromDate.getFullYear(),
-            monthNames.indexOf(item.month),
-            1
-          );
-          return itemDate >= fromDate && itemDate <= toDate;
-        });
-        setChartData(filteredData);
-      } else {
-        setChartData(initialChartData);
-      }
-    },
-    []
-  );
+    return `${format(firstDate, "LLL dd, y")} - ${format(
+      lastDate,
+      "LLL dd, y"
+    )}`;
+  };
 
   return (
     <Card className="bg-transparent shadow-none ring-0 border-0">
@@ -118,79 +77,65 @@ export default function WeeklyChart() {
         <div className="flex items-center justify-between w-full">
           <div>
             <CardTitle className="text-base font-semibold">
-              Weekly Sales
+              Weekly Alignment
             </CardTitle>
-            <CardDescription>Overview of visits</CardDescription>
+            <CardDescription>{getFormattedDateRange()}</CardDescription>
           </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-[200px] justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                {date?.from ? (
-                  date.to ? (
-                    <>
-                      {format(date.from, "LLL dd, y")} -{" "}
-                      {format(date.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(date.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Pick a date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={date?.from}
-                selected={date}
-                onSelect={handleDateChange}
-                numberOfMonths={2}
-              />
-            </PopoverContent>
-          </Popover>
         </div>
       </CardHeader>
       <CardContent>
         <ChartContainer
-          className="aspect-auto h-[160px] w-[600px]" // Adjusted width to fill container
+          className="aspect-auto h-[160px] w-[600px]" // Maintained width for consistency
           config={chartConfig}
         >
-          <AreaChart
-            accessibilityLayer
-            data={chartData}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="month"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
-            />
-            <Area
-              dataKey="desktop"
-              type="natural"
-              fill="#956fd670"
-              fillOpacity={0.4}
-              stroke="#956fd670"
-            />
-          </AreaChart>
+          {chartData.length > 0 ? (
+            <AreaChart
+              accessibilityLayer
+              data={chartData}
+              margin={{
+                left: 12,
+                right: 12,
+              }}
+            >
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => {
+                  try {
+                    return format(new Date(value), "MMM d");
+                  } catch (error) {
+                    return "";
+                  }
+                }}
+              />
+              <YAxis
+                domain={[0, 100]}
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => `${value}%`}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent indicator="line" />}
+              />
+              <Area
+                dataKey="alignment_percentage"
+                type="natural"
+                fill="#956fd6"
+                fillOpacity={0.2}
+                stroke="#956fd6"
+                strokeWidth={2}
+              />
+            </AreaChart>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
+              No alignment history available.
+            </div>
+          )}
         </ChartContainer>
       </CardContent>
     </Card>

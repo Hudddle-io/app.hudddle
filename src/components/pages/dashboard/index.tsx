@@ -315,13 +315,18 @@ const PageDashboard: React.FC = () => {
           currentUser={
             currentUser
               ? {
+                  id: String(currentUser.id),
                   name: currentUser.first_name ?? "Guest",
                   avatar_url: currentUser.avatar_url ?? "",
+                  email: currentUser.email,
                   productivity: currentUser.productivity_percentage,
                   average_task_time: currentUser.average_task_time_hours,
                   xp: currentUser.xp,
                   daily_active_minutes: currentUser.daily_active_minutes,
                   teamwork_collaborations: currentUser.teamwork_collaborations,
+                  level: 1, // Provide a default or map from userLevels if available
+
+                  // Add any other required RoomMemberData properties with defaults or mapped values
                 }
               : null
           }
