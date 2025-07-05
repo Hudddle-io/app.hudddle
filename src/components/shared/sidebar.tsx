@@ -16,6 +16,11 @@ import dribble from "../../../public/assets/dribble.svg";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { backendUri } from "@/lib/config";
 import { Skeleton } from "@/components/ui/skeleton"; // Import Skeleton component
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"; // Import Popover components
 
 interface UserOnlineStatusProps extends HTMLAttributes<HTMLDivElement> {
   isOnline: boolean;
@@ -65,6 +70,7 @@ const Sidebar = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null); // State for local preview
   const [isUserOnline, setIsUserOnline] = useState(false); // State for user online status
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false); // State to control popover visibility
 
   const router = useRouter();
   const pathname = usePathname();
@@ -93,12 +99,7 @@ const Sidebar = () => {
           method: "GET",
           mode: "no-cors", // Use no-cors for external health checks if no specific data is needed
         });
-        // For 'no-cors' requests, response.ok will always be true
-        // and response.status will be 0.
-        // A common practice for health checks in 'no-cors' is to just ensure
-        // the fetch doesn't throw an error.
-        // If your backend endpoint for status check supports CORS and
-        // returns actual status codes, remove 'no-cors' and check response.status === 200.
+        //TODO: Expand this function to also reupdate the user when it fetches if there is change else it should not. also if there is a pending friend request, it should show how many with the red circle over the friends to show there is an activity change. also.
         setIsUserOnline(true);
       } catch (error) {
         console.error("Failed to check online status:", error);
@@ -178,7 +179,8 @@ const Sidebar = () => {
   };
 
   // This function handles the actual upload to the server
-  const handleUploadButtonClick = async () => {
+  const handleUploadProfileImage = async () => {
+    setIsPopoverOpen(false); // Close popover immediately
     const fileInput = document.getElementById(
       "image-upload"
     ) as HTMLInputElement;
@@ -245,6 +247,11 @@ const Sidebar = () => {
     }
   };
 
+  const handleUpdateProfile = () => {
+    setIsPopoverOpen(false); // Close popover
+    router.push("/edit-profile"); // Route to edit-profile page
+  };
+
   return (
     <section className="col-span-1 min-w-[250px] ring-[0.6px] ring-[#999999] ring-opacity-[25%] flex items-start justify-center py-10 px-6">
       <div className="w-full h-full flex flex-col gap-[40px] items-center">
@@ -286,23 +293,43 @@ const Sidebar = () => {
                   >
                     <ImageIcon className="w-3 h-3" />
                   </Button>
-                  <label htmlFor="image-upload" className="cursor-pointer fle">
-                    <Button
-                      id="upload-btn"
-                      onClick={handleUploadButtonClick} // This triggers the file input click
-                      className="bg-white ring-1 ring-[#956FD6] hover:text-white shadow text-[#956FD6] h-5 w-5 rounded-full p-0"
-                    >
-                      <Pencil className="w-3 h-3" />
-                    </Button>
-                    <input
-                      id="image-upload"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      placeholder="upload"
-                      onChange={handleImageLocalPreview}
-                    />
-                  </label>
+
+                  {/* Popover for Pencil icon */}
+                  <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="edit-profile-popover-trigger"
+                        className="bg-white ring-1 ring-[#956FD6] hover:text-white shadow text-[#956FD6] h-5 w-5 rounded-full p-0"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-48 p-2 flex flex-col gap-2">
+                      <Button
+                        variant="ghost"
+                        className="justify-start"
+                        onClick={handleUploadProfileImage}
+                      >
+                        Upload Picture
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="justify-start"
+                        onClick={handleUpdateProfile}
+                      >
+                        Update Profile
+                      </Button>
+                    </PopoverContent>
+                  </Popover>
+
+                  <input
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    placeholder="upload"
+                    onChange={handleImageLocalPreview}
+                  />
                 </div>
               </div>
             )}
