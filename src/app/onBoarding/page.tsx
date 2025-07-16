@@ -60,25 +60,22 @@ const OnBoarding: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  // Destructure refreshUser from the context
   const { currentUser, refreshUser } = useUserSessionContext();
 
-  // Redirect if user is already marked as onboarded
   useEffect(() => {
-    // Check if currentUser exists and if the backend specifically says they are onboarded
     if (currentUser && currentUser.is_user_onboarded === true) {
       console.log("User is already onboarded, redirecting to dashboard");
       router.push("/dashboard");
     }
-  }, [currentUser, router]); // Dependency array should include currentUser to react to changes
+  }, [currentUser, router]);
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
-      occupation: "Frontend Developer", // Ensure default values match SelectItem values
-      awareness: "Website", // Ensure default values match SelectItem values
+      occupation: "Frontend Developer",
+      awareness: "Website",
       software: "",
     },
   });
@@ -89,11 +86,11 @@ const OnBoarding: React.FC = () => {
     try {
       const token = getToken();
       if (!token) {
-        throw new Error("No access token found. Please log in again."); // no access found , meaning there is no login
+        throw new Error("No access token found. Please log in again.");
       }
 
       const response = await fetch(
-        `${backendUri}/api/v1/auth/update-profile-data`, // Ensure this URL is correct
+        `${backendUri}/api/v1/auth/update-profile-data`,
         {
           method: "PUT",
           headers: {
@@ -119,9 +116,6 @@ const OnBoarding: React.FC = () => {
         throw new Error(errorData.message || "Failed to update profile.");
       }
 
-      // IMPORTANT: Trigger a refetch of the user data in the context
-      // This ensures that `currentUser` in the context is updated with the new profile info
-      // so the useEffect guard works correctly on subsequent renders/visits.
       if (refreshUser) {
         await refreshUser();
         console.log("User session refreshed after profile update.");
@@ -155,9 +149,11 @@ const OnBoarding: React.FC = () => {
   return (
     <UserSessionProvider>
       {/* Main container: full width, min height screen, flex column on small, flex row on large */}
-      <div className="w-full min-h-screen h-auto bg-white flex flex-col lg:flex-row">
+      {/* Removed min-h-screen from here on small screens to allow body/html to scroll if needed */}
+      <div className="w-full h-auto bg-white flex flex-col lg:flex-row lg:min-h-screen">
         {/* Left Section (Form): full width on small, half width on large, centered content */}
-        <div className="w-full lg:w-1/2 min-h-screen h-auto bg-white flex flex-col justify-center py-8 px-4 sm:px-6 md:px-8 lg:px-16">
+        {/* Added overflow-y-auto to allow scrolling within this div on small screens */}
+        <div className="w-full lg:w-1/2 h-auto bg-white flex flex-col justify-center py-8 px-4 sm:px-6 md:px-8 lg:px-16 overflow-y-auto">
           <div className="flex flex-col space-y-6 sm:space-y-8">
             {/* Logo */}
             <div>
@@ -414,7 +410,7 @@ const OnBoarding: React.FC = () => {
           </div>
         </div>
         {/* Right Section (Image and Text Overlay): Hidden on small/medium, visible on large */}
-        <div className="relative  h-auto w-full lg:w-1/2 min-h-[300px] lg:min-h-screen hidden lg:block">
+        <div className="relative h-auto w-full lg:w-1/2 min-h-[300px] lg:min-h-screen hidden lg:block">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-10 p-4 ">
             <MainHeading className="text-white text-[clamp(1.5rem,_4vw_+_1rem,_2.5rem)]">
               Connect and work <br /> with friends <br />
