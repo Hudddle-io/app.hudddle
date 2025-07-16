@@ -155,9 +155,9 @@ const OnBoarding: React.FC = () => {
   return (
     <UserSessionProvider>
       {/* Main container: full width, min height screen, flex column on small, flex row on large */}
-      <div className="w-full min-h-screen bg-white flex flex-col lg:flex-row">
+      <div className="w-full min-h-screen h-auto bg-white flex flex-col lg:flex-row">
         {/* Left Section (Form): full width on small, half width on large, centered content */}
-        <div className="w-full lg:w-1/2 min-h-screen bg-white flex flex-col justify-center py-8 px-4 sm:px-6 md:px-8 lg:px-16">
+        <div className="w-full lg:w-1/2 min-h-screen h-auto bg-white flex flex-col justify-center py-8 px-4 sm:px-6 md:px-8 lg:px-16">
           <div className="flex flex-col space-y-6 sm:space-y-8">
             {/* Logo */}
             <div>
@@ -414,8 +414,8 @@ const OnBoarding: React.FC = () => {
           </div>
         </div>
         {/* Right Section (Image and Text Overlay): Hidden on small/medium, visible on large */}
-        <div className="relative w-full lg:w-1/2 min-h-[300px] lg:min-h-screen overflow-hidden hidden lg:block">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-10 p-4">
+        <div className="relative  h-auto w-full lg:w-1/2 min-h-[300px] lg:min-h-screen hidden lg:block">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-10 p-4 ">
             <MainHeading className="text-white text-[clamp(1.5rem,_4vw_+_1rem,_2.5rem)]">
               Connect and work <br /> with friends <br />
               ...
