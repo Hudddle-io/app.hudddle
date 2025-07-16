@@ -37,10 +37,11 @@ export default function PreventTabletAndMobileWrapper({
 
   // Determine if the route is an authentication route or the onboarding route
   const isAuthRoute = route.startsWith("/auth/");
-  const isOnboardingRoute = route === "/onboarding"; // Check for exact /onboarding route
+  const isOnboardingRoute = route === "/onBoarding"; // Check for exact /onboarding route
 
   // Condition to always show children: if it's NOT mobile OR it's an auth route OR it's the onboarding route
-  const shouldAlwaysShowChildren = !isMobile || isAuthRoute || isOnboardingRoute;
+  const shouldAlwaysShowChildren =
+    !isMobile || isAuthRoute || isOnboardingRoute;
 
   useEffect(() => {
     // Function to generate random values for animation properties
@@ -108,11 +109,19 @@ export default function PreventTabletAndMobileWrapper({
       controls2.stop();
       controls3.stop();
     }
-  }, [isMobile, isAuthRoute, isOnboardingRoute, controls1, controls2, controls3]); // Add new dependencies
+  }, [
+    isMobile,
+    isAuthRoute,
+    isOnboardingRoute,
+    controls1,
+    controls2,
+    controls3,
+  ]); // Add new dependencies
 
   // Determine if the mobile message should be shown
   // This is the inverse of shouldAlwaysShowChildren, but specifically for the mobile message content
-  const shouldShowMobileMessage = isMobile && !isAuthRoute && !isOnboardingRoute;
+  const shouldShowMobileMessage =
+    isMobile && !isAuthRoute && !isOnboardingRoute;
 
   return (
     <main
