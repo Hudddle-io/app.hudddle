@@ -92,7 +92,7 @@ const OnBoarding: React.FC = () => {
       const response = await fetch(
         `${backendUri}/api/v1/auth/update-profile-data`,
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
