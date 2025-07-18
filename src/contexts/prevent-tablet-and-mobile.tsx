@@ -35,13 +35,14 @@ export default function PreventTabletAndMobileWrapper({
     };
   }, []);
 
-  // Determine if the route is an authentication route or the onboarding route
+  // Determine if the route is an authentication route, the onboarding route, or the root route
   const isAuthRoute = route.startsWith("/auth/");
   const isOnboardingRoute = route === "/onBoarding"; // Check for exact /onboarding route
+  const isRootRoute = route === "/"; // <--- ADDED THIS LINE
 
-  // Condition to always show children: if it's NOT mobile OR it's an auth route OR it's the onboarding route
+  // Condition to always show children: if it's NOT mobile OR it's an auth route OR it's the onboarding route OR it's the root route
   const shouldAlwaysShowChildren =
-    !isMobile || isAuthRoute || isOnboardingRoute;
+    !isMobile || isAuthRoute || isOnboardingRoute || isRootRoute; // <--- MODIFIED THIS LINE
 
   useEffect(() => {
     // Function to generate random values for animation properties
@@ -96,8 +97,9 @@ export default function PreventTabletAndMobileWrapper({
       });
     };
 
-    // Blobs should only animate if it's a mobile device AND NOT an auth route AND NOT the onboarding route
-    const shouldAnimateBlobs = isMobile && !isAuthRoute && !isOnboardingRoute;
+    // Blobs should only animate if it's a mobile device AND NOT an auth route AND NOT the onboarding route AND NOT the root route
+    const shouldAnimateBlobs =
+      isMobile && !isAuthRoute && !isOnboardingRoute && !isRootRoute; // <--- MODIFIED THIS LINE
 
     if (shouldAnimateBlobs) {
       startBlobAnimation(controls1, 0);
@@ -113,6 +115,7 @@ export default function PreventTabletAndMobileWrapper({
     isMobile,
     isAuthRoute,
     isOnboardingRoute,
+    isRootRoute, // <--- ADDED THIS DEPENDENCY
     controls1,
     controls2,
     controls3,
@@ -121,7 +124,7 @@ export default function PreventTabletAndMobileWrapper({
   // Determine if the mobile message should be shown
   // This is the inverse of shouldAlwaysShowChildren, but specifically for the mobile message content
   const shouldShowMobileMessage =
-    isMobile && !isAuthRoute && !isOnboardingRoute;
+    isMobile && !isAuthRoute && !isOnboardingRoute && !isRootRoute; // <--- MODIFIED THIS LINE
 
   return (
     <main

@@ -142,7 +142,7 @@ const SignUp = () => {
                       size={"sm"}
                       disabled={loading}
                       // Adjusted margin-top/bottom and made full width
-                      className="bg-[#5C5CE9] mt-8 mb-4 rounded-[8px] w-full py-2"
+                      className="bg-[#5C5CE9] mt-8 mb-4 rounded-[8px] w-full py-2 mx-auto"
                     >
                       {loading ? (
                         <h1>Creating account ....</h1>

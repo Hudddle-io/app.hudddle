@@ -150,7 +150,7 @@ const OnBoarding: React.FC = () => {
     <UserSessionProvider>
       {/* Main container: full width, min height screen, flex column on small, flex row on large */}
       {/* Removed min-h-screen from here on small screens to allow body/html to scroll if needed */}
-      <div className="w-full h-auto bg-white flex flex-col lg:flex-row lg:min-h-screen">
+      <div className="w-full h-auto bg-white flex flex-col lg:flex-row">
         {/* Left Section (Form): full width on small, half width on large, centered content */}
         {/* Added overflow-y-auto to allow scrolling within this div on small screens */}
         <div className="w-full lg:w-1/2 h-auto bg-white flex flex-col justify-center py-8 px-4 sm:px-6 md:px-8 lg:px-16 overflow-y-auto">

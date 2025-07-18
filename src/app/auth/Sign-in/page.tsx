@@ -236,7 +236,7 @@ const SignIn = () => {
                       type="submit"
                       size={"sm"}
                       disabled={loading}
-                      className="bg-[#5C5CE9] mt-8 mb-4 rounded-[8px] w-full py-2"
+                      className="bg-[#5C5CE9] mt-8 mb-4 rounded-[8px] w-full py-2 mx-auto"
                     >
                       {loading ? <h1>Logging In....</h1> : <h1>Sign In</h1>}
                     </Button>
