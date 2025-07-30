@@ -253,11 +253,11 @@ const Sidebar = () => {
   };
 
   return (
-    <section className="col-span-1 min-w-[250px] ring-[0.6px] ring-[#999999] ring-opacity-[25%] flex items-start justify-center py-10 px-6">
+    <section className="w-[250px] flex-shrink-0 ring-[0.6px] ring-[#999999] ring-opacity-[25%] flex items-start justify-center py-10 px-6">
       <div className="w-full h-full flex flex-col gap-[40px] items-center">
         <Link
           href={"/"}
-          className="relative w-[clamp(clamp(3.125rem,_4.2735vw,_6.25rem))] h-[clamp(1.5625rem,_2.1368vh,_3.125rem)]"
+          className="relative w-[50px] h-[25px]"
         >
           <Image src={"/assets/logo.svg"} alt="logo" fill />
         </Link>
@@ -341,14 +341,14 @@ const Sidebar = () => {
               statusText={true}
               isLoading={loading}
             />
-            <h1 className="text-[#FFFFFF] text-[clamp(0.9375rem,_0.5128vw,_1.3125rem)] font-semibold text-center">
+            <h1 className="text-[#FFFFFF] text-[15px] font-semibold text-center">
               {loading ? (
                 <Skeleton className="w-32 h-5 mx-auto" />
               ) : (
                 `${currentUser?.first_name} ${currentUser?.last_name}`
               )}
             </h1>
-            <p className="font-normal text-[clamp(0.5rem,_0.3419vw,_0.75rem)] leading-[16px] text-white text-center truncate text-wrap">
+            <p className="font-normal text-[8px] leading-[16px] text-white text-center truncate text-wrap">
               {loading ? (
                 <Skeleton className="w-48 h-3 mx-auto" />
               ) : (
@@ -363,12 +363,12 @@ const Sidebar = () => {
                 <Button
                   id="side-link-btn"
                   className={cn(
-                    "text-white w-full hover:bg-[#EEAE05] hover:text-[#fff] text-[clamp(0.625rem,_0.3419vw,_0.875rem)] gap-2 font-normal pl-[24px] justify-start",
+                    "text-white w-full hover:bg-[#EEAE05] hover:text-[#fff] text-[10px] gap-2 font-normal pl-[24px] justify-start",
                     pathname.startsWith(link.url) && "bg-[#EEAE05]" // Corrected logic here
                   )}
                   variant={"ghost"}
                 >
-                  <div className="relative w-[clamp(0.9375rem,_0.4274vw,_1.25rem)] h-[clamp(0.9375rem,_0.4274vh,_1.25rem]">
+                  <div className="relative w-[15px] h-[15px]">
                     {/* Ensure link.icon contains a valid path to an image file */}
                     <Image
                       alt={link.text}
@@ -383,10 +383,10 @@ const Sidebar = () => {
             ))}
             <Button
               onClick={handleLogout}
-              className="text-white w-full hover:bg-[#EEAE05] hover:text-[#fff] text-[clamp(0.625rem,_0.3419vw,_0.875rem)] gap-2 font-normal pl-[24px] justify-start"
+              className="text-white w-full hover:bg-[#EEAE05] hover:text-[#fff] text-[10px] gap-2 font-normal pl-[24px] justify-start"
               variant={"ghost"}
             >
-              <div className="relative w-[clamp(0.9375rem,_0.4274vw,_1.25rem)] h-[clamp(0.9375rem,_0.4274vh,_1.25rem]">
+              <div className="relative w-[15px] h-[15px]">
                 <Image
                   width={24}
                   height={24}
