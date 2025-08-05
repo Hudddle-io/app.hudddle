@@ -422,42 +422,86 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
     );
   };
 
-  // --- NEW: handleUseInRoomClick to send workroomId to Electron via local API ---
+  // --- UPDATED: handleUseInRoomClick to send only workroomId to desktop app ---
   const handleUseInRoomClick = async () => {
     const workroomId = params.roomId;
+    
     try {
-      const response = await fetch('http://localhost:5001/api/workroom-id', {
-        method: 'POST',
+      // Method 1: Try HTTP server connection (desktop app listens on port 3001)
+      const httpResponse = await fetch(`http://localhost:3001/connect-workroom?workroomId=${encodeURIComponent(workroomId)}`, {
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ workroomId: workroomId }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (httpResponse.ok) {
+        const data = await httpResponse.json();
         toast({
-          description: data.message || "Workroom ID sent to Electron app!",
+          description: data.message || "Successfully connected to desktop app!",
           variant: "default",
         });
-        console.log('Response from Electron:', data);
-      } else {
-        const errorData = await response.json();
-        toast({
-          description: errorData.message || "Failed to send Workroom ID to Electron app.",
-          variant: "destructive",
-        });
-        console.error('Failed to send Workroom ID to Electron:', response.statusText, errorData);
+        console.log('Desktop app connection successful:', data);
+        return; // Exit if HTTP method succeeds
       }
-    } catch (error) {
-      console.error('Error communicating with Electron app:', error);
+    } catch (httpError) {
+      console.log('HTTP connection failed, trying protocol method:', httpError);
+    }
+
+    try {
+      // Method 2: Try custom protocol (fallback method)
+      const protocolUrl = `hudddle-desktop://connect-workroom?workroomId=${encodeURIComponent(workroomId)}`;
+      
+      // Create a temporary anchor element to trigger the protocol
+      const anchor = document.createElement('a');
+      anchor.href = protocolUrl;
+      anchor.style.display = 'none';
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      
       toast({
-        description: "Could not connect to Electron app. Please ensure it is running.",
+        description: "Opening desktop app... If the app doesn't open, please start it manually.",
+        variant: "default",
+      });
+      
+      console.log('Protocol method triggered:', protocolUrl);
+      
+      // Give the desktop app time to start, then try HTTP connection again
+      setTimeout(async () => {
+        try {
+          const retryResponse = await fetch(`http://localhost:3001/connect-workroom?workroomId=${encodeURIComponent(workroomId)}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (retryResponse.ok) {
+            const retryData = await retryResponse.json();
+            toast({
+              description: retryData.message || "Desktop app connected successfully!",
+              variant: "default",
+            });
+            console.log('Retry connection successful:', retryData);
+          } else {
+            console.log('Retry connection failed, but protocol may have worked');
+          }
+        } catch (retryError) {
+          console.log('Retry connection failed:', retryError);
+          // Don't show error toast here as the protocol method might have worked
+        }
+      }, 3000); // Wait 3 seconds for desktop app to start
+      
+    } catch (protocolError) {
+      console.error('Protocol method failed:', protocolError);
+      toast({
+        description: "Could not connect to desktop app. Please ensure Hudddle Desktop is installed and try again.",
         variant: "destructive",
       });
     }
   };
-  // --- END NEW ---
+  // --- END UPDATED ---
 
 
   if (!roomData) { // Simplified loading state as extensionStatus.isLoading is removed

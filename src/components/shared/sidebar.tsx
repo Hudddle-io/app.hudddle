@@ -7,7 +7,16 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { FC, HTMLAttributes, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Dribbble, Figma, Home, ImageIcon, LogOut, Pencil } from "lucide-react";
+import {
+  Dribbble,
+  Figma,
+  Home,
+  ImageIcon,
+  LogOut,
+  Pencil,
+  Download,
+} from "lucide-react";
+import { motion } from "framer-motion";
 import { sideLinks } from "@/data/data"; // Make sure sideLinks contains correct icon paths
 import { useUserSession } from "@/contexts/useUserSession"; // This now provides refreshUser
 import { useRouter, usePathname } from "next/navigation";
@@ -396,6 +405,61 @@ const Sidebar = () => {
               </div>
               <span>Clock out</span>
             </Button>{" "}
+          </div>
+
+          {/* Download workroom button */}
+          <div className="w-full px-[14px] pb-[14px]">
+            <div className="relative rounded-lg">
+              {/* Moving gradient border - only the gradient rotates */}
+              <div className="absolute inset-0 rounded-lg p-[1px] overflow-hidden">
+                <motion.div
+                  className="absolute inset-[-50%] rounded-lg"
+                  style={{
+                    background: 'conic-gradient(from 0deg, #4A3678, #C1A0FA, #4A3678, #C1A0FA, #4A3678)'
+                  }}
+                  animate={{
+                    rotate: 360
+                  }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                />
+                <div className="absolute inset-[1px] rounded-lg bg-[#211451] z-10" />
+              </div>
+              
+              {/* Moving glow shadow - only the glow rotates */}
+              <div className="absolute -inset-1 rounded-lg overflow-hidden">
+                <motion.div
+                  className="absolute inset-[-50%] rounded-lg opacity-30 blur-md"
+                  style={{
+                    background: 'conic-gradient(from 0deg, transparent, rgba(193,160,250,0.4), transparent, rgba(193,160,250,0.4), transparent)'
+                  }}
+                  animate={{
+                    rotate: 360
+                  }}
+                  transition={{
+                    duration: 5,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                />
+              </div>
+              
+              {/* Button container - stays stationary */}
+              <div className="relative z-20">
+                <Button
+                  className="text-white w-full hover:bg-[#6B46C1] hover:text-[#fff] text-[clamp(0.625rem,_0.3419vw,_0.875rem)] gap-2 font-normal pl-[24px] justify-start bg-transparent rounded-lg border-0"
+                  variant={"ghost"}
+                >
+                  <div className="relative w-[clamp(0.9375rem,_0.4274vw,_1.25rem)] h-[clamp(0.9375rem,_0.4274vh,_1.25rem]">
+                    <Download className="w-4 h-4 text-white" />
+                  </div>
+                  <span>Download workroom</span>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
