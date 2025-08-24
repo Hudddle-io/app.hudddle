@@ -1,16 +1,29 @@
-import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
-import Image from 'next/image';
-import React from 'react';
-import ProgressBar from '@/components/shared/progress-bar';
-import { StatsCardProps } from '@/lib/@types';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
+import Image from "next/image";
+import React from "react";
+import ProgressBar from "@/components/shared/progress-bar";
+import { StatsCardProps } from "@/lib/@types";
 
-type UserLevelCategory = 'Leader' | 'Workaholic' | 'Team Player' | 'Slacker';
+type UserLevelCategory = "Leader" | "Workaholic" | "Team Player" | "Slacker";
 
-const calculateProgressPercentage = (points: number, category: UserLevelCategory): number => {
+const calculateProgressPercentage = (
+  points: number,
+  category: UserLevelCategory
+): number => {
   const thresholds = {
     Leader: { Beginner: 0, Intermediate: 50, Advanced: 150, Expert: 300 },
     Workaholic: { Beginner: 0, Intermediate: 50, Advanced: 150, Expert: 300 },
-    "Team Player": { Beginner: 0, Intermediate: 50, Advanced: 150, Expert: 300 },
+    "Team Player": {
+      Beginner: 0,
+      Intermediate: 50,
+      Advanced: 150,
+      Expert: 300,
+    },
     Slacker: { Beginner: 0, Intermediate: 50, Advanced: 150, Expert: 300 },
   };
 
@@ -36,19 +49,36 @@ const calculateProgressPercentage = (points: number, category: UserLevelCategory
   return Math.max(0, Math.min(100, progress));
 };
 
-const StatsCard: React.FC<StatsCardProps> = ({ image, title, description, progressValue, progressColor }) => {
+const StatsCard: React.FC<StatsCardProps> = ({
+  image,
+  title,
+  description,
+  progressValue,
+  progressColor,
+}) => {
   return (
-    <Card className='border-none p-4 rounded-md space-y-5 neo-effect'>
-      <CardContent className='p-0 flex gap-2'>
+    <Card className="border-none px-5 py-6 bg-white shadow-sm rounded-lg space-y-5 neo-effect">
+      <CardContent className="p-0 flex gap-2 h-2/4">
         <Image src={image} alt={title} width={30} height={30} />
-        <div>
-          <CardTitle className='text-custom-semiBlack text-xl'>{title}</CardTitle>
+        <div className="w-3/4">
+          <CardTitle className="text-custom-semiBlack text-xl">
+            {title}
+          </CardTitle>
           <CardDescription>{description}</CardDescription>
+        </div>
+        <div className="flex flex-col gap-2 w-1/4 capitalize items-end justify-center">
+          <span className="text-primary-hudddleLight font-medium ">
+            level 1
+          </span>
+          <span className="text-custom-semiBlack text-xs">up next level 2</span>
         </div>
       </CardContent>
       <ProgressBar
-        className='h-10 rounded-full'
-        progressValue={calculateProgressPercentage(progressValue, title as UserLevelCategory)}
+        className="h-14 bg-gray-300 rounded-full"
+        progressValue={calculateProgressPercentage(
+          progressValue,
+          title as UserLevelCategory
+        )}
         progressColor={progressColor}
       />
     </Card>

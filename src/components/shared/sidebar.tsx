@@ -262,18 +262,15 @@ const Sidebar = () => {
   };
 
   return (
-    <section className="w-[250px] flex-shrink-0 ring-[0.6px] ring-[#999999] ring-opacity-[25%] flex items-start justify-center py-10 px-6">
-      <div className="w-full h-full flex flex-col gap-[40px] items-center">
-        <Link
-          href={"/"}
-          className="relative w-[50px] h-[25px]"
-        >
+    <section className="w-[250px] flex-shrink-0 ring-[0.6px] ring-[#999999] overflow-auto ring-opacity-[25%] flex items-start justify-center py-3 px-6">
+      <div className="w-full h-full flex flex-col gap-2 items-center ">
+        <Link href={"/"} className="relative  h-1/6 w-28">
           <Image src={"/assets/logo.svg"} alt="logo" fill />
         </Link>
 
         {/* huddle user bar */}
         <div
-          className="relative shadow-xl mt-[50px] w-full h-fit rounded-[16px] bg-[#211451] px-[14px] py-[4px]"
+          className="relative flex flex-col shadow-xl mt-[50px] w-full h-5/6 rounded-[16px] bg-[#211451] px-[14px] py-[4px]"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
@@ -366,98 +363,102 @@ const Sidebar = () => {
             </p>
           </header>
           {/* links */}
-          <div className="flex flex-col w-full h-fit gap-[24px] pb-[14px]">
-            {sideLinks.map((link, i) => (
-              <Link id="side-link" key={i} href={link.url}>
-                <Button
-                  id="side-link-btn"
-                  className={cn(
-                    "text-white w-full hover:bg-[#EEAE05] hover:text-[#fff] text-[10px] gap-2 font-normal pl-[24px] justify-start",
-                    pathname.startsWith(link.url) && "bg-[#EEAE05]" // Corrected logic here
-                  )}
-                  variant={"ghost"}
-                >
-                  <div className="relative w-[15px] h-[15px]">
-                    {/* Ensure link.icon contains a valid path to an image file */}
-                    <Image
-                      alt={link.text}
-                      src={`${link.icon}`}
-                      width={24}
-                      height={24}
-                    />
-                  </div>
-                  <span>{link.text}</span>
-                </Button>{" "}
-              </Link>
-            ))}
-            <Button
-              onClick={handleLogout}
-              className="text-white w-full hover:bg-[#EEAE05] hover:text-[#fff] text-[10px] gap-2 font-normal pl-[24px] justify-start"
-              variant={"ghost"}
-            >
-              <div className="relative w-[15px] h-[15px]">
-                <Image
-                  width={24}
-                  height={24}
-                  alt="signout image"
-                  src={"/assets/home.svg"} // Consider using a dedicated logout icon if available
-                />
-              </div>
-              <span>Clock out</span>
-            </Button>{" "}
-          </div>
+          <div className="flex flex-col justify-between pb-3 flex-1">
+            <div className="flex flex-col w-full h-fit gap-2   pb-[14px]">
+              {sideLinks.map((link, i) => (
+                <Link id="side-link" key={i} href={link.url}>
+                  <Button
+                    id="side-link-btn"
+                    className={cn(
+                      "text-white w-full hover:bg-[#EEAE05] hover:text-[#fff] text-sm gap-2 font-normal pl-[24px] justify-start",
+                      pathname.startsWith(link.url) && "bg-pink-900" // Corrected logic here
+                    )}
+                    variant={"ghost"}
+                  >
+                    <div className="relative w-[15px] h-[15px]">
+                      {/* Ensure link.icon contains a valid path to an image file */}
+                      <Image
+                        alt={link.text}
+                        src={`${link.icon}`}
+                        width={24}
+                        height={24}
+                      />
+                    </div>
+                    <span>{link.text}</span>
+                  </Button>{" "}
+                </Link>
+              ))}
+              <Button
+                onClick={handleLogout}
+                className="text-white w-full text-sm hover:bg-[#EEAE05] hover:text-[#fff]  gap-2 font-normal pl-[24px] justify-start"
+                variant={"ghost"}
+              >
+                <div className="relative w-[15px] h-[15px]">
+                  <Image
+                    width={24}
+                    height={24}
+                    alt="signout image"
+                    src={"/assets/home.svg"} // Consider using a dedicated logout icon if available
+                  />
+                </div>
+                <span>Clock out</span>
+              </Button>{" "}
+            </div>
 
-          {/* Download workroom button */}
-          <div className="w-full px-[14px] pb-[14px]">
-            <div className="relative rounded-lg">
-              {/* Moving gradient border - only the gradient rotates */}
-              <div className="absolute inset-0 rounded-lg p-[1px] overflow-hidden">
-                <motion.div
-                  className="absolute inset-[-50%] rounded-lg"
-                  style={{
-                    background: 'conic-gradient(from 0deg, #4A3678, #C1A0FA, #4A3678, #C1A0FA, #4A3678)'
-                  }}
-                  animate={{
-                    rotate: 360
-                  }}
-                  transition={{
-                    duration: 5,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                />
-                <div className="absolute inset-[1px] rounded-lg bg-[#211451] z-10" />
-              </div>
-              
-              {/* Moving glow shadow - only the glow rotates */}
-              <div className="absolute -inset-1 rounded-lg overflow-hidden">
-                <motion.div
-                  className="absolute inset-[-50%] rounded-lg opacity-30 blur-md"
-                  style={{
-                    background: 'conic-gradient(from 0deg, transparent, rgba(193,160,250,0.4), transparent, rgba(193,160,250,0.4), transparent)'
-                  }}
-                  animate={{
-                    rotate: 360
-                  }}
-                  transition={{
-                    duration: 5,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                />
-              </div>
-              
-              {/* Button container - stays stationary */}
-              <div className="relative z-20">
-                <Button
-                  className="text-white w-full hover:bg-[#6B46C1] hover:text-[#fff] text-[clamp(0.625rem,_0.3419vw,_0.875rem)] gap-2 font-normal pl-[24px] justify-start bg-transparent rounded-lg border-0"
-                  variant={"ghost"}
-                >
-                  <div className="relative w-[clamp(0.9375rem,_0.4274vw,_1.25rem)] h-[clamp(0.9375rem,_0.4274vh,_1.25rem]">
-                    <Download className="w-4 h-4 text-white" />
-                  </div>
-                  <span>Download workroom</span>
-                </Button>
+            {/* Download workroom button */}
+            <div className="w-full px-[14px] pb-[14px]">
+              <div className="relative rounded-lg">
+                {/* Moving gradient border - only the gradient rotates */}
+                <div className="absolute inset-0 rounded-lg p-[1px] overflow-hidden">
+                  <motion.div
+                    className="absolute inset-[-50%] rounded-lg"
+                    style={{
+                      background:
+                        "conic-gradient(from 0deg, #4A3678, #C1A0FA, #4A3678, #C1A0FA, #4A3678)",
+                    }}
+                    animate={{
+                      rotate: 360,
+                    }}
+                    transition={{
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                  <div className="absolute inset-[1px] rounded-lg bg-[#211451] z-10" />
+                </div>
+
+                {/* Moving glow shadow - only the glow rotates */}
+                <div className="absolute -inset-1 rounded-lg overflow-hidden">
+                  <motion.div
+                    className="absolute inset-[-50%] rounded-lg opacity-30 blur-md"
+                    style={{
+                      background:
+                        "conic-gradient(from 0deg, transparent, rgba(193,160,250,0.4), transparent, rgba(193,160,250,0.4), transparent)",
+                    }}
+                    animate={{
+                      rotate: 360,
+                    }}
+                    transition={{
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                </div>
+
+                {/* Button container - stays stationary */}
+                <div className="relative z-20">
+                  <Button
+                    className="text-white w-full hover:bg-[#6B46C1] hover:text-[#fff] text-[clamp(0.625rem,_0.3419vw,_0.875rem)] gap-2 font-normal pl-[24px] justify-start bg-transparent rounded-lg border-0"
+                    variant={"ghost"}
+                  >
+                    <div className="relative w-[clamp(0.9375rem,_0.4274vw,_1.25rem)] h-[clamp(0.9375rem,_0.4274vh,_1.25rem]">
+                      <Download className="w-4 h-4 text-white" />
+                    </div>
+                    <span>Download workroom</span>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -486,7 +487,7 @@ const Sidebar = () => {
         )}
 
         {/* bar footer */}
-        <footer className="w-full p-[14px] mx-5 flex flex-col gap-2">
+        <footer className="w-full p-[14px] h-1/6  mx-5 flex flex-col gap-2">
           <p className="font-normal text-[14px] leading-[20px] text-[#707070]">
             Frequently used tools
           </p>

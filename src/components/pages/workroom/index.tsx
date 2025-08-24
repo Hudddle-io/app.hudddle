@@ -5,7 +5,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { MainHeading, SubHeading } from "@/components/basics/Heading";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus } from "lucide-react";
+import { Building, Loader2, Pen, Plus } from "lucide-react";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -348,17 +348,23 @@ const WorkroomPage = (props: Props) => {
   }, [searchQuery, sharedWorkrooms]);
 
   return (
-    <main className="py-12 px-10 flex flex-col gap-4">
+    <main className="py-12 px-10 flex flex-col gap-2 bg-[#FDFCFC]">
       <header className="flex w-full justify-between items-center">
         <MainHeading variant="secondary">Workrooms</MainHeading>
-        <div className="flex items-center gap-[clamp(0.625rem,_0.8547vw,_1.25rem)]">
-          <Button className="w-[clamp(9.375rem,_5.4701vw,_13.375rem)] rounded-[16px] bg-white text-[#956FD6] shadow">
-            {roomsData.length} Workrooms
-          </Button>
-          <Button className="w-[clamp(6.25rem,_4.8718vw,_9.8125rem)] rounded-[16px] bg-white text-[#956FD6] shadow">
-            {roomsData.filter((room) => room.isActive).length} Active
-          </Button>
+        <div className="flex items-center justify-around  w-3/5 gap-[clamp(0.625rem,_0.8547vw,_1.25rem)]">
+          <div className="w-1/3 shadow-md rounded-2xl text-base font-medium text-gray-900 bg-white justify-center py-3.5 flex item-center gap-7">
+            <div className="text-primary-hudddleLight">
+              <Building />
+            </div>
+            <span>{roomsData.length} Workroom</span>
+          </div>
+          <div className="w-1/3 rounded-2xl text-base font-medium bg-white text-primary-hudddleLight text-center shadow-md py-3.5">
+            <span>
+              {roomsData.filter((room) => room.isActive).length} Active
+            </span>
+          </div>
           <NavigationLink
+            className="w-1/3"
             onClick={handleCreateRoom}
             icon={{
               icon_component: <Plus size={24} color="white" />,
@@ -372,7 +378,9 @@ const WorkroomPage = (props: Props) => {
 
       <section id="active-workroom" className="w-full flex flex-col gap-2">
         <header className="w-full flex items-center justify-between">
-          <SubHeading>You&apos;re presently working on</SubHeading>
+          <SubHeading className="text-base font-medium">
+            You&apos;re presently working on
+          </SubHeading>
           <Button variant="ghost" size="icon">
             <Image src={BulletedList} alt="list" width={16} height={16} />
           </Button>
@@ -380,28 +388,31 @@ const WorkroomPage = (props: Props) => {
 
         {loading ? (
           <RecentWorkroomsLoader />
-        ) : roomsData[0] ? (
-          <div className="w-full h-[clamp(6.25rem,_3.6752vh,_8.9375rem)] rounded-[16px] card-morph border border-[#956FD6] py-1 px-4 flex flex-col justify-between">
-            <section className="flex justify-between">
-              <div className="flex items-start flex-col gap-1">
+        ) : !roomsData[0] ? (
+          <div className="w-full  shadow-md rounded-[16px] card-morph  p-7 min-h-48 flex flex-col justify-between">
+            <section className="flex justify-between ">
+              <div className="flex items-start flex-col gap-3">
                 <MainHeading variant="bigCardTitle">
-                  {roomsData[0].name}
+                  {/* {roomsData[0].name } */}
+                  workroom test 1
                 </MainHeading>
                 <Button
                   variant="ghost"
-                  className="text-[#956FD6] text-xs p-0 h-0"
-                  onClick={() => handleEditWorkroom(roomsData[0].id)}
+                  className="text-primary-hudddleLight space-x-1 text-xs p-0 h-0"
+                  // onClick={() => handleEditWorkroom(roomsData[0].id)}
                 >
-                  Edit workroom
+                  <Pen size={10} />
+                  <span>Edit workroom</span>
                 </Button>
               </div>
-              {roomsData[0].isActive && (
+              {/* {roomsData[0].isActive && ( */}
+              {
                 <div className="w-4 h-4 bg-[#ADD359] animate-pulse rounded-full" />
-              )}
+              }
             </section>
             <section className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <span className="flex gap-1">
+                {/* <span className="flex gap-1">
                   {roomsData[0].users
                     ?.slice(0, 3)
                     .map((user: any, idx: number) => (
@@ -417,17 +428,18 @@ const WorkroomPage = (props: Props) => {
                         />
                       </div>
                     ))}
-                </span>
+                </span> */}
                 <p className="text-sm text-[#999999]">
-                  {roomsData[0].users?.map((u: any) => u.fullname).join(", ")}{" "}
+                  {/* {roomsData[0].users?.map((u: any) => u.fullname).join(", ")}{" "} */}
                   are in this workroom
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <NavigationLink
-                  href={`/workroom/room/${roomsData[0].id}`}
+                  // href={`/workroom/room/${roomsData[0].id}`}
+                  // href={`/workroom/room/${roomsData`}
                   variant={"outline"}
-                  className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none"
+                  className="h-7 text-sm rounded-[6px] bg-primary-hudddle text-white capitalize shadow-none"
                 >
                   join Workroom
                 </NavigationLink>
@@ -442,23 +454,31 @@ const WorkroomPage = (props: Props) => {
         )}
       </section>
 
-      <section className="w-full pt-4">
+      <section className="w-full pt-10">
         <Tabs
           defaultValue="workroom"
           value={activeTab}
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center ">
             <TabsList>
-              <TabsTrigger value="workroom">workroom</TabsTrigger>
-              <TabsTrigger value="created">created by you</TabsTrigger>
-              <TabsTrigger value="shared">shared workrooms</TabsTrigger>
+              {["workroom", "created by you", "shared workrooms"].map(
+                (item) => (
+                  <TabsTrigger
+                    className="text-primary-hudddle capitalize"
+                    key={item}
+                    value={item}
+                  >
+                    {item}
+                  </TabsTrigger>
+                )
+              )}
             </TabsList>
             <Input
               type="search"
-              placeholder="search rooms"
-              className="h-9 w-[clamp(12.5rem,_15.6239vw,_21rem)]"
+              placeholder="search"
+              className="h-9 w-1/3 placeholder:capitalize p-4"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -471,8 +491,10 @@ const WorkroomPage = (props: Props) => {
               value="workroom"
               className="w-full grid grid-cols-2 gap-4"
             >
-              {filteredRooms.map((room, index) => {
-                const isCreatedByYou = room.createdBy?._id === currentUserId;
+              {/* {filteredRooms.map((room, index) => { */}
+              {Array.from({ length: 3 }).map((room, index) => {
+                // const isCreatedByYou = room.createdBy?._id === currentUserId;
+                const isCreatedByYou = true;
 
                 return (
                   <div
@@ -482,59 +504,60 @@ const WorkroomPage = (props: Props) => {
                     <header className="flex justify-between">
                       <div className="flex flex-col items-start gap-2">
                         <MainHeading variant="smallCardTitle">
-                          {room.name}
+                          {/* {room.name} */}
+                          Workroom Test 3
                         </MainHeading>
                         {isCreatedByYou ? (
                           <Button
                             variant="ghost"
                             className="text-[#956FD6] text-xs p-0 h-0"
-                            onClick={() => handleEditWorkroom(room.id)}
+                            // onClick={() => handleEditWorkroom(room.id)}
                           >
                             Edit workroom
                           </Button>
                         ) : (
                           <span className="text-sm text-muted-foreground">
-                            Created by {room.createdBy?.fullname || "someone"}
+                            {/* Created by {room.createdBy?.fullname || "someone"} */}
+                            Created by someone
                           </span>
                         )}
                       </div>
-                      {room.isActive && (
-                        <div className="w-4 h-4 bg-[#ADD359] animate-pulse rounded-full" />
-                      )}
+                      {/* {room.isActive && ( */}
+                      <div className="w-4 h-4 bg-[#ADD359] animate-pulse rounded-full" />
+                      {/* )} */}
                     </header>
                     <footer className="w-full flex items-center justify-between">
                       <div className="flex items-center">
                         {/* Clustered avatars */}
-                        {room.users && room.users.length > 0 && (
-                          <div className="flex items-center -space-x-2 mr-2">
-                            {room.users
+                        {/* {room.users && room.users.length > 0 && ( */}
+                        <div className="flex items-center -space-x-2 mr-2">
+                          {/* {room.users
                               .slice(0, 4)
-                              .map((user: any, userIdx: number) => (
-                                <div
-                                  key={userIdx}
-                                  className="w-7 h-7 bg-black rounded-full relative border-2 border-white" // Added relative for fill prop and border for visibility
-                                  style={{ zIndex: 4 - userIdx }} // Ensures correct overlap order
-                                >
-                                  <Image
-                                    src={
-                                      user.avatar_url ||
-                                      DefaultAvatarPlaceholder
-                                    }
-                                    className="rounded-full object-cover"
-                                    alt={`${user.fullname || "User"}'s avatar`}
-                                    fill
-                                  />
-                                </div>
-                              ))}
+                              .map((user: any, userIdx: number) => ( */}
+                          <div
+                            // key={userIdx}
+                            className="w-7 h-7 bg-black rounded-full relative border-2 border-white" // Added relative for fill prop and border for visibility
+                            // style={{ zIndex: 4 - userIdx }} // Ensures correct overlap order
+                          >
+                            {/* <Image
+                              src={user.avatar_url || DefaultAvatarPlaceholder}
+                              className="rounded-full object-cover"
+                              alt={`${user.fullname || "User"}'s avatar`}
+                              fill
+                            /> */}
                           </div>
-                        )}
+                          {/* ))} */}
+                        </div>
+                        {/* } */}
                         <p className="text-sm text-[#999999]">
-                          {room.users?.length > 0
+                          {/* {room.users?.length > 0
                             ? `${room.users.length} people in this workroom`
-                            : "No one is in this workroom"}
+                            : "No one is in this workroom"} */}
+                          No one is in this workroom
                         </p>
                         <NavigationLink
-                          href={`/workroom/room/${room.id}`}
+                          // href={`/workroom/room/${room.id}`}
+                          href={`/workroom/room`}
                           variant={"outline"}
                           className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none ml-2"
                         >
@@ -546,7 +569,7 @@ const WorkroomPage = (props: Props) => {
                         variant="ghost"
                         disabled={deleting}
                         className="p-0 h-0"
-                        onClick={() => handleDeleteWorkroom(room.id)}
+                        // onClick={() => handleDeleteWorkroom(room.id)}
                       >
                         {deleting ? (
                           <div className="flex items-center gap-2 text-red-500">

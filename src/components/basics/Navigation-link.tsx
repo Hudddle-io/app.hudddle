@@ -71,7 +71,7 @@ const NavigationLink: React.FC<NavigationLinkProps> = ({
       variant={variant}
       onClick={handleClick} // Call the async handleClick
       disabled={linkIsNavigating}
-      className={"flex items-center gap-2 " + className} // Added for spacing
+      className={"flex items-center gap-2 !p-4 rounded-xl " + className} // Added for spacing
     >
       {/* Render left icon if not navigating and position is left */}
       {icon &&

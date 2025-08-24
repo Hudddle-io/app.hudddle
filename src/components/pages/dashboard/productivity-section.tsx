@@ -26,9 +26,11 @@ const TimeLogCardContent: React.FC<TimeLogCardContentProps> = ({
   value,
   border,
 }) => (
-  <CardContent className={`rounded-none ${border}`}>
+  <CardContent
+    className={`rounded-none ${border} flex flex-col items-center !justify-center  `}
+  >
     <CardDescription>{description}</CardDescription>
-    <h1 className="text-[#E27522] font-bold gap-1 text-lg flex items-center">
+    <div className="text-[#E27522] font-bold gap-1 text-lg flex items-center">
       {description === "Your points" ? (
         <>
           {value}{" "}
@@ -44,7 +46,7 @@ const TimeLogCardContent: React.FC<TimeLogCardContentProps> = ({
           {value}
         </>
       )}
-    </h1>
+    </div>
   </CardContent>
 );
 
@@ -189,11 +191,11 @@ const ProductivityBadge: React.FC<{
   currentUser: ProductivitySectionProps["currentUser"];
 }> = ({ currentUser }) => {
   return (
-    <Card className="border-none rounded-md p-4 h-full neo-effect">
-      <CardContent className="p-0 flex items-center gap-5">
+    <Card className="border-none flex item-center justify-center rounded-md p-4 h-full neo-effect">
+      <CardContent className="p-0 flex items-center gap-7">
         <Image src={"/assets/chess.svg"} alt="chess" width={30} height={30} />
         <div>
-          <CardTitle className="text-xl font-semibold text-custom-semiBlack p-0">
+          <CardTitle className="text-xl font-semibold text-primary-hudddle p-0">
             {currentUser?.productivity || 0}%{" "}
             <span className="font-bold">productive</span>
           </CardTitle>
@@ -202,7 +204,7 @@ const ProductivityBadge: React.FC<{
                 It would need to be part of RoomMemberData directly if it's meant to be displayed here from the parent. */}
             {`${
               (currentUser as any)?.average_task_time_hours || 0
-            } hrs per task`}
+            }hrs per task`}
           </CardDescription>
         </div>
       </CardContent>

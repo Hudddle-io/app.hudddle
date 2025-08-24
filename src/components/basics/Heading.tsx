@@ -25,7 +25,7 @@ export const MainHeading: FC<HeadingProps> = ({
       <h1
         className={
           className +
-          " font-inria leading-[55px] text-[clamp(1.375rem,_1.2821vw,_2.3125rem)] font-bold"
+          " font-inria text-4xl text-primary-hudddle  leading-[55px]  font-bold"
         }
       >
         {children}
@@ -34,14 +34,14 @@ export const MainHeading: FC<HeadingProps> = ({
   }
   if (variant === "bigCardTitle") {
     return (
-      <h1
+      <h2
         className={
           className +
-          "leading-[28px] text-[clamp(1.375rem,_1.2821vw,_2.3125rem)] font-bold"
+          "leading-[28px] text-3xl capitalize text-primary-hudddle font-black"
         }
       >
         {children}
-      </h1>
+      </h2>
     );
   }
   if (variant === "smallCardTitle") {

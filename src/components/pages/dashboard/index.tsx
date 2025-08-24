@@ -296,7 +296,7 @@ const PageDashboard: React.FC = () => {
   };
 
   return (
-    <section className="pt-8 pb-10 px-12 overflow-y-scroll">
+    <section className="pt-14 pb-10 px-12 overflow-y-scroll">
       <Header
         friends={friends}
         name={currentUser?.first_name || "Guest"}
@@ -305,10 +305,10 @@ const PageDashboard: React.FC = () => {
         companyName="Atlassian Incorporated"
       />
       <div className="mt-10">
-        <p className="text-custom-semiBlack font-semibold text-right">
-          Streaks:{" "}
-          <span className="text-custom-yellow">
-            {userStreak?.current_streak || 0}
+        <p className="text-gray-500 font-semibold text-right">
+          Streak:{" "}
+          <span className="text-primary-hudddleLight">
+            {userStreak?.current_streak || 0} days
           </span>
         </p>
         <ProductivitySection
@@ -331,25 +331,30 @@ const PageDashboard: React.FC = () => {
               : null
           }
         />
-        <div className="w-full grid grid-cols-2 gap-x-10 gap-y-5 mt-10">
-          {userLevels.map((level) => (
-            <StatsCard
-              key={level.category}
-              image={levelImageMap[level.category]}
-              title={level.category}
-              description={levelDescriptions[level.category]}
-              progressValue={level.points}
-              progressColor={
-                level.category === "Leader"
-                  ? "#F97316"
-                  : level.category === "Workaholic"
-                  ? "#84CC16"
-                  : level.category === "Team Player"
-                  ? "#2563EB"
-                  : "#EC4899"
-              }
-            />
-          ))}
+        <div>
+          <h2 className="text-2xl capitalize pt-10 font-bold text-primary-hudddleLight">
+            weekly stats
+          </h2>
+          <div className="w-full grid grid-cols-2 gap-x-10 gap-y-5 mt-10">
+            {userLevels.map((level) => (
+              <StatsCard
+                key={level.category}
+                image={levelImageMap[level.category]}
+                title={level.category}
+                description={levelDescriptions[level.category]}
+                progressValue={level.points}
+                progressColor={
+                  level.category === "Leader"
+                    ? "#F97316"
+                    : level.category === "Workaholic"
+                    ? "#84CC16"
+                    : level.category === "Team Player"
+                    ? "#2563EB"
+                    : "#EC4899"
+                }
+              />
+            ))}
+          </div>
         </div>
         <div className="mt-10 flex justify-between items-center">
           <h1 className="font-bold text-slate-600 text-xl">

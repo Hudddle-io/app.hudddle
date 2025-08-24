@@ -104,14 +104,14 @@ const Header: React.FC<HeaderProps> = ({
       >
         <CardHeader className="p-0">
           <SubHeading
-            className={`text-custom-semiBlack ${
+            className={`text-primary-hudddle !text-base ${
               isInWorkroom ? "font-bold" : "font-semibold"
             }`}
           >
             {!isInWorkroom ? formatDate() : companyName}
           </SubHeading>
           {!isInWorkroom ? (
-            <MainHeading className="text-custom-semiBlack font-light">
+            <MainHeading className="text-primary-hudddle font-light">
               Welcome, <span className="font-semibold">{name}</span>
             </MainHeading>
           ) : (
