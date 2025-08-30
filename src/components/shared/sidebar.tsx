@@ -370,8 +370,8 @@ const Sidebar = () => {
                   <Button
                     id="side-link-btn"
                     className={cn(
-                      "text-white w-full hover:bg-[#EEAE05] hover:text-[#fff] text-sm gap-2 font-normal pl-[24px] justify-start",
-                      pathname.startsWith(link.url) && "bg-pink-900" // Corrected logic here
+                      "text-white w-full hover:bg-primary-hudddleLight hover:text-[#fff] text-sm gap-2 font-normal pl-[24px] justify-start",
+                      pathname.startsWith(link.url) && "bg-primary-hudddleLight" // Corrected logic here
                     )}
                     variant={"ghost"}
                   >
@@ -390,7 +390,7 @@ const Sidebar = () => {
               ))}
               <Button
                 onClick={handleLogout}
-                className="text-white w-full text-sm hover:bg-[#EEAE05] hover:text-[#fff]  gap-2 font-normal pl-[24px] justify-start"
+                className="text-white w-full text-sm hover:bg-primary-hudddleLight hover:text-[#fff]  gap-2 font-normal pl-[24px] justify-start"
                 variant={"ghost"}
               >
                 <div className="relative w-[15px] h-[15px]">
@@ -491,7 +491,7 @@ const Sidebar = () => {
           <p className="font-normal text-[14px] leading-[20px] text-[#707070]">
             Frequently used tools
           </p>
-          <div className="flex flex-row items-center space-x-2">
+          <div className="flex flex-row items-center justify-center space-x-2">
             <Image src={pinterest} width={20} height={20} alt="pintrest" />
             <Image src={dribble} width={20} height={20} alt="dribble" />
           </div>

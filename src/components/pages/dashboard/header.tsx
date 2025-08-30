@@ -122,22 +122,19 @@ const Header: React.FC<HeaderProps> = ({
         </CardHeader>
         <CardContent className="flex gap-4 p-0">
           {!isInWorkroom ? (
-            <>
+            <div className="flex items-center gap-4">
               <div className="flex flex-col p-0 items-end text-custom-semiBlack">
                 {firstThreeFriends.length > 0 ? ( // Conditional rendering based on friends array
-                  <>
+                  <div className="flex flex-col justify-center gap-1 items-end ">
                     <div className="flex items-center gap-1">
                       {/* Map over the first three friends */}
                       {firstThreeFriends.map((friend) => (
                         <TooltipProvider key={friend.id}>
                           <Tooltip>
                             <TooltipTrigger>
-                              <Avatar className="w-[clamp(1rem,_0.6838vw,_1.5rem)] h-[clamp(1rem,_0.6838vh,_1.5rem)]">
+                              <Avatar className="size-8">
                                 <AvatarImage
-                                  src={
-                                    friend.avatar_url ||
-                                    "/assets/profileImage.svg"
-                                  } // Use friend's avatar_url, with a fallback
+                                  src={friend.avatar_url} // Use friend's avatar_url, with a fallback
                                   loading="lazy"
                                   alt={`${friend.first_name} ${friend.last_name}'s profile`}
                                 />
@@ -162,7 +159,7 @@ const Header: React.FC<HeaderProps> = ({
                     </div>
                     {/* Updated text */}
                     <p className="text-xs">Your Friends are waiting for you</p>
-                  </>
+                  </div>
                 ) : (
                   // Render when friends array is empty
                   <div className="flex flex-col items-end gap-2">
@@ -187,7 +184,7 @@ const Header: React.FC<HeaderProps> = ({
               >
                 Create workroom
               </NavigationLink>
-            </>
+            </div>
           ) : (
             <p className="text-sm font-semibold text-custom-semiBlack">
               {formatDate()}

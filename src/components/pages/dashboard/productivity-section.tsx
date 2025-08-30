@@ -27,7 +27,7 @@ const TimeLogCardContent: React.FC<TimeLogCardContentProps> = ({
   border,
 }) => (
   <CardContent
-    className={`rounded-none ${border} flex flex-col items-center !justify-center  `}
+    className={`rounded-none ${border} flex flex-col items-center !p-4 justify-center  `}
   >
     <CardDescription>{description}</CardDescription>
     <div className="text-[#E27522] font-bold gap-1 text-lg flex items-center">
@@ -166,7 +166,7 @@ export const DailyTimeLog: React.FC<{
     : formatElapsedTime((currentUser?.daily_active_minutes || 0) * 60 * 1000);
 
   return (
-    <Card className="border-none rounded-md p-4 grid grid-cols-3 h-full neo-effect">
+    <Card className="border-none rounded-lg shadow-md p-4 grid grid-cols-3 h-full ">
       <TimeLogCardContent
         description="Your points"
         icon={"/assets/strike-full.svg"}
@@ -191,7 +191,7 @@ const ProductivityBadge: React.FC<{
   currentUser: ProductivitySectionProps["currentUser"];
 }> = ({ currentUser }) => {
   return (
-    <Card className="border-none flex item-center justify-center rounded-md p-4 h-full neo-effect">
+    <Card className="border-none flex item-center justify-center rounded-lg p-4 h-full shadow-md">
       <CardContent className="p-0 flex items-center gap-7">
         <Image src={"/assets/chess.svg"} alt="chess" width={30} height={30} />
         <div>
@@ -272,11 +272,11 @@ const ProductivitySection: React.FC<ProductivitySectionProps> = ({
   );
 
   return (
-    <Card className="grid gap-6 grid-cols-9 mt-3 rounded-none border-none shadow-none">
-      <div className="col-span-3">
+    <Card className="grid gap-6 bg-inherit grid-cols-9 mt-3 rounded-none border-none shadow-none">
+      <div className="col-span-2">
         <ProductivityBadge currentUser={currentUser} />
       </div>
-      <div className="col-span-6">
+      <div className="col-span-7">
         <DailyTimeLog
           currentUser={currentUser}
           onUpdateUserData={updateUserProfileData}

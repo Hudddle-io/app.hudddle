@@ -308,7 +308,8 @@ const PageDashboard: React.FC = () => {
         <p className="text-gray-500 font-semibold text-right">
           Streak:{" "}
           <span className="text-primary-hudddleLight">
-            {userStreak?.current_streak || 0} days
+            {userStreak?.current_streak || 0}{" "}
+            {(userStreak?.current_streak ?? 0) > 1 ? "days" : "day"}
           </span>
         </p>
         <ProductivitySection

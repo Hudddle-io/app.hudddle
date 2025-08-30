@@ -425,15 +425,20 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   // --- UPDATED: handleUseInRoomClick to send only workroomId to desktop app ---
   const handleUseInRoomClick = async () => {
     const workroomId = params.roomId;
-    
+
     try {
       // Method 1: Try HTTP server connection (desktop app listens on port 3001)
-      const httpResponse = await fetch(`http://localhost:3001/connect-workroom?workroomId=${encodeURIComponent(workroomId)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const httpResponse = await fetch(
+        `http://localhost:3001/connect-workroom?workroomId=${encodeURIComponent(
+          workroomId
+        )}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (httpResponse.ok) {
         const data = await httpResponse.json();
@@ -441,70 +446,81 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           description: data.message || "Successfully connected to desktop app!",
           variant: "default",
         });
-        console.log('Desktop app connection successful:', data);
+        console.log("Desktop app connection successful:", data);
         return; // Exit if HTTP method succeeds
       }
     } catch (httpError) {
-      console.log('HTTP connection failed, trying protocol method:', httpError);
+      console.log("HTTP connection failed, trying protocol method:", httpError);
     }
 
     try {
       // Method 2: Try custom protocol (fallback method)
-      const protocolUrl = `hudddle-desktop://connect-workroom?workroomId=${encodeURIComponent(workroomId)}`;
-      
+      const protocolUrl = `hudddle-desktop://connect-workroom?workroomId=${encodeURIComponent(
+        workroomId
+      )}`;
+
       // Create a temporary anchor element to trigger the protocol
-      const anchor = document.createElement('a');
+      const anchor = document.createElement("a");
       anchor.href = protocolUrl;
-      anchor.style.display = 'none';
+      anchor.style.display = "none";
       document.body.appendChild(anchor);
       anchor.click();
       document.body.removeChild(anchor);
-      
+
       toast({
-        description: "Opening desktop app... If the app doesn't open, please start it manually.",
+        description:
+          "Opening desktop app... If the app doesn't open, please start it manually.",
         variant: "default",
       });
-      
-      console.log('Protocol method triggered:', protocolUrl);
-      
+
+      console.log("Protocol method triggered:", protocolUrl);
+
       // Give the desktop app time to start, then try HTTP connection again
       setTimeout(async () => {
         try {
-          const retryResponse = await fetch(`http://localhost:3001/connect-workroom?workroomId=${encodeURIComponent(workroomId)}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          
+          const retryResponse = await fetch(
+            `http://localhost:3001/connect-workroom?workroomId=${encodeURIComponent(
+              workroomId
+            )}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
           if (retryResponse.ok) {
             const retryData = await retryResponse.json();
             toast({
-              description: retryData.message || "Desktop app connected successfully!",
+              description:
+                retryData.message || "Desktop app connected successfully!",
               variant: "default",
             });
-            console.log('Retry connection successful:', retryData);
+            console.log("Retry connection successful:", retryData);
           } else {
-            console.log('Retry connection failed, but protocol may have worked');
+            console.log(
+              "Retry connection failed, but protocol may have worked"
+            );
           }
         } catch (retryError) {
-          console.log('Retry connection failed:', retryError);
+          console.log("Retry connection failed:", retryError);
           // Don't show error toast here as the protocol method might have worked
         }
       }, 3000); // Wait 3 seconds for desktop app to start
-      
     } catch (protocolError) {
-      console.error('Protocol method failed:', protocolError);
+      console.error("Protocol method failed:", protocolError);
       toast({
-        description: "Could not connect to desktop app. Please ensure Hudddle Desktop is installed and try again.",
+        description:
+          "Could not connect to desktop app. Please ensure Hudddle Desktop is installed and try again.",
         variant: "destructive",
       });
     }
   };
   // --- END UPDATED ---
 
-
-  if (!roomData) { // Simplified loading state as extensionStatus.isLoading is removed
+  if (!roomData) {
+    // Simplified loading state as extensionStatus.isLoading is removed
     return <RoomLoader />;
   }
 
@@ -694,7 +710,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                             (m as LeaderboardEntry).user_id ||
                             i
                           }
-                          className="h-auto min-h-[clamp(3.75rem,_3.6303rem+0.5983vh,_4.1875rem)] rounded-[12px] bg-[#956fd634] p-[clamp(0.625rem,_0.5224rem+0.5128vw,_1rem)] flex justify-between items-end cursor-pointer"
+                          className="h-auto min-h-[clamp(3.75rem,_3.6303rem+0.5983vh,_4.1875rem)] rounded-[12px] hover:bg-[#956fd634] p-[clamp(0.625rem,_0.5224rem+0.5128vw,_1rem)] flex justify-between items-end cursor-pointer"
                           onClick={() => {
                             const fullMemberData = safeRoomDataMembers.find(
                               (member) =>
@@ -1188,4 +1204,3 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
     </main>
   );
 }
-

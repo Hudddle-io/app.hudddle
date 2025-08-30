@@ -46,14 +46,14 @@ export const MainHeading: FC<HeadingProps> = ({
   }
   if (variant === "smallCardTitle") {
     return (
-      <h1
+      <h2
         className={
           className +
-          "leading-[28px] text-[clamp(1rem,_0.4274vw,_1.3125rem)] font-bold"
+          "leading-[28px] text-primary-hudddle text-2xl font-extrabold"
         }
       >
         {children}
-      </h1>
+      </h2>
     );
   }
 
