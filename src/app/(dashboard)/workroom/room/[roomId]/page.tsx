@@ -425,96 +425,122 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   // --- UPDATED: handleUseInRoomClick to send only workroomId to desktop app ---
   const handleUseInRoomClick = async () => {
     const workroomId = params.roomId;
-
-    try {
-      // Method 1: Try HTTP server connection (desktop app listens on port 3001)
-      const httpResponse = await fetch(
-        `http://localhost:3001/connect-workroom?workroomId=${encodeURIComponent(
-          workroomId
-        )}`,
-        {
-          method: "GET",
+  
+    // Array of common ports desktop apps might use
+    const portsToTry = [3001, 3000, 3002, 8080, 8081, 5000, 5001, 9000];
+    
+    // Array of possible protocol schemes (try different variations)
+    const protocolSchemes = [
+      'hudddle-desktop://',
+      'hudddle://',
+      'huddledeskop:', // typo variation
+      'hudddle-app://',
+    ];
+  
+    let connectionSuccessful = false;
+  
+    // Helper function to try HTTP connection on a specific port
+    const tryHttpConnection = async (port: number): Promise<boolean> => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5 second timeout
+  
+        // Try POST request with JSON body (more reliable than GET with query params)
+        const response = await fetch(`http://localhost:${port}/api/connect-workroom`, {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
-        }
-      );
-
-      if (httpResponse.ok) {
-        const data = await httpResponse.json();
-        toast({
-          description: data.message || "Successfully connected to desktop app!",
-          variant: "default",
+          body: JSON.stringify({ workroomId }),
+          signal: controller.signal,
         });
-        console.log("Desktop app connection successful:", data);
-        return; // Exit if HTTP method succeeds
-      }
-    } catch (httpError) {
-      console.log("HTTP connection failed, trying protocol method:", httpError);
-    }
-
-    try {
-      // Method 2: Try custom protocol (fallback method)
-      const protocolUrl = `hudddle-desktop://connect-workroom?workroomId=${encodeURIComponent(
-        workroomId
-      )}`;
-
-      // Create a temporary anchor element to trigger the protocol
-      const anchor = document.createElement("a");
-      anchor.href = protocolUrl;
-      anchor.style.display = "none";
-      document.body.appendChild(anchor);
-      anchor.click();
-      document.body.removeChild(anchor);
-
-      toast({
-        description:
-          "Opening desktop app... If the app doesn't open, please start it manually.",
-        variant: "default",
-      });
-
-      console.log("Protocol method triggered:", protocolUrl);
-
-      // Give the desktop app time to start, then try HTTP connection again
-      setTimeout(async () => {
-        try {
-          const retryResponse = await fetch(
-            `http://localhost:3001/connect-workroom?workroomId=${encodeURIComponent(
-              workroomId
-            )}`,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          if (retryResponse.ok) {
-            const retryData = await retryResponse.json();
-            toast({
-              description:
-                retryData.message || "Desktop app connected successfully!",
-              variant: "default",
-            });
-            console.log("Retry connection successful:", retryData);
-          } else {
-            console.log(
-              "Retry connection failed, but protocol may have worked"
-            );
-          }
-        } catch (retryError) {
-          console.log("Retry connection failed:", retryError);
-          // Don't show error toast here as the protocol method might have worked
+  
+        clearTimeout(timeoutId);
+  
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`✓ Connected via HTTP on port ${port}:`, data);
+          toast({
+            description: data.message || 'Successfully connected to desktop app!',
+            variant: 'default',
+          });
+          return true;
         }
-      }, 3000); // Wait 3 seconds for desktop app to start
-    } catch (protocolError) {
-      console.error("Protocol method failed:", protocolError);
+        return false;
+      } catch (error) {
+        // Port not available or app not responding
+        console.log(`✗ Port ${port} not available:`, error);
+        return false;
+      }
+    };
+  
+    // Helper function to try protocol handler
+    const tryProtocolHandler = (scheme: string): void => {
+      try {
+        // Method 1: Create an invisible iframe (works better on Mac)
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.src = `${scheme}connect-workroom?workroomId=${encodeURIComponent(workroomId)}`;
+        document.body.appendChild(iframe);
+  
+        // Clean up after a short delay
+        setTimeout(() => {
+          if (iframe.parentNode) {
+            document.body.removeChild(iframe);
+          }
+        }, 2000);
+  
+        console.log(`✓ Tried protocol: ${scheme}`);
+      } catch (error) {
+        console.log(`✗ Protocol ${scheme} failed:`, error);
+      }
+    };
+  
+    // STRATEGY 1: Try HTTP connections on common ports
+    console.log('🔍 Scanning for desktop app on common ports...');
+    
+    for (const port of portsToTry) {
+      const success = await tryHttpConnection(port);
+      if (success) {
+        connectionSuccessful = true;
+        return; // Exit early if connection successful
+      }
+    }
+  
+    // STRATEGY 2: Try protocol handlers (works without knowing the port)
+    console.log('🔍 Trying protocol handlers...');
+    
+    for (const scheme of protocolSchemes) {
+      tryProtocolHandler(scheme);
+    }
+  
+    // Show appropriate toast message
+    if (!connectionSuccessful) {
       toast({
-        description:
-          "Could not connect to desktop app. Please ensure Hudddle Desktop is installed and try again.",
-        variant: "destructive",
+        description: 'Attempting to connect to desktop app... If the app doesn\'t open, please ensure it\'s installed and running.',
+        variant: 'default',
       });
+  
+      // STRATEGY 3: Wait and retry HTTP connections (in case desktop app is starting)
+      setTimeout(async () => {
+        console.log('🔄 Retrying HTTP connections...');
+        
+        for (const port of portsToTry) {
+          const success = await tryHttpConnection(port);
+          if (success) {
+            return; // Exit if retry successful
+          }
+        }
+  
+        // If still not connected after retry, show warning
+        console.warn('⚠ Desktop app not detected after retry');
+        toast({
+          description: 'Could not connect to desktop app. Please ensure Hudddle Desktop is installed and running.',
+          variant: 'destructive',
+        });
+      }, 3000); // Wait 3 seconds for desktop app to start
     }
   };
   // --- END UPDATED ---
