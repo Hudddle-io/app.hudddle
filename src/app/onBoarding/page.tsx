@@ -199,7 +199,7 @@ const OnBoarding = () => {
                 Just one more step!
               </h1>
               <p className="text-[#211451] text-lg">
-                Let's personalize your Hudddle experience.
+                Let&apos;s personalize your Hudddle experience.
               </p>
             </div>
             {/* Form */}
