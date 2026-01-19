@@ -89,7 +89,7 @@ const GeneralSettingsTabContent = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("Authorization token not found. Please log in.");
-        router.push("/auth/Sign-in");
+        router.push("/auth/sign-in");
         setIsLoading(false);
         return;
       }

@@ -145,7 +145,7 @@ const SignUp = () => {
         description:
           "Account Created. Please check your email to verify your account.",
       });
-      router.push("/auth/Sign-in");
+      router.push("/auth/sign-in");
     } catch (err: any) {
       toast({
         description:

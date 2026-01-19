@@ -43,7 +43,7 @@ export const DeleteModal: React.FC<DeleteModalProps> = ({
         />
       </div>
       <div className="w-[300px] mx-auto flex flex-col justify-center items-center">
-        <Image src="/success2.png" alt="Invite Icon" width={140} height={140} />
+        <img src="/success2.png" alt="Invite Icon" />
         {/* <Image src="/success.png" alt='success' className='py-0' width={140} height={140} /> */}
         <CardDescription className="text-center text-black pb-5">
           {message || (
@@ -98,7 +98,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
         />
       </div>
       <div className="w-[300px] mx-auto flex flex-col justify-center items-center">
-        <Image src="/success2.png" alt="Invite Icon" width={140} height={140} />
+        <img src="/success2.png" alt="Invite Icon" />
         <CardDescription className="text-center text-black pb-5">
           {message || (
             <>
@@ -164,7 +164,7 @@ const CopyLinkModal: React.FC<CopyLinkModalProps> = ({
         </div>
 
         <div className="w-full mx-auto flex flex-col justify-center items-center">
-          <Image src="/success2.png" alt="Invite Icon" width={140} height={140} />
+          <img src="/success2.png" alt="Invite Icon" />
           <CardDescription className="text-center text-black pb-5">
             Here’s an invite link to get your <br /> friend over to Hudddle.
             <span className="font-bold">

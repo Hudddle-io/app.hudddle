@@ -159,7 +159,7 @@ const Sidebar = () => {
     const storedToken = localStorage.getItem("token");
     if (!storedToken) {
       logoutContext();
-      router.push("/auth/Sign-in");
+      router.push("/auth/sign-in");
       return;
     }
     try {
@@ -175,14 +175,14 @@ const Sidebar = () => {
         console.error("Logout failed:", errorData);
         if (response.status === 401) {
           logoutContext(); // Clear context on 401 even if backend didn't officially log out
-          router.push("/auth/Sign-in");
+          router.push("/auth/sign-in");
           return;
         }
         throw new Error(errorData.message || "Logout failed");
       }
 
       logoutContext(); // Clear context after successful backend logout
-      router.push("/auth/Sign-in");
+      router.push("/auth/sign-in");
       toast.success("Logged out successfully!");
     } catch (error) {
       toast.error("Network Error", {
