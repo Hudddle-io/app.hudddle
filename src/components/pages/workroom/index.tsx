@@ -24,6 +24,23 @@ const Trash = "/assets/trash.svg";
 
 type Props = {};
 
+type WorkroomTask = {
+  title?: string;
+  name?: string;
+  status?: string;
+};
+
+type WorkroomListItem = {
+  id: string;
+  name: string;
+  createdBy: any;
+  users: any[];
+  isActive?: boolean;
+  tasks?: WorkroomTask[];
+  current_task?: { title?: string; name?: string } | string | null;
+  currentTask?: { title?: string; name?: string } | string | null;
+};
+
 // Interface for workroom data from "created by me" and "shared" endpoints
 interface WorkroomSummary {
   id: string;
@@ -41,7 +58,7 @@ const WorkroomPage = (props: Props) => {
   const [deleting, setDeleting] = useState(false);
   const [newRoomId, setNewRoomId] = useState<string | null>(null);
 
-  const [roomsData, setRoomsData] = useState<any[]>([]); // will use API schema
+  const [roomsData, setRoomsData] = useState<WorkroomListItem[]>([]); // will use API schema
   const router = useRouter();
 
   // Simulated current user ID from token
@@ -98,14 +115,29 @@ const WorkroomPage = (props: Props) => {
 
         const data = await response.json();
 
-        // Adjusting to use the expected API response structure
-        const workrooms = (data.workrooms || []).map((room: any) => ({
-          id: room.id,
-          name: room.title || "Untitled Room", // Default to "Untitled Room" if title is missing
-          createdBy: room.created_by || "Unknown", // Default to "Unknown" if created_by is missing
-          users: room.members || [], // Default to an empty array if members are missing
-          isActive: false, // Assuming isActive is not provided in the API response
-        }));
+        const asBoolean = (value: unknown) => {
+          if (typeof value === "boolean") return value;
+          if (typeof value === "number") return value === 1;
+          if (typeof value === "string") {
+            const normalized = value.trim().toLowerCase();
+            return normalized === "true" || normalized === "1";
+          }
+          return false;
+        };
+
+        // Adjusting to use the expected API response structure (while preserving extra fields if provided)
+        const workrooms: WorkroomListItem[] = (data.workrooms || []).map(
+          (room: any) => ({
+            id: room.id,
+            name: room.title || "Untitled Room", // Default to "Untitled Room" if title is missing
+            createdBy: room.created_by || "Unknown", // Default to "Unknown" if created_by is missing
+            users: room.members || [], // Default to an empty array if members are missing
+            isActive: asBoolean(room.isActive ?? room.is_active ?? false),
+            tasks: Array.isArray(room.tasks) ? room.tasks : [],
+            current_task: room.current_task ?? null,
+            currentTask: room.currentTask ?? null,
+          })
+        );
 
         setRoomsData(workrooms);
       } catch (error) {
@@ -347,24 +379,72 @@ const WorkroomPage = (props: Props) => {
     );
   }, [searchQuery, sharedWorkrooms]);
 
+  const activeRooms = useMemo(
+    () => roomsData.filter((room) => Boolean(room.isActive)),
+    [roomsData]
+  );
+
+  const getOnlineTaskTitle = (room: WorkroomListItem | undefined) => {
+    if (!room) return null;
+
+    const pickTitle = (taskLike: any) => {
+      if (!taskLike) return null;
+      if (typeof taskLike === "string") return taskLike;
+      if (typeof taskLike?.title === "string" && taskLike.title.trim())
+        return taskLike.title;
+      if (typeof taskLike?.name === "string" && taskLike.name.trim())
+        return taskLike.name;
+      return null;
+    };
+
+    const direct = pickTitle(room.current_task) ?? pickTitle(room.currentTask);
+    if (direct) return direct;
+
+    const tasks = Array.isArray(room.tasks) ? room.tasks : [];
+    const inProgress = tasks.find((t) =>
+      String(t?.status || "")
+        .toLowerCase()
+        .replace(/_/g, " ")
+        .includes("progress")
+    );
+    return pickTitle(inProgress) ?? pickTitle(tasks[0]) ?? null;
+  };
+
+  const activeRoomToShow = useMemo(() => activeRooms[0] ?? null, [activeRooms]);
+
+  const activeRoomTaskTitle = useMemo(
+    () => getOnlineTaskTitle(activeRoomToShow || undefined),
+    [activeRoomToShow]
+  );
+
+  const handleBrowseWorkrooms = () => {
+    const el = document.getElementById("workroom-list");
+    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <main className="py-12 px-10 flex flex-col  bg-[#FDFCFC]">
       <header className="flex w-full justify-between items-center">
         <MainHeading variant="secondary">Workrooms</MainHeading>
         <div className="flex items-center justify-around  w-3/5 gap-[clamp(0.625rem,_0.8547vw,_1.25rem)]">
-          <div className="w-1/3 shadow-md rounded-2xl text-base font-medium text-gray-900 bg-white justify-center py-3.5 flex item-center gap-7">
+          <div className="w-1/3 shadow-md rounded-2xl text-base font-medium text-gray-900 bg-white justify-center py-3.5 flex items-center gap-7">
             <div className="text-primary-hudddleLight">
               <Building />
             </div>
             <span>{roomsData.length} Workroom</span>
           </div>
-          <div className="w-1/3 rounded-2xl text-base font-medium bg-white text-primary-hudddleLight text-center shadow-md py-3.5">
-            <span>
-              {roomsData.filter((room) => room.isActive).length} Active
-            </span>
+          <div className="w-1/3 shadow-md rounded-2xl text-base font-medium text-gray-900 bg-white justify-center py-3.5 flex items-center gap-7">
+            <div className="flex flex-col items-center leading-tight">
+              <span>{activeRooms.length} Active</span>
+              {activeRoomTaskTitle ? (
+                <span className="text-xs text-muted-foreground">
+                  {activeRoomTaskTitle}
+                </span>
+              ) : null}
+            </div>
           </div>
           <NavigationLink
-            className="w-1/3"
+            className="w-1/3 h-auto py-3.5 rounded-2xl text-base font-medium text-white justify-center flex items-center gap-7 shadow-md"
             onClick={handleCreateRoom}
             icon={{
               icon_component: <Plus size={24} color="white" />,
@@ -376,7 +456,7 @@ const WorkroomPage = (props: Props) => {
         </div>
       </header>
 
-      <section id="active-workroom" className="w-full flex flex-col gap-2">
+      <section id="active-workroom" className="w-full flex flex-col mt-8">
         <header className="w-full flex items-center justify-between">
           <SubHeading className="text-base text-primary-hudddle font-medium">
             You&apos;re presently working on
@@ -388,31 +468,35 @@ const WorkroomPage = (props: Props) => {
 
         {loading ? (
           <RecentWorkroomsLoader />
-        ) : roomsData[0] ? (
+        ) : activeRoomToShow ? (
           <div className="w-full  shadow-md rounded-[16px] card-morph  p-7 min-h-48 flex flex-col justify-between">
             <section className="flex justify-between ">
               <div className="flex items-start flex-col gap-3">
                 <MainHeading variant="bigCardTitle">
-                  {roomsData[0]?.name}
+                  {activeRoomToShow?.name}
                 </MainHeading>
+                {activeRoomTaskTitle ? (
+                  <p className="text-sm text-muted-foreground">
+                    Task: {activeRoomTaskTitle}
+                  </p>
+                ) : null}
                 <Button
                   variant="ghost"
                   className="text-primary-hudddleLight space-x-1 text-xs p-0 h-0"
-                  onClick={() => handleEditWorkroom(roomsData[0]?.id)}
+                  onClick={() => handleEditWorkroom(activeRoomToShow?.id)}
                 >
                   <Pen size={10} />
                   <span>Edit workroom</span>
                 </Button>
               </div>
-              {/* {roomsData[0]?.isActive && ( */}
-              {
+              {activeRoomToShow?.isActive ? (
                 <div className="w-4 h-4 bg-[#ADD359] animate-pulse rounded-full" />
-              }
+              ) : null}
             </section>
             <section className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <span className="flex gap-1">
-                  {roomsData[0]?.users
+                  {activeRoomToShow?.users
                     ?.slice(0, 3)
                     .map((user: any, idx: number) => (
                       <div
@@ -429,13 +513,15 @@ const WorkroomPage = (props: Props) => {
                     ))}
                 </span>
                 <p className="text-sm text-[#999999]">
-                  {roomsData[0]?.users?.map((u: any) => u.fullname).join(", ")}{" "}
+                  {activeRoomToShow?.users
+                    ?.map((u: any) => u.fullname)
+                    .join(", ")}{" "}
                   are in this workroom
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <NavigationLink
-                  href={`/workroom/room/${roomsData[0]?.id}`}
+                  href={`/workroom/room/${activeRoomToShow?.id}`}
                   // href={`/workroom/room/${roomsData`}
                   variant={"outline"}
                   className="h-7 text-sm rounded-[6px] bg-primary-hudddle text-white capitalize shadow-none"
@@ -449,11 +535,38 @@ const WorkroomPage = (props: Props) => {
             </section>
           </div>
         ) : (
-          <RecentWorkroomsLoader />
+          <div className="w-full rounded-[16px] card-morph p-6 md:p-7 min-h-48 flex items-center">
+            <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+              <div className="flex items-start gap-4">
+                <div className="shrink-0 h-11 w-11 rounded-full bg-[#956FD6]/10 text-primary-hudddle flex items-center justify-center">
+                  <Building className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-base font-semibold text-primary-hudddle">
+                    No active workroom
+                  </p>
+                  <p className="text-sm text-muted-foreground max-w-[55ch]">
+                    Create a workroom or join an existing one to start
+                    collaborating and tracking tasks.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  className="border-primary-hudddle/20 text-primary-hudddle hover:bg-primary-hudddle/5"
+                  onClick={handleBrowseWorkrooms}
+                >
+                  <span>Browse workrooms</span>
+                </Button>
+              </div>
+            </div>
+          </div>
         )}
       </section>
 
-      <section className="w-full pt-10">
+      <section id="workroom-list" className="w-full pt-10">
         <Tabs
           defaultValue="workroom"
           value={activeTab}
@@ -462,17 +575,19 @@ const WorkroomPage = (props: Props) => {
         >
           <div className="flex justify-between items-center ">
             <TabsList>
-              {["workroom", "created by you", "shared workrooms"].map(
-                (item) => (
-                  <TabsTrigger
-                    className="text-primary-hudddle capitalize"
-                    key={item}
-                    value={item}
-                  >
-                    {item}
-                  </TabsTrigger>
-                )
-              )}
+              {[
+                { label: "workroom", value: "workroom" },
+                { label: "Created by You", value: "created" },
+                { label: "Shared Workrooms", value: "shared" },
+              ].map((item) => (
+                <TabsTrigger
+                  className="text-primary-hudddle capitalize"
+                  key={item.value}
+                  value={item.value}
+                >
+                  {item.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
             <Input
               type="search"
@@ -594,13 +709,18 @@ const WorkroomPage = (props: Props) => {
           {/* New TabsContent for "Created by You" */}
           <TabsContent value="created" className="w-full flex flex-col gap-4">
             {loadingCreated ? (
-              <p>Loading your created workrooms...</p>
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-primary-hudddle" />
+                <p className="text-gray-500">
+                  Loading your created workrooms...
+                </p>
+              </div>
             ) : filteredCreatedWorkrooms.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredCreatedWorkrooms.map((workroom) => (
                   <div
                     key={workroom.id}
-                    className="rounded-[16px] shadow-lg py-1 px-4 h-[clamp(7.5rem,_7.1068rem+1.9658vh,_8.9375rem)] flex flex-col justify-between hover:border hover:border-[#956FD6] cursor-pointer"
+                    className="rounded-[16px] shadow-lg py-5 px-6 h-48 flex flex-col justify-between hover:border hover:border-[#956FD6] cursor-pointer"
                     onClick={() => router.push(`/workroom/room/${workroom.id}`)}
                   >
                     <header className="flex justify-between">
@@ -663,13 +783,16 @@ const WorkroomPage = (props: Props) => {
           {/* New TabsContent for "Shared Workrooms" */}
           <TabsContent value="shared" className="w-full flex flex-col gap-4">
             {loadingShared ? (
-              <p>Loading shared workrooms...</p>
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-primary-hudddle" />
+                <p className="text-gray-500">Loading shared workrooms...</p>
+              </div>
             ) : filteredSharedWorkrooms.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredSharedWorkrooms.map((workroom) => (
                   <div
                     key={workroom.id}
-                    className="rounded-[16px] shadow-lg py-1 px-4 h-[clamp(7.5rem,_7.1068rem+1.9658vh,_8.9375rem)] flex flex-col justify-between hover:border hover:border-[#956FD6] cursor-pointer"
+                    className="rounded-[16px] shadow-lg py-5 px-6 h-48 flex flex-col justify-between hover:border hover:border-[#956FD6] cursor-pointer"
                     onClick={() => router.push(`/workroom/room/${workroom.id}`)}
                   >
                     <header className="flex justify-between">

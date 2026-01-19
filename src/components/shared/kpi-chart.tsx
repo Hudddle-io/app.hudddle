@@ -22,16 +22,17 @@ interface KpiChartProps {
 }
 
 function KpiChart({ overallAlignmentPercentage }: KpiChartProps) {
-  // Data for the speedometer: We'll use this single percentage for all three bars
-  // to ensure they all reflect the same overall alignment, but will be visually distinct.
+  const safePercentage = Number.isFinite(overallAlignmentPercentage)
+    ? Math.max(0, Math.min(100, overallAlignmentPercentage))
+    : 0;
+
   const chartData = [
     {
       name: "Overall KPI Alignment",
-      value: overallAlignmentPercentage,
+      value: safePercentage,
     },
   ];
 
-  // Chart configuration for tooltips and general color scheme
   const chartConfig = {
     "Overall KPI Alignment": {
       label: "Overall KPI Alignment",
@@ -40,30 +41,19 @@ function KpiChart({ overallAlignmentPercentage }: KpiChartProps) {
   } satisfies ChartConfig;
 
   return (
-    <Card className="flex flex-col bg-transparent shadow-none border-0 ring-0">
-      {/* Set a fixed height and width for CardContent to guarantee chart has space */}
-      <CardContent
-        className="flex items-center justify-center p-4"
-        style={{ height: "300px", width: "200px" }}
-      >
-        <ChartContainer
-          config={chartConfig}
-          className="w-full h-full flex items-center justify-center"
-        >
+    <Card className="flex flex-col bg-transparent shadow-none border-0 ring-0 w-full h-full">
+      <CardContent className="flex items-start justify-center pt-2 w-full h-full">
+        <ChartContainer config={chartConfig} className="w-full h-full">
           <ResponsiveContainer width="100%" height="100%">
-            {/* THIS IS THE SINGLE RADIALBARCHART INSTANCE housing all concentric bars */}
             <RadialBarChart
               data={chartData}
-              // Keep start/end angles for the speedometer arc design
-              startAngle={360}
+              startAngle={180}
               endAngle={0}
-              cx="50%" // Center X of the chart within its SVG
-              cy="50%" // Center Y of the chart within its SVG
-              innerRadius={70} // Set inner radius for the chart
-              outerRadius={110} // Set outer radius for the chart
-              barSize={20} // Increased bar size for thicker bars
-              width={400} // Increased chart width
-              height={400} // Increased chart height
+              cx="50%"
+              cy="70%"
+              innerRadius={50}
+              outerRadius={80}
+              barSize={14}
             >
               <ChartTooltip
                 cursor={false}
@@ -111,15 +101,15 @@ function KpiChart({ overallAlignmentPercentage }: KpiChartProps) {
                         >
                           <tspan
                             x={cx}
-                            y={cy - 20} // Adjusted Y position for percentage for better spacing in larger chart
+                            y={cy - 22}
                             className="fill-foreground text-2xl font-bold"
                             fill="#211451"
                           >
-                            {overallAlignmentPercentage.toFixed(0)}%
+                            {safePercentage.toFixed(0)}%
                           </tspan>
                           <tspan
                             x={cx}
-                            y={cy + 10} // Adjusted Y position for KPI name for better spacing in larger chart
+                            y={cy + 12}
                             className="text-[clamp(0.65rem,_0.6158rem+0.1709vw,_0.775rem)] text-[#211451]"
                             fill="#211451"
                           >

@@ -12,13 +12,18 @@ import NavigationLink from "@/components/basics/Navigation-link";
 
 interface TodaysTaskProps {
   task: TaskTodayProps;
+  workroomName?: string;
 }
 
-const TodaysTasks: React.FC<TodaysTaskProps> = ({ task }) => {
+const TodaysTasks: React.FC<TodaysTaskProps> = ({ task, workroomName }) => {
   // Extract the first 6 characters of workroom_id if it exists
   const displayWorkroomId = task.workroom_id
     ? task.workroom_id.substring(0, 6)
     : "";
+
+  const displayRoomLabel =
+    (workroomName && workroomName.trim()) ||
+    (displayWorkroomId ? `${displayWorkroomId}...` : "");
 
   return (
     <Card className="rounded-none shadow-none py-4 border-x-0 border-t-0 hover:bg-custom-whitesmoke hover:border-b-custom-purple px-0 items-center grid grid-cols-9 border-b-[1px] border-b-slate-300">
@@ -43,7 +48,7 @@ const TodaysTasks: React.FC<TodaysTaskProps> = ({ task }) => {
               href={`/workroom/room/${task.workroom_id}`}
               variant="ghost"
             >
-              From Room - {displayWorkroomId}...
+              From Room - {displayRoomLabel}
             </NavigationLink>
           </span>
         ) : (

@@ -1,42 +1,117 @@
 "use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signInWithPopup, UserCredential } from "firebase/auth";
+import { auth, googleProvider } from "../../../../config/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import React, { useState } from "react";
+import { toast } from "@/components/ui/use-toast";
+import { backendUri } from "@/lib/config";
 import Google from "../../../../public/assets/google.svg";
 import huddleLogo from "../../../../public/assets/images/huddle-logo.png";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "../../../../config/firebase";
-import Link from "next/link";
-import { toast } from "../../../components/ui/use-toast";
-
-import { useUserSession } from "@/contexts/useUserSession";
-import { backendUri } from "@/lib/config";
 
 const SignUp = () => {
-  const { currentUser } = useUserSession(); // This might be used for auth state, but not directly in the UI here.
   const router = useRouter();
-  const [emailAddress, setEmailAddress] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [emailAddress, setEmailAddress] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const SignInWithGoogle = async () => {
+  const handleAuthSuccessAndRedirect = async (token: string) => {
     try {
-      await signInWithPopup(auth, googleProvider);
-      toast({
-        description: "Account created with Google!",
+      const meResponse = await fetch(`${backendUri}/api/v1/auth/me`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
-      router.push("/onBoarding");
+
+      if (!meResponse.ok) {
+        const errorData = await meResponse.json();
+        throw new Error(
+          errorData.message || "Failed to fetch user profile after login."
+        );
+      }
+
+      const userData = await meResponse.json();
+      localStorage.setItem("userData", JSON.stringify(userData));
+
+      const destination = userData?.is_user_onboarded
+        ? "/dashboard"
+        : "/onBoarding";
+      router.push(destination);
+    } catch (meError: any) {
+      console.error("Error during post-auth user data fetch:", meError);
+      setError(meError.message || "An error occurred during sign up.");
+      toast({
+        description:
+          meError.message ||
+          "An error occurred after sign up. Please try again.",
+        variant: "destructive",
+      });
+      localStorage.removeItem("token");
+      router.push("/auth/sign-in");
+    }
+  };
+
+  const SignUpWithGoogle = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result: UserCredential = await signInWithPopup(
+        auth,
+        googleProvider
+      );
+      const idToken = await result.user.getIdToken();
+
+      const backendAuthResponse = await fetch(
+        `${backendUri}/api/v1/auth/google-login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id_token: idToken }),
+        }
+      );
+
+      if (!backendAuthResponse.ok) {
+        const errorData = await backendAuthResponse.json();
+        throw new Error(
+          errorData.message || "Backend authentication with Google failed."
+        );
+      }
+
+      const backendData = await backendAuthResponse.json();
+      const backendAccessToken = backendData.access_token;
+      if (!backendAccessToken) {
+        throw new Error("Backend did not return an access token.");
+      }
+
+      localStorage.setItem("token", backendAccessToken);
+
+      toast({
+        description: "Signed up with Google!",
+      });
+
+      await handleAuthSuccessAndRedirect(backendAccessToken);
     } catch (err: any) {
-      // Catch and display Firebase errors
       console.error(err);
+      setError(
+        err.message || "Failed to sign up with Google. Please try again."
+      );
       toast({
         description:
           err.message || "Failed to sign up with Google. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,15 +141,12 @@ const SignUp = () => {
       }
 
       const data = await response.json();
-      console.log(data);
       toast({
         description:
           "Account Created. Please check your email to verify your account.",
       });
       router.push("/auth/Sign-in");
-      // setLoading(true); // This might be a logic error, usually set to false after redirect or success
     } catch (err: any) {
-      console.log(err.message);
       toast({
         description:
           err.message ||
@@ -88,93 +160,167 @@ const SignUp = () => {
   };
 
   return (
-    // Main container: full width, min height screen, flex column on small, flex row on large
-    // Centered content both vertically and horizontally
-    <div className="w-full min-h-screen flex flex-col lg:flex-row justify-center items-center text-black overflow-hidden relative">
+    <div className="w-full min-h-screen flex items-center justify-center text-black overflow-hidden relative bg-white">
       <div className="flex flex-col lg:flex-row w-full h-full lg:h-screen">
-        {" "}
-        {/* Adjusted height for lg screens */}
-        {/* Left Section (Form): full width on small, 3/4 on large, centered content */}
-        <div className="w-full lg:w-3/4 bg-white flex flex-col justify-center gap-10 items-center py-8 px-4 sm:px-6 md:px-8 lg:py-0 lg:px-0">
-          <Image src={"/assets/logo.svg"} alt="logo" width={60} height={30} />
+        {/* Sign Up Form Section */}
+        <div className="w-full lg:w-2/3 bg-white flex flex-col justify-center items-center gap-10 py-8 px-4 sm:px-6 md:px-8 lg:py-0">
           <div className="flex flex-col items-center justify-center w-full">
-            {/* Form Card: flexible width, max-width to prevent stretching, responsive padding */}
-            <div className="card-morph p-6 sm:p-10 w-full max-w-md md:max-w-lg lg:max-w-[539px] bg-[#ffffff] rounded-[5px] border border-transparent">
-              <div className="flex flex-col space-y-5">
-                <h1 className="text-[28px] sm:text-[36px] font-inter font-semibold text-center leading-[36px] sm:leading-[43.57px]">
-                  Sign Up
-                </h1>
+            <div className="p-8 sm:p-10 w-full max-w-md md:max-w-lg lg:max-w-[539px] bg-[#FDFCFC] rounded-[20px] shadow-[0_8px_16px_rgba(0,0,0,0.08),0_16px_32px_rgba(0,0,0,0.06),0_24px_48px_rgba(0,0,0,0.04)]">
+              <h1 className="text-3xl sm:text-4xl font-inter font-semibold text-center mb-8">
+                Sign Up
+              </h1>
 
-                <form onSubmit={handleSubmit}>
-                  <div className="flex flex-col space-y-6 sm:space-y-8">
-                    <div>
-                      <label htmlFor="email">Email Address</label>
-                      <Input
-                        id="email" // Added id for accessibility
-                        type="email" // Changed to type="email" for better validation
-                        value={emailAddress}
-                        placeholder="@gmail.com"
-                        onChange={(e) => setEmailAddress(e.target.value)}
-                        required
-                        className="shadow-lg rounded-[8px]" // Changed to 8px for consistency
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="password">Password</label>{" "}
-                      {/* Added id for accessibility */}
-                      <Input
-                        id="password"
-                        type="password"
-                        placeholder="Enter password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="shadow-lg rounded-[8px] mb-6 sm:mb-8 placeholder-slate-300" // Adjusted margin-bottom
-                        required
-                      />
-                    </div>
-                    {error && (
-                      <p className="text-red-500 text-center text-sm mt-2">
-                        {error}
-                      </p>
-                    )}
-                    <Button
-                      type="submit"
-                      size={"sm"}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block mb-2 text-sm text-gray-600"
+                  >
+                    Email address
+                  </label>
+                  <Input
+                    id="email"
+                    disabled={loading}
+                    type="email"
+                    value={emailAddress}
+                    placeholder="@gmail.com"
+                    onChange={(e) => setEmailAddress(e.target.value)}
+                    required
+                    className="rounded-lg border border-gray-200 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block mb-2 text-sm text-gray-600"
+                  >
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Input
+                      id="password"
                       disabled={loading}
-                      // Adjusted margin-top/bottom and made full width
-                      className="bg-[#5C5CE9] mt-8 mb-4 rounded-[8px] w-full py-2 mx-auto"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="rounded-lg border border-gray-200 bg-white placeholder-gray-300 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                     >
-                      {loading ? (
-                        <h1>Creating account ....</h1>
+                      {showPassword ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-5 h-5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
+                          />
+                        </svg>
                       ) : (
-                        <h1>Sign Up</h1>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="w-5 h-5"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
                       )}
-                    </Button>
+                    </button>
                   </div>
-                </form>
-              </div>
-              <p className="text-center pt-6 sm:pt-9 text-sm sm:text-base">
-                {" "}
-                {/* Adjusted padding-top */}
-                Already have an account?
-                <span className="text-violet-500 hover:text-violet-800 hover:underline">
-                  <Link href="/auth/Sign-in">Log In</Link>
-                </span>
-              </p>
+                </div>
+
+                {error && (
+                  <p className="text-red-500 text-center text-sm">{error}</p>
+                )}
+
+                <div className="flex justify-center pt-2">
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-[#5C5CE9] rounded-lg px-16 py-2 hover:bg-[#4A4AD8] transition-colors"
+                  >
+                    {loading ? "Creating account..." : "Sign Up"}
+                  </Button>
+                </div>
+              </form>
             </div>
           </div>
-          {/* Google Sign-in Button: flexible width, centered */}
-          <div className="mt-8 relative w-full px-4 sm:px-0">
-            {" "}
-            {/* Adjusted margin-top and added padding */}
+
+          {/* Google Sign In & Links */}
+          <div className="w-full px-4 sm:px-0 space-y-4">
+            <button
+              className="w-full sm:w-auto flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2 px-4 mx-auto hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={SignUpWithGoogle}
+              disabled={loading}
+            >
+              <Image src={Google} alt="Google Logo" width={20} height={20} />
+              <span className="text-sm sm:text-base">
+                {loading ? "Please wait..." : "Sign up with Google"}
+              </span>
+            </button>
+
+            <p className="text-center pt-6 text-sm sm:text-base text-violet-500">
+              Already have an account?{" "}
+              <Link
+                href="/auth/sign-in"
+                className="font-semibold hover:text-violet-800 hover:underline"
+              >
+                Log In
+              </Link>
+            </p>
+
+            <p className="text-center text-xs mt-4 sm:text-sm text-violet-500">
+              Forgot your password, again?{" "}
+              <Link
+                href="/auth/forgot-password"
+                className="font-semibold hover:text-violet-800 hover:underline"
+              >
+                Reset password
+              </Link>
+            </p>
           </div>
         </div>
-        {/* Right Section (Image): Hidden on small/medium screens, visible on large */}
-        <div className="hidden lg:block lg:w-1/3">
+
+        {/* Image Section */}
+        <div className="hidden relative lg:block lg:w-1/3">
           <Image
             src={huddleLogo}
-            alt="Huddle Logo - Collaborative Workspace" // Descriptive alt text
-            className="w-full h-full object-cover rounded-t-[12px] rounded-bl-[12px]" // Ensure image covers its container
+            alt="Huddle Logo - Collaborative Workspace"
+            className="w-full h-full object-cover rounded-tl-xl rounded-bl-xl"
+          />
+          <h3 className="absolute bottom-6 left-4 text-white text-4xl font-semibold w-1/2">
+            A workful world of fun!
+          </h3>
+          <Image
+            src="/assets/images/mainLogo.svg"
+            alt="logo"
+            className="absolute top-10 left-10"
+            width={80}
+            height={40}
           />
         </div>
       </div>

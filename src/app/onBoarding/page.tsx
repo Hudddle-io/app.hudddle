@@ -1,15 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import logo from "../../../public/assets/logo.svg";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "@/components/ui/use-toast";
-import onBoardingImage from "../../../public/assets/images/onboard.png";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -27,28 +26,78 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { getToken } from "@/contexts/useUserSession"; // Assuming this utility is correct
+import { getToken } from "@/contexts/useUserSession";
 import {
   useUserSessionContext,
   UserSessionProvider,
-} from "@/contexts/useUserContext"; // Import updated context
-import { MainHeading, SubHeading } from "@/components/basics/Heading";
-import { backendUri } from "@/lib/config"; // Ensure backendUri is correctly configured here
+} from "@/contexts/useUserContext";
+import { MainHeading } from "@/components/basics/Heading";
+import { backendUri } from "@/lib/config";
+import logo from "../../../public/assets/logo.svg";
+import onBoardingImage from "../../../public/assets/images/onboard.png";
+
+const SUGGESTED_SOFTWARE = ["Photoshop", "Figma", "Github"];
+
+const OCCUPATION_OPTIONS = [
+  {
+    label: "Engineering",
+    options: [
+      "Frontend Developer",
+      "Backend Developer",
+      "Fullstack Developer",
+      "Mobile Developer",
+      "DevOps Engineer",
+      "QA Engineer",
+      "Embedded Systems Engineer",
+    ],
+  },
+  {
+    label: "Design",
+    options: [
+      "UX/UI Designer",
+      "Product Designer",
+      "Graphic Designer",
+      "Motion Designer",
+    ],
+  },
+  {
+    label: "Data",
+    options: ["Data Scientist", "Data Engineer", "Data Analyst", "ML Engineer"],
+  },
+  {
+    label: "Management",
+    options: [
+      "Project Manager",
+      "Product Manager",
+      "Engineering Manager",
+      "CTO/Technical Director",
+    ],
+  },
+  {
+    label: "Other Tech",
+    options: [
+      "Security Engineer",
+      "Site Reliability Engineer",
+      "Cloud Architect",
+      "Blockchain Developer",
+      "Game Developer",
+    ],
+  },
+];
+
+const AWARENESS_OPTIONS = [
+  { value: "Website", label: "Website" },
+  { value: "Social Media", label: "Social Media" },
+  { value: "Friends and family", label: "Friends and family" },
+  { value: "Web search", label: "Web search" },
+  { value: "Word-of-Mouth", label: "Word of Mouth" },
+];
 
 const FormSchema = z.object({
-  firstName: z.string().min(2, {
-    message: "First name must be at least 2 characters.",
-  }),
-  lastName: z.string().min(2, {
-    message: "Last name must be at least 2 characters.",
-  }),
-  occupation: z.string({
-    required_error: "Please select your occupation.",
-  }),
-  awareness: z.string({
-    required_error: "Please select how you found us.",
-  }),
+  firstName: z.string().min(2, "First name must be at least 2 characters."),
+  lastName: z.string().min(2, "Last name must be at least 2 characters."),
+  occupation: z.string({ required_error: "Please select your occupation." }),
+  awareness: z.string({ required_error: "Please select how you found us." }),
   software: z.string({
     required_error: "Please specify the software you use.",
   }),
@@ -56,15 +105,13 @@ const FormSchema = z.object({
 
 type FormSchemaType = z.infer<typeof FormSchema>;
 
-const OnBoarding: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+const OnBoarding = () => {
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { currentUser, refreshUser } = useUserSessionContext();
 
   useEffect(() => {
-    if (currentUser && currentUser.is_user_onboarded === true) {
-      console.log("User is already onboarded, redirecting to dashboard");
+    if (currentUser?.is_user_onboarded) {
       router.push("/dashboard");
     }
   }, [currentUser, router]);
@@ -80,9 +127,9 @@ const OnBoarding: React.FC = () => {
     },
   });
 
-  const onSubmit: SubmitHandler<FormSchemaType> = async (data) => {
+  const onSubmit = async (data: FormSchemaType) => {
     setLoading(true);
-    setError(null);
+
     try {
       const token = getToken();
       if (!token) {
@@ -116,29 +163,19 @@ const OnBoarding: React.FC = () => {
         throw new Error(errorData.message || "Failed to update profile.");
       }
 
-      if (refreshUser) {
-        await refreshUser();
-        console.log("User session refreshed after profile update.");
-      } else {
-        console.warn(
-          "refreshUser function not available in context. User state might be stale."
-        );
-      }
+      await refreshUser?.();
 
       toast({
         title: "Profile Updated Successfully!",
         description: "Your profile has been updated. Welcome to Hudddle!",
-        variant: "default",
       });
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update profile";
       toast({
         title: "Error",
-        description:
-          err instanceof Error ? err.message : "Failed to update profile",
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -148,29 +185,22 @@ const OnBoarding: React.FC = () => {
 
   return (
     <UserSessionProvider>
-      {/* Main container: full width, min height screen, flex column on small, flex row on large */}
-      {/* Removed min-h-screen from here on small screens to allow body/html to scroll if needed */}
       <div className="w-full h-auto bg-white flex flex-col lg:flex-row">
-        {/* Left Section (Form): full width on small, half width on large, centered content */}
-        {/* Added overflow-y-auto to allow scrolling within this div on small screens */}
-        <div className="w-full lg:w-1/2 h-auto bg-white flex flex-col justify-center py-8 px-4 sm:px-6 md:px-8 lg:px-16 overflow-y-auto">
+        <div className="w-full lg:w-1/2 h-auto bg-white flex flex-col justify-center py-6 px-4 sm:px-6 md:px-8 lg:px-16 overflow-y-auto">
           <div className="flex flex-col space-y-6 sm:space-y-8">
-            {/* Logo */}
-            <div>
-              <Image
-                src={logo}
-                alt="Huddle Logo"
-                className="w-[clamp(3.125rem,_4.2735vw,_6.25rem)] h-[clamp(1.5625rem,_2.1368vh,_3.125rem)] object-contain"
-              />
-            </div>
-            {/* Headings */}
-            <div className="flex flex-col space-y-1 sm:space-y-2">
-              <MainHeading className="text-[#211451] text-[clamp(1.5rem,_4vw_+_1rem,_2.5rem)]">
+            <Image
+              src={logo}
+              alt="Huddle Logo"
+              className="w-30 object-contain"
+            />
+
+            <div className="space-y-2">
+              <h1 className="text-[#211451] text-4xl font-bold">
                 Just one more step!
-              </MainHeading>
-              <SubHeading className="text-[#211451] text-[clamp(0.875rem,_2vw_+_0.5rem,_1.25rem)]">
-                Let’s personalize your Hudddle experience.
-              </SubHeading>
+              </h1>
+              <p className="text-[#211451] text-lg">
+                Let's personalize your Hudddle experience.
+              </p>
             </div>
             {/* Form */}
             <Form {...form}>
@@ -178,21 +208,20 @@ const OnBoarding: React.FC = () => {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="w-full max-w-lg space-y-6"
               >
-                {/* First Name & Last Name Fields */}
-                <div className="w-full flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
+                <div className="flex flex-col sm:flex-row gap-4">
                   <FormField
                     control={form.control}
                     name="firstName"
                     render={({ field }) => (
-                      <FormItem className="w-full sm:w-1/2">
-                        <FormLabel className="text-[#44546F] leading-[16px] text-[14px] sm:text-[16px] font-light">
+                      <FormItem className="flex-1">
+                        <FormLabel className="text-[#44546F] text-sm font-light">
                           First Name
                         </FormLabel>
                         <Input
                           {...field}
-                          type="text"
+                          disabled={loading}
                           placeholder="First Name"
-                          className="w-full h-12 border border-[#E0E0E0] rounded-[8px] px-4"
+                          className="h-12 border-[#E0E0E0] rounded-lg"
                         />
                         <FormMessage />
                       </FormItem>
@@ -202,30 +231,28 @@ const OnBoarding: React.FC = () => {
                     control={form.control}
                     name="lastName"
                     render={({ field }) => (
-                      <FormItem className="w-full sm:w-1/2">
-                        <FormLabel className="text-[#44546F] leading-[16px] text-[14px] sm:text-[16px] font-light">
+                      <FormItem className="flex-1">
+                        <FormLabel className="text-[#44546F] text-sm font-light">
                           Last Name
                         </FormLabel>
                         <Input
                           {...field}
                           disabled={loading}
-                          type="text"
                           placeholder="Last Name"
-                          className="w-full h-12 border border-[#E0E0E0] rounded-[8px] px-4"
+                          className="h-12 border-[#E0E0E0] rounded-lg"
                         />
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                {/* Occupation Select */}
                 <FormField
                   control={form.control}
                   name="occupation"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[#44546F] leading-[16px] text-[14px] sm:text-[16px] font-light">
-                        Which Kind of user are you?
+                      <FormLabel className="text-[#44546F] text-sm font-light">
+                        Which kind of user are you?
                       </FormLabel>
                       <Select
                         onValueChange={field.onChange}
@@ -233,114 +260,33 @@ const OnBoarding: React.FC = () => {
                         disabled={loading}
                       >
                         <FormControl>
-                          <SelectTrigger className="w-full h-12 border border-[#E0E0E0] rounded-[8px] px-4">
-                            <SelectValue
-                              placeholder="Individual"
-                              className="placeholder-[#626F86]"
-                            />
+                          <SelectTrigger className="h-12 border-[#E0E0E0] rounded-lg">
+                            <SelectValue placeholder="Select your role" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>Engineering</SelectLabel>
-                            <SelectItem value="Frontend Developer">
-                              Frontend Developer
-                            </SelectItem>
-                            <SelectItem value="Backend Developer">
-                              Backend Developer
-                            </SelectItem>
-                            <SelectItem value="Fullstack Developer">
-                              Fullstack Developer
-                            </SelectItem>
-                            <SelectItem value="Mobile Developer">
-                              Mobile Developer
-                            </SelectItem>
-                            <SelectItem value="DevOps Engineer">
-                              DevOps Engineer
-                            </SelectItem>
-                            <SelectItem value="QA Engineer">
-                              QA Engineer
-                            </SelectItem>
-                            <SelectItem value="Embedded Systems Engineer">
-                              Embedded Systems Engineer
-                            </SelectItem>
-                          </SelectGroup>
-                          <SelectGroup>
-                            <SelectLabel>Design</SelectLabel>
-                            <SelectItem value="UX/UI Designer">
-                              UX/UI Designer
-                            </SelectItem>
-                            <SelectItem value="Product Designer">
-                              Product Designer
-                            </SelectItem>
-                            <SelectItem value="Graphic Designer">
-                              Graphic Designer
-                            </SelectItem>
-                            <SelectItem value="Motion Designer">
-                              Motion Designer
-                            </SelectItem>
-                          </SelectGroup>
-                          <SelectGroup>
-                            <SelectLabel>Data</SelectLabel>
-                            <SelectItem value="Data Scientist">
-                              Data Scientist
-                            </SelectItem>
-                            <SelectItem value="Data Engineer">
-                              Data Engineer
-                            </SelectItem>
-                            <SelectItem value="Data Analyst">
-                              Data Analyst
-                            </SelectItem>
-                            <SelectItem value="ML Engineer">
-                              ML Engineer
-                            </SelectItem>
-                          </SelectGroup>
-                          <SelectGroup>
-                            <SelectLabel>Management</SelectLabel>
-                            <SelectItem value="Project Manager">
-                              Project Manager
-                            </SelectItem>
-                            <SelectItem value="Product Manager">
-                              Product Manager
-                            </SelectItem>
-                            <SelectItem value="Engineering Manager">
-                              Engineering Manager
-                            </SelectItem>
-                            <SelectItem value="CTO/Technical Director">
-                              CTO/Technical Director
-                            </SelectItem>
-                          </SelectGroup>
-                          <SelectGroup>
-                            <SelectLabel>Other Tech</SelectLabel>
-                            <SelectItem value="Security Engineer">
-                              Security Engineer
-                            </SelectItem>
-                            <SelectItem value="Site Reliability Engineer">
-                              Site Reliability Engineer
-                            </SelectItem>
-                            <SelectItem value="Cloud Architect">
-                              Cloud Architect
-                            </SelectItem>
-                            <SelectItem value="Blockchain Developer">
-                              Blockchain Developer
-                            </SelectItem>
-                            <SelectItem value="Game Developer">
-                              Game Developer
-                            </SelectItem>
-                          </SelectGroup>
+                          {OCCUPATION_OPTIONS.map((group) => (
+                            <SelectGroup key={group.label}>
+                              <SelectLabel>{group.label}</SelectLabel>
+                              {group.options.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                {/* Awareness Select */}
                 <FormField
                   control={form.control}
                   name="awareness"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[#44546F] leading-[16px] text-[14px] sm:text-[16px] font-light">
+                      <FormLabel className="text-[#44546F] text-sm font-light">
                         Where did you find us?
                       </FormLabel>
                       <Select
@@ -349,59 +295,65 @@ const OnBoarding: React.FC = () => {
                         disabled={loading}
                       >
                         <FormControl>
-                          <SelectTrigger className="w-full h-12 border border-[#E0E0E0] rounded-[8px] px-4">
-                            <SelectValue
-                              placeholder="Website Search"
-                              className="placeholder-[#626F86] ring-1 ring-[#091e4213]"
-                            />
+                          <SelectTrigger className="h-12 border-[#E0E0E0] rounded-lg">
+                            <SelectValue placeholder="Select a source" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Website">Website</SelectItem>
-                          <SelectItem value="Social Media">
-                            Social Media
-                          </SelectItem>
-                          <SelectItem value="Friends and family">
-                            Friends and family
-                          </SelectItem>
-                          <SelectItem value="Web search">Web search</SelectItem>
-                          <SelectItem value="Word-of-Mouth">
-                            Word of Mouth
-                          </SelectItem>
+                          {AWARENESS_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                {/* Software Input */}
                 <FormField
                   control={form.control}
                   name="software"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[#44546F] leading-[16px] text-[14px] sm:text-[16px] font-light">
+                      <FormLabel className="text-[#44546F] text-sm font-light">
                         What software/s do you use the most?
                       </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           value={field.value || ""}
-                          type="text"
                           placeholder="e.g., Figma, VS Code, Jira"
-                          className="w-full h-12 border border-[#E0E0E0] rounded-[8px] px-4"
+                          className="h-12 border-[#E0E0E0] rounded-lg"
                           disabled={loading}
                         />
                       </FormControl>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {SUGGESTED_SOFTWARE.map((software) => (
+                          <button
+                            key={software}
+                            type="button"
+                            onClick={() => {
+                              const current = field.value || "";
+                              const updated = current
+                                ? `${current}, ${software}`
+                                : software;
+                              field.onChange(updated);
+                            }}
+                            className="bg-purple-100 text-purple-700 rounded-lg text-sm px-3 py-1 hover:bg-purple-200 transition-colors"
+                          >
+                            {software}
+                          </button>
+                        ))}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                {/* Submit Button */}
                 <Button
-                  className="w-full py-3 text-[16px]"
                   type="submit"
                   disabled={loading}
+                  className="w-full h-12 text-base"
                 >
                   {loading ? "Finishing setup..." : "Finish Setup"}
                 </Button>
@@ -410,18 +362,18 @@ const OnBoarding: React.FC = () => {
           </div>
         </div>
         {/* Right Section (Image and Text Overlay): Hidden on small/medium, visible on large */}
-        <div className="relative h-auto w-full lg:w-1/2 min-h-[300px] lg:min-h-screen hidden lg:block">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-10 p-4 ">
-            <MainHeading className="text-white text-[clamp(1.5rem,_4vw_+_1rem,_2.5rem)]">
-              Connect and work <br /> with friends <br />
-              ...
-            </MainHeading>
-          </div>
+        <div className="relative w-full lg:w-1/2 min-h-[300px] lg:min-h-screen hidden lg:block">
           <Image
             src={onBoardingImage}
             alt="People collaborating on a project"
             className="w-full h-full object-cover"
           />
+          <div className="absolute bottom-64 left-24 z-10">
+            <h1 className="text-white text-4xl font-bold leading-tight">
+              Connect and work <br /> with friends <br />
+              ...
+            </h1>
+          </div>
         </div>
       </div>
     </UserSessionProvider>

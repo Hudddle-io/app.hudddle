@@ -25,7 +25,7 @@ const WorkroomFooter: FC<WorkroomFooterProps> = ({
   set_current_step,
 }) => {
   return (
-    <footer className="flex w-full justify-between mt-10">
+    <footer className="flex w-full justify-between mt-10 mb-6 px-4">
       <Button
         onClick={() => {
           set_current_step((prev: number) => prev - 1);
@@ -34,10 +34,10 @@ const WorkroomFooter: FC<WorkroomFooterProps> = ({
         className={`h-[clamp(2.25rem,_1.3675vh,_3.25rem)] w-[clamp(6.25rem,_2.906vw,_8.375rem)] flex-col font-normal text-[#956FD6] disabled:text-[#C4C4C4] hover:bg-transparent`}
         variant={"ghost"}
       >
-        <span className="self-end text-[clamp(0.5rem,_0.3419vw,_0.75rem)] leading-[16px]">
-          previous
+        <span className="self-end text-[clamp(1rem,_0.75vw,_2rem)] leading-[16px]">
+          Previous
         </span>
-        <span className="flex items-center gap-2 text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[22px]">
+        <span className="flex items-center gap-2 text-[clamp(1rem,_0.75vw,_2rem)] leading-[22px]">
           <SkipBack />{" "}
           {current_step == 1
             ? ""
@@ -85,10 +85,10 @@ const WorkroomFooter: FC<WorkroomFooterProps> = ({
           className="h-[clamp(2.25rem,_1.3675vh,_3.25rem)] w-[clamp(6.25rem,_2.906vw,_8.375rem)] flex-col font-normal text-[#956FD6] disabled:text-[#C4C4C4] hover:bg-transparent"
           variant={"ghost"}
         >
-          <span className="self-start text-[clamp(0.5rem,_0.3419vw,_0.75rem)] leading-[16px]">
-            next:
+          <span className="self-start text-[clamp(1rem,_0.75vw,_2rem)] leading-[16px]">
+            Next:
           </span>
-          <span className="flex items-center gap-2 text-[clamp(0.75rem,_0.5128vw,_1.125rem)] leading-[22px]">
+          <span className="flex items-center gap-2 text-[clamp(1rem,_0.75vw,_2rem)] leading-[22px]">
             <SkipForward />
             {current_step === 1
               ? type === "create"

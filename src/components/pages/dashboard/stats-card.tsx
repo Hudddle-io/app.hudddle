@@ -9,44 +9,15 @@ import React from "react";
 import ProgressBar from "@/components/shared/progress-bar";
 import { StatsCardProps } from "@/lib/@types";
 
-type UserLevelCategory = "Leader" | "Workaholic" | "Team Player" | "Slacker";
+const clamp = (value: number, min = 0, max = 100) =>
+  Math.max(min, Math.min(max, value));
 
-const calculateProgressPercentage = (
-  points: number,
-  category: UserLevelCategory
-): number => {
-  const thresholds = {
-    Leader: { Beginner: 0, Intermediate: 50, Advanced: 150, Expert: 300 },
-    Workaholic: { Beginner: 0, Intermediate: 50, Advanced: 150, Expert: 300 },
-    "Team Player": {
-      Beginner: 0,
-      Intermediate: 50,
-      Advanced: 150,
-      Expert: 300,
-    },
-    Slacker: { Beginner: 0, Intermediate: 50, Advanced: 150, Expert: 300 },
-  };
-
-  const currentCategoryThresholds = thresholds[category];
-  if (!currentCategoryThresholds) return 0;
-
-  let lowerBound = 0;
-  let upperBound = Infinity;
-
-  if (points < currentCategoryThresholds.Intermediate) {
-    upperBound = currentCategoryThresholds.Intermediate;
-  } else if (points < currentCategoryThresholds.Advanced) {
-    lowerBound = currentCategoryThresholds.Intermediate;
-    upperBound = currentCategoryThresholds.Advanced;
-  } else if (points < currentCategoryThresholds.Expert) {
-    lowerBound = currentCategoryThresholds.Advanced;
-    upperBound = currentCategoryThresholds.Expert;
-  } else {
-    return 100;
-  }
-
-  const progress = ((points - lowerBound) / (upperBound - lowerBound)) * 100;
-  return Math.max(0, Math.min(100, progress));
+const getLevelFromProgress = (progress: number) => {
+  const safe = clamp(progress);
+  if (safe >= 75) return 4;
+  if (safe >= 50) return 3;
+  if (safe >= 25) return 2;
+  return 1;
 };
 
 const StatsCard: React.FC<StatsCardProps> = ({
@@ -56,6 +27,10 @@ const StatsCard: React.FC<StatsCardProps> = ({
   progressValue,
   progressColor,
 }) => {
+  const safeProgress = clamp(progressValue);
+  const currentLevel = getLevelFromProgress(safeProgress);
+  const nextLevel = currentLevel < 4 ? currentLevel + 1 : null;
+
   return (
     <Card className="border-none px-5 py-6 bg-white shadow-sm rounded-lg space-y-5 neo-effect">
       <CardContent className="p-0 flex gap-2 h-2/4">
@@ -68,17 +43,16 @@ const StatsCard: React.FC<StatsCardProps> = ({
         </div>
         <div className="flex flex-col gap-2 w-1/4 capitalize items-end justify-center">
           <span className="text-primary-hudddleLight font-medium ">
-            level 1
+            Level {currentLevel}
           </span>
-          <span className="text-custom-semiBlack text-xs">up next level 2</span>
+          <span className="text-custom-semiBlack text-xs">
+            up next {nextLevel ? `Level ${nextLevel}` : "Max Level"}
+          </span>
         </div>
       </CardContent>
       <ProgressBar
         className="h-14 bg-gray-300 rounded-full"
-        progressValue={calculateProgressPercentage(
-          progressValue,
-          title as UserLevelCategory
-        )}
+        progressValue={safeProgress}
         progressColor={progressColor}
       />
     </Card>

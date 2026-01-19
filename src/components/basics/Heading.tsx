@@ -8,12 +8,13 @@ export const MainHeading: FC<HeadingProps> = ({
   className,
   variant,
 }) => {
+  const base = className ? `${className} ` : "";
   if (variant === "default") {
     return (
       <h1
         className={
-          className +
-          " font-inria leading-[55px] text-[clamp(1.25rem,_2.5641vw,_3.125rem)] font-bold"
+          base +
+          "font-inria leading-[55px] text-[clamp(1.25rem,_2.5641vw,_3.125rem)] font-bold"
         }
       >
         {children}
@@ -24,8 +25,8 @@ export const MainHeading: FC<HeadingProps> = ({
     return (
       <h1
         className={
-          className +
-          " font-inria text-4xl text-primary-hudddle  leading-[55px]  font-bold"
+          base +
+          "font-inria text-4xl text-primary-hudddle leading-[55px] font-bold"
         }
       >
         {children}
@@ -36,8 +37,8 @@ export const MainHeading: FC<HeadingProps> = ({
     return (
       <h2
         className={
-          className +
-          "leading-[28px] text-3xl capitalize text-primary-hudddle font-black"
+          base +
+          "font-inria leading-[28px] text-3xl capitalize text-primary-hudddle font-black"
         }
       >
         {children}
@@ -48,8 +49,8 @@ export const MainHeading: FC<HeadingProps> = ({
     return (
       <h2
         className={
-          className +
-          "leading-[28px] text-primary-hudddle text-2xl font-extrabold"
+          base +
+          "font-inria leading-[28px] text-primary-hudddle text-2xl font-extrabold"
         }
       >
         {children}
@@ -61,8 +62,8 @@ export const MainHeading: FC<HeadingProps> = ({
   return (
     <h1
       className={
-        className +
-        " font-inria leading-[55px] text-[clamp(1.25rem,_2.5641vw,_3.125rem)] font-bold"
+        base +
+        "font-inria leading-[55px] text-[clamp(1.25rem,_2.5641vw,_3.125rem)] font-bold"
       }
     >
       {children}
@@ -74,8 +75,8 @@ export const SubHeading: FC<HeadingProps> = ({ children, className }) => {
   return (
     <h3
       className={
-        className +
-        " font-inria leading-[24px] text-[clamp(0.75rem,_0.7692vw,_1.3125rem)] font-normal"
+        (className ? `${className} ` : "") +
+        "font-inria leading-[24px] text-[clamp(0.75rem,_0.7692vw,_1.3125rem)] font-normal"
       }
     >
       {children}

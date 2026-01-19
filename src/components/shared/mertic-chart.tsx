@@ -26,12 +26,15 @@ interface MetricChartProps {
 }
 
 export function MetricChart({ kpiName, weight, percentage }: MetricChartProps) {
+  const safePercentage = Number.isFinite(percentage)
+    ? Math.max(0, Math.min(100, percentage))
+    : 0;
+
   // Define chart data based on the weight
   // The pie chart will show 'achieved' and 'remaining' portions
-  // Using specific hex colors to match the provided image
   const chartData = [
-    { name: "Achieved", value: percentage, fill: "#6B46C1" }, // Darker purple for achieved part
-    { name: "Remaining", value: 100 - percentage, fill: "#A78BFA" }, // Lighter purple/blue for remaining part
+    { name: "Achieved", value: safePercentage, fill: "#956FD6" },
+    { name: "Remaining", value: 100 - safePercentage, fill: "#D3C4ED" },
   ];
 
   // Define chart configuration (colors here are less critical as fill is set directly in chartData)
@@ -51,7 +54,7 @@ export function MetricChart({ kpiName, weight, percentage }: MetricChartProps) {
 
   return (
     // Card styling updated to match the image's background and rounded corners
-    <Card className="flex flex-col bg-transparent rounded-[16px] shadow-none border-none p-4">
+    <Card className="flex flex-col bg-transparent rounded-[16px] shadow-none border-none p-0">
       <CardContent className="flex-1 p-0 flex items-center justify-center">
         {" "}
         {/* Centering content */}
@@ -71,6 +74,8 @@ export function MetricChart({ kpiName, weight, percentage }: MetricChartProps) {
               innerRadius={60}
               outerRadius={80} // Increased outer radius slightly for thicker ring
               strokeWidth={0} // No stroke for a cleaner look
+              startAngle={90}
+              endAngle={-270}
             >
               <Label
                 content={({ viewBox }) => {
@@ -87,7 +92,7 @@ export function MetricChart({ kpiName, weight, percentage }: MetricChartProps) {
                           y={(viewBox.cy ?? 0) - 10} // Adjusted Y position for percentage
                           className="fill-[#211451] text-3xl font-bold" // Darker text for percentage, larger font
                         >
-                          {percentage.toFixed(0)}%
+                          {safePercentage.toFixed(0)}%
                         </tspan>
                         <tspan
                           x={viewBox.cx}

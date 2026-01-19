@@ -95,7 +95,7 @@ const MyTask: React.FC<MyTaskProps> = ({
 
     try {
       const response = await fetch(`${backendUri}/api/v1/tasks/${taskId}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${storedToken}`,

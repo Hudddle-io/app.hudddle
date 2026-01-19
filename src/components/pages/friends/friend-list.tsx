@@ -192,7 +192,7 @@ const FriendList: React.FC<FriendListProps> = ({
     <>
       {/* TabSwitch should update the 'tab' search param in the URL */}
       <TabSwitch currentTab={tab} />
-      <Card className="mt-5 p-4 border-none neo-effect">
+      <Card className="mt-4 p-6 bg-white border border-slate-200 rounded-[16px] shadow-sm">
         {data.length > 0 ? (
           data.map((profile) =>
             tab === "all-friends" ? (

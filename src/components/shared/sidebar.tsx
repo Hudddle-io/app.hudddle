@@ -133,6 +133,28 @@ const Sidebar = () => {
     return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`;
   };
 
+  const getDisplayName = (user: any) => {
+    const first = (user?.first_name ?? "").toString().trim();
+    const last = (user?.last_name ?? "").toString().trim();
+    const full = `${first} ${last}`.trim();
+    if (full) return full;
+
+    const email = (user?.email ?? "").toString().trim();
+    if (email) return email.split("@")[0];
+
+    return "User";
+  };
+
+  const getDisplayInitials = (user: any) => {
+    const initials = getInitials(user?.first_name, user?.last_name).trim();
+    if (initials) return initials;
+
+    const email = (user?.email ?? "").toString().trim();
+    if (email) return email.slice(0, 2).toUpperCase();
+
+    return "U";
+  };
+
   const handleLogout = async () => {
     const storedToken = localStorage.getItem("token");
     if (!storedToken) {
@@ -265,7 +287,7 @@ const Sidebar = () => {
     <section className="w-[250px] flex-shrink-0 ring-[0.6px] ring-[#999999] overflow-auto ring-opacity-[25%] flex items-start justify-center py-3 px-6">
       <div className="w-full h-full flex flex-col gap-2 items-center ">
         <Link href={"/"} className="relative  h-1/6 w-28">
-          <Image src={"/assets/logo.svg"} alt="logo" fill />
+          <Image src={"/assets/logo.svg"} alt="logo" fill priority />
         </Link>
 
         {/* huddle user bar */}
@@ -279,13 +301,13 @@ const Sidebar = () => {
               <Avatar>
                 <AvatarImage
                   src={previewImage || undefined} // Use previewImage for immediate feedback, fallback to undefined
-                  alt={`@${currentUser?.first_name}`}
+                  alt={`@${getDisplayName(currentUser)}`}
                 />
                 <AvatarFallback>
                   {loading ? ( // Skeleton for AvatarFallback during loading
                     <Skeleton className="w-full h-full rounded-full" />
                   ) : (
-                    getInitials(currentUser?.first_name, currentUser?.last_name)
+                    getDisplayInitials(currentUser)
                   )}
                 </AvatarFallback>
               </Avatar>
@@ -349,16 +371,16 @@ const Sidebar = () => {
             />
             <h1 className="text-[#FFFFFF] text-[15px] font-semibold text-center">
               {loading ? (
-                <Skeleton className="w-32 h-5 mx-auto" />
+                <span className="inline-block w-32 h-5 bg-muted animate-pulse rounded-md mx-auto" />
               ) : (
-                `${currentUser?.first_name} ${currentUser?.last_name}`
+                getDisplayName(currentUser)
               )}
             </h1>
             <p className="font-normal text-[8px] leading-[16px] text-white text-center truncate text-wrap">
               {loading ? (
-                <Skeleton className="w-48 h-3 mx-auto" />
+                <span className="inline-block w-48 h-3 bg-muted animate-pulse rounded-md mx-auto" />
               ) : (
-                currentUser?.email
+                currentUser?.email || ""
               )}
             </p>
           </header>
@@ -488,7 +510,7 @@ const Sidebar = () => {
 
         {/* bar footer */}
         <footer className="w-full p-[14px] h-1/6  mx-5 flex flex-col gap-2">
-          <p className="font-normal text-[14px] leading-[20px] text-[#707070]">
+          <p className="font-normal text-[14px] text-center leading-[20px] text-[#707070]">
             Frequently used tools
           </p>
           <div className="flex flex-row items-center justify-center space-x-2">

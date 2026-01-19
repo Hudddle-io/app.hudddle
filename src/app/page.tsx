@@ -1,6 +1,6 @@
 "use client";
 
-import SignUp from "@/app/auth/Sign-up/page";
+import SignUp from "@/app/auth/sign-up/page";
 import { useUserSession } from "@/contexts/useUserSession";
 import { redirect } from "next/navigation";
 
