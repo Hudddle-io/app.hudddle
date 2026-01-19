@@ -210,10 +210,11 @@ const FriendCard: React.FC<FriendCardProps> = ({ friend }) => {
   };
 
   return (
-    <Card className="rounded-none shadow-none py-4 border-x-0 border-t-0 hover:bg-custom-whitesmoke bg-transparent hover:border-b-custom-purple px-0 items-center grid grid-cols-9 border-b-[1px] border-b-slate-300">
+    <Card className="rounded-none shadow-none py-4 border-x-0 border-t-0 bg-transparent px-0 items-center grid grid-cols-9 border-b border-slate-200">
       <CardContent className="col-span-7 flex justify-between items-center p-0">
         <div className="space-y-1 p-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 rounded-full border border-slate-300 shrink-0" />
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>

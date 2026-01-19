@@ -72,8 +72,9 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
       return;
     }
 
-    if (!inputValue || inputValue.length < 2) {
-      setFilteredSuggestions([]);
+    // If input is empty, show all suggestions
+    if (!inputValue) {
+      setFilteredSuggestions(allPossibleSuggestions);
       return;
     }
 
@@ -103,9 +104,7 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
   };
 
   const handleFocus = () => {
-    if (inputValue.length >= 2 || filteredSuggestions.length > 0 || isLoading) {
-      setShowSuggestions(true);
-    }
+    setShowSuggestions(true);
   };
 
   const handleBlur = () => {
@@ -133,8 +132,8 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
         onChange={handleInputChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        placeholder="Search by email or name" // Updated placeholder
-        className="px-2 h-[36px] input-morph border rounded-lg w-full placeholder:font-bold"
+        placeholder="Search"
+        className="px-3 h-[42px] border border-slate-200 rounded-md w-full"
       />
 
       {shouldShowDropdown && (

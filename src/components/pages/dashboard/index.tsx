@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Header from "./header";
 import ProductivitySection from "./productivity-section";
 import StatsCard from "./stats-card";
@@ -11,6 +11,7 @@ import { Metadata } from "next";
 import { TaskTodayProps } from "@/lib/@types"; // Your combined TaskTodayProps interface
 import { backendUri } from "@/lib/config";
 import DashboardLoader from "@/components/loaders/dashboard";
+import { useUserSession } from "@/contexts/useUserSession";
 
 export const metadata: Metadata = {
   title: "Hudddle | Dashboard",
@@ -22,11 +23,13 @@ interface UserStreakData {
   last_active_date: string | null;
 }
 
-interface UserLevelData {
-  category: "Leader" | "Workaholic" | "Team Player" | "Slacker";
-  tier: string;
-  points: number;
-}
+type UserLevelCategory = "Leader" | "Workaholic" | "Team Player" | "Slacker";
+
+type WeeklyStatCard = {
+  category: UserLevelCategory;
+  progress: number; // 0-100
+  description: string;
+};
 
 export interface UserData {
   id: number;
@@ -69,26 +72,30 @@ export interface FriendData {
   software_used: string[];
 }
 
-const levelDescriptions: Record<UserLevelData["category"], string> = {
-  Leader:
-    "Create more tasks and delegate effectively to boost your leadership score.",
-  Workaholic:
-    "Complete tasks on time and consistently to increase your workaholic level.",
-  "Team Player":
-    "Collaborate on tasks and accept invites to enhance your team player status.",
-  Slacker:
-    "Improve your task completion rate and stay active daily to avoid being a slacker.",
-};
+const clamp = (value: number, min = 0, max = 100) =>
+  Math.max(min, Math.min(max, value));
+
+const normalizeStatus = (status: unknown) =>
+  String(status || "")
+    .trim()
+    .toUpperCase();
 
 const PageDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const tasksPerPage = 5;
 
-  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
+  const { currentUser, loading: userLoading } = useUserSession();
   const [todaysTasks, setTodaysTasks] = useState<TaskTodayProps[]>([]);
-  const [userStreak, setUserStreak] = useState<UserStreakData | null>(null);
-  const [userLevels, setUserLevels] = useState<UserLevelData[]>([]);
+  const [allTasks, setAllTasks] = useState<any[]>([]);
+  const [workroomNameById, setWorkroomNameById] = useState<
+    Record<string, string>
+  >({});
+  const [userStreak, setUserStreak] = useState<UserStreakData | null>({
+    current_streak: 0,
+    highest_streak: 0,
+    last_active_date: null,
+  });
   const [friends, setFriends] = useState<FriendData[]>([]); // New state for friends
   const [loading, setLoading] = useState(true);
 
@@ -117,60 +124,6 @@ const PageDashboard: React.FC = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        // --- Fetch User Data, Streak, and Levels from dashboard endpoint ---
-        const dashboardResponse = await fetch(
-          `${backendUri}/api/v1/dashboard`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${storedToken}`,
-            },
-          }
-        );
-
-        if (!dashboardResponse.ok) {
-          console.error(
-            "Failed to fetch dashboard data:",
-            dashboardResponse.status
-          );
-          // Don't stop loading if dashboard fails, but handle the error
-        } else {
-          const data = await dashboardResponse.json();
-          localStorage.setItem("user", JSON.stringify(data));
-
-          const user: UserData = {
-            id: data.id || 0,
-            username: data.username || null,
-            first_name: data.first_name || "Guest",
-            last_name: data.last_name || "",
-            email: data.email || "",
-            productivity_percentage: data.productivity_percentage || 0,
-            average_task_time_hours: data.average_task_time_hours || 0,
-            xp: data.xp || 0,
-            daily_active_minutes: data.daily_active_minutes || 0,
-            teamwork_collaborations: data.teamwork_collaborations || 0,
-            avatar_url: data.avatar_url || null,
-            friends: data.friends || [],
-          };
-          setCurrentUser(user);
-
-          const streak = {
-            current_streak: data.streaks || 0,
-            highest_streak: data.highest_streak || 0,
-            last_active_date: data.last_active_date || null,
-          };
-          setUserStreak(streak);
-
-          const levels = (data.levels || []).map(
-            (level: Partial<UserLevelData>) => ({
-              category: level.category || "Slacker",
-              tier: level.tier || "Beginner",
-              points: level.points || 0,
-            })
-          );
-          setUserLevels(levels);
-        }
-
         // --- Fetch Tasks from a separate endpoint ---
         const tasksResponse = await fetch(`${backendUri}/api/v1/tasks`, {
           method: "GET",
@@ -185,21 +138,14 @@ const PageDashboard: React.FC = () => {
         } else {
           const tasksData = await tasksResponse.json();
           const allTasks = Array.isArray(tasksData) ? tasksData : [];
-
-          const today = new Date();
-          const todayYear = today.getFullYear();
-          const todayMonth = today.getMonth();
-          const todayDay = today.getDate();
+          setAllTasks(allTasks);
 
           const todaysFilteredAndSortedTasks: TaskTodayProps[] = allTasks
             .filter((task: any) => {
               if (!task.due_by) return false;
-              const taskDueDate = new Date(task.due_by);
-              return (
-                taskDueDate.getFullYear() === todayYear &&
-                taskDueDate.getMonth() === todayMonth &&
-                taskDueDate.getDate() === todayDay
-              );
+              const taskDate = new Date(task.due_by).toDateString();
+              const todayDate = new Date().toDateString();
+              return taskDate === todayDate;
             })
             .sort((a: any, b: any) => {
               const dateA = new Date(a.due_by);
@@ -268,6 +214,41 @@ const PageDashboard: React.FC = () => {
           const friendsData: FriendData[] = await friendsResponse.json();
           setFriends(friendsData);
         }
+
+        // --- Fetch workrooms so tasks can show room names ---
+        try {
+          const workroomsResponse = await fetch(
+            `${backendUri}/api/v1/workrooms/all`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${storedToken}`,
+              },
+            }
+          );
+
+          if (!workroomsResponse.ok) {
+            console.error(
+              "Failed to fetch workrooms:",
+              workroomsResponse.status
+            );
+          } else {
+            const workroomsData = await workroomsResponse.json();
+            const workrooms = Array.isArray(workroomsData?.workrooms)
+              ? workroomsData.workrooms
+              : [];
+
+            const mapping: Record<string, string> = {};
+            for (const room of workrooms) {
+              if (!room?.id) continue;
+              mapping[String(room.id)] =
+                String(room.title || "").trim() || "Untitled Room";
+            }
+            setWorkroomNameById(mapping);
+          }
+        } catch (e) {
+          console.error("Error fetching workrooms:", e);
+        }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -278,9 +259,7 @@ const PageDashboard: React.FC = () => {
     fetchDashboardData();
   }, []); // Empty dependency array means this runs once on mount
 
-  if (loading) return <DashboardLoader />;
-
-  const levelImageMap: Record<UserLevelData["category"], string> = {
+  const levelImageMap: Record<UserLevelCategory, string> = {
     Leader:
       statsCardsData.find((stat) => stat.title === "Leader")?.image ||
       "default-leader.png",
@@ -294,6 +273,104 @@ const PageDashboard: React.FC = () => {
       statsCardsData.find((stat) => stat.title === "Slacker")?.image ||
       "default-slacker.png",
   };
+
+  const weeklyStatCards: WeeklyStatCard[] = useMemo(() => {
+    const averageHoursPerTask = Number.isFinite(
+      (currentUser as any)?.average_task_time_hours
+    )
+      ? (currentUser as any).average_task_time_hours
+      : 0;
+
+    const dropIns = Number.isFinite(
+      (currentUser as any)?.teamwork_collaborations
+    )
+      ? (currentUser as any).teamwork_collaborations
+      : 0;
+
+    const now = new Date();
+    const weekAgo = new Date(now);
+    weekAgo.setDate(now.getDate() - 7);
+
+    const createdById =
+      (currentUser as any)?.id != null ? String((currentUser as any).id) : null;
+
+    const completedThisWeekCount = allTasks.filter((t: any) => {
+      const status = normalizeStatus(t?.status);
+      if (status !== "COMPLETED") return false;
+      const completedAt = t?.completed_at ? new Date(t.completed_at) : null;
+      return completedAt instanceof Date && !Number.isNaN(completedAt.getTime())
+        ? completedAt >= weekAgo
+        : false;
+    }).length;
+
+    const createdThisWeekCount = allTasks.filter((t: any) => {
+      if (!createdById) return false;
+      const creator = t?.created_by_id != null ? String(t.created_by_id) : "";
+      if (creator !== createdById) return false;
+      const createdAt = t?.created_at ? new Date(t.created_at) : null;
+      return createdAt instanceof Date && !Number.isNaN(createdAt.getTime())
+        ? createdAt >= weekAgo
+        : false;
+    }).length;
+
+    const overdueOpenCount = allTasks.filter((t: any) => {
+      const status = normalizeStatus(t?.status);
+      if (status === "COMPLETED") return false;
+      if (!t?.due_by) return false;
+      const due = new Date(t.due_by);
+      if (Number.isNaN(due.getTime())) return false;
+      return due < now;
+    }).length;
+
+    // Heuristic progress scoring (0-100). These can be tuned as backend metrics mature.
+    const leaderProgress = clamp((createdThisWeekCount / 20) * 100);
+    const workaholicProgress = clamp((completedThisWeekCount / 15) * 100);
+    const teamPlayerProgress = clamp((dropIns / 50) * 100);
+    const slackerProgress = clamp((overdueOpenCount / 10) * 100);
+
+    const hrsLabel = `${averageHoursPerTask || 0}hrs per task`;
+
+    return [
+      {
+        category: "Leader",
+        progress: leaderProgress,
+        description: hrsLabel,
+      },
+      {
+        category: "Team Player",
+        progress: teamPlayerProgress,
+        description: `${dropIns}/50 Drop-ins this week`,
+      },
+      {
+        category: "Workaholic",
+        progress: workaholicProgress,
+        description: hrsLabel,
+      },
+      {
+        category: "Slacker",
+        progress: slackerProgress,
+        description: hrsLabel,
+      },
+    ];
+  }, [allTasks, currentUser]);
+
+  const overallProductivity = useMemo(() => {
+    const get = (category: UserLevelCategory) =>
+      weeklyStatCards.find((c) => c.category === category)?.progress ?? 0;
+
+    const leader = get("Leader");
+    const teamPlayer = get("Team Player");
+    const workaholic = get("Workaholic");
+    const slacker = get("Slacker");
+
+    // Assumption: higher slacker score means less productive.
+    const slackerContribution = 100 - slacker;
+    return Math.round(
+      (leader + teamPlayer + workaholic + slackerContribution) / 4
+    );
+  }, [weeklyStatCards]);
+
+  if (userLoading || loading) return <DashboardLoader />;
 
   return (
     <section className="pt-14 pb-10 px-12 overflow-y-scroll">
@@ -320,8 +397,8 @@ const PageDashboard: React.FC = () => {
                   name: currentUser.first_name ?? "Guest",
                   avatar_url: currentUser.avatar_url ?? "",
                   email: currentUser.email,
-                  productivity: currentUser.productivity_percentage,
-                  average_task_time: currentUser.average_task_time_hours,
+                  productivity: overallProductivity,
+                  average_task_time_hours: currentUser.average_task_time_hours,
                   xp: currentUser.xp,
                   daily_active_minutes: currentUser.daily_active_minutes,
                   teamwork_collaborations: currentUser.teamwork_collaborations,
@@ -337,13 +414,13 @@ const PageDashboard: React.FC = () => {
             weekly stats
           </h2>
           <div className="w-full grid grid-cols-2 gap-x-10 gap-y-5 mt-10">
-            {userLevels.map((level) => (
+            {weeklyStatCards.map((level) => (
               <StatsCard
                 key={level.category}
                 image={levelImageMap[level.category]}
                 title={level.category}
-                description={levelDescriptions[level.category]}
-                progressValue={level.points}
+                description={level.description}
+                progressValue={level.progress}
                 progressColor={
                   level.category === "Leader"
                     ? "#F97316"
@@ -375,7 +452,15 @@ const PageDashboard: React.FC = () => {
           {currentTasks.length > 0 ? (
             currentTasks.map((task) => (
               // Ensure task.id is stable and unique for the key
-              <TodaysTask key={task.id || task.title} task={task} />
+              <TodaysTask
+                key={task.id || task.title}
+                task={task}
+                workroomName={
+                  task.workroom_id
+                    ? workroomNameById[String(task.workroom_id)]
+                    : undefined
+                }
+              />
             ))
           ) : (
             <p className="text-center text-gray-500">No tasks for today!</p>

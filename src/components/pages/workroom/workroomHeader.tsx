@@ -3,7 +3,7 @@
 // current step
 import React, { FC } from "react";
 import { Header, HeaderTexts } from "./Header";
-import { MoveLeft } from "lucide-react";
+import { ArrowLeft, MoveLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateUniqueKey } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
@@ -31,13 +31,14 @@ const WorkroomHeader: FC<WorkroomHeader> = ({
               window.history.back();
             }}
             variant={"ghost"}
+            className="rounded-full p-2 mr-1"
           >
-            <MoveLeft className="stroke-[1px] text-[#4D4D4D]" />
+            <ArrowLeft className="stroke-[1px] text-[#4D4D4D]" />
           </Button>
           <h3 className="font-semibold text-[clamp(1.2rem,_1.2vw,_1.8rem)] text-[#4D4D4D]">
             {headerTitle} :{" "}
             {type === "create" ? (
-              <span className="font-light text-[clamp(0.5rem,_0.6838vw,_1rem)] leading-[22px]">
+              <span className="font-light text-[clamp(1rem,_0.75vw,_2rem)] leading-[22px]">
                 Add teams, Tasks, Kpi&apos;s to properly manage your Results
               </span>
             ) : (
@@ -48,24 +49,24 @@ const WorkroomHeader: FC<WorkroomHeader> = ({
           </h3>
         </div>
 
-        <div className="flex items-center gap-2 pl-8">
+        <div className="flex items-center gap-2 pl-8 w-full overflow-x-auto">
           {header_steps.map((step, i) => {
             const { _id } = generateUniqueKey(step);
 
             return (
               <div
                 key={_id}
-                className="flex flex-col justify-between h-[clamp(1.375rem,_1.3675vh,_2.375rem)]"
+                className="flex flex-col items-start h-[clamp(1.375rem,_1.3675vh,_2.375rem)] flex-shrink-0"
               >
                 <Progress
                   color="#956FD666 "
-                  className="w-[clamp(11.8125rem,_3.3906vw,_14.2919rem)] bg-[#D9D9D9]"
+                  className="w-[clamp(9.5rem,_2.5vw,_14.2919rem)] bg-[#D9D9D9] h-1"
                   value={
                     current_step === i + 1 || i + 1 < current_step ? 100 : 0
                   }
                 />
                 <span
-                  className={`font-normal text-[clamp(0.75rem,_0.5128vw,_1.125rem)] translate-y-2 text-[#956FD6] ${
+                  className={`font-normal text-[clamp(0.65rem,_0.4128vw,_0.875rem)] text-[#956FD6] whitespace-nowrap ${
                     current_step === i + 1 || i + 1 < current_step
                       ? "block"
                       : "hidden"

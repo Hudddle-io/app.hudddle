@@ -12,6 +12,7 @@ import PreventTabletAndMobileWrapper from "../contexts/prevent-tablet-and-mobile
 
 const inriasans = localFont({
   src: "../../public/fonts/InriaSans-Regular.ttf",
+  variable: "--font-inria",
 });
 
 export const metadata: Metadata = {
@@ -60,7 +61,9 @@ export default function RootLayout({
   return (
     <StoreProvider>
       <html lang="en">
-        <body className={`${inriasans.className} relative`}>
+        <body
+          className={`${inriasans.className} ${inriasans.variable} relative`}
+        >
           <PreventTabletAndMobileWrapper>
             {children}
             <Toaster />

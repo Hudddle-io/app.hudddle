@@ -11,12 +11,22 @@ import { Clock4, Zap } from "lucide-react";
 import { TimeLogCardContentProps } from "@/lib/@types";
 import { backendUri } from "@/lib/config"; // Import backendUri
 import { toast } from "@/components/ui/use-toast"; // Assuming you have toast
-import { RoomMemberData } from "@/app/(dashboard)/workroom/room/[roomId]/page";
 
-// Reuse RoomMemberData interface from page.tsx for consistency
+type ProductivityUser = {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+  email: string;
+  productivity: number;
+  average_task_time_hours?: number;
+  xp: number;
+  daily_active_minutes: number;
+  teamwork_collaborations: number;
+  level?: number;
+};
 
 interface ProductivitySectionProps {
-  currentUser: RoomMemberData | null; // Use RoomMemberData
+  currentUser: ProductivityUser | null;
   // Removed onUpdateUserData from ProductivitySectionProps, as it defines and passes it down
 }
 
@@ -35,13 +45,25 @@ const TimeLogCardContent: React.FC<TimeLogCardContentProps> = ({
         <>
           {value}{" "}
           {Icon && (
-            <Image src={Icon} alt={Icon + " value"} width={18} height={18} />
+            <Image
+              src={Icon}
+              alt={Icon + " value"}
+              width={18}
+              height={18}
+              style={{ width: "auto", height: "auto" }}
+            />
           )}
         </>
       ) : (
         <>
           {Icon && (
-            <Image src={Icon} alt={Icon + " value"} width={18} height={18} />
+            <Image
+              src={Icon}
+              alt={Icon + " value"}
+              width={18}
+              height={18}
+              style={{ width: "auto", height: "auto" }}
+            />
           )}{" "}
           {value}
         </>
@@ -53,7 +75,7 @@ const TimeLogCardContent: React.FC<TimeLogCardContentProps> = ({
 export const DailyTimeLog: React.FC<{
   currentUser: ProductivitySectionProps["currentUser"];
   // Explicitly define the type for onUpdateUserData here for DailyTimeLog
-  onUpdateUserData: (data: Partial<RoomMemberData>) => Promise<void>;
+  onUpdateUserData: (data: Partial<ProductivityUser>) => Promise<void>;
 }> = ({ currentUser, onUpdateUserData }) => {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState<number>(0); // In milliseconds
@@ -193,18 +215,20 @@ const ProductivityBadge: React.FC<{
   return (
     <Card className="border-none flex item-center justify-center rounded-lg p-4 h-full shadow-md">
       <CardContent className="p-0 flex items-center gap-7">
-        <Image src={"/assets/chess.svg"} alt="chess" width={30} height={30} />
+        <Image
+          src={"/assets/chess.svg"}
+          alt="chess"
+          width={30}
+          height={30}
+          style={{ width: "auto", height: "auto" }}
+        />
         <div>
           <CardTitle className="text-xl font-semibold text-primary-hudddle p-0">
             {currentUser?.productivity || 0}%{" "}
             <span className="font-bold">productive</span>
           </CardTitle>
           <CardDescription>
-            {/* Note: currentUser?.average_task_time is not passed to ProductivityBadge's currentUser prop.
-                It would need to be part of RoomMemberData directly if it's meant to be displayed here from the parent. */}
-            {`${
-              (currentUser as any)?.average_task_time_hours || 0
-            }hrs per task`}
+            {`${currentUser?.average_task_time_hours || 0}hrs per task`}
           </CardDescription>
         </div>
       </CardContent>
@@ -216,7 +240,7 @@ const ProductivitySection: React.FC<ProductivitySectionProps> = ({
   currentUser,
 }) => {
   const updateUserProfileData = useCallback(
-    async (data: Partial<RoomMemberData>) => {
+    async (data: Partial<ProductivityUser>) => {
       try {
         if (typeof window === "undefined") return; // Ensure client-side only
         const token = localStorage.getItem("token");
@@ -229,12 +253,9 @@ const ProductivitySection: React.FC<ProductivitySectionProps> = ({
         }
 
         // Filter out undefined values to ensure only relevant fields are sent
-        const payload: { [key: string]: any } = {};
-        for (const key in data) {
-          if (data[key as keyof Partial<RoomMemberData>] !== undefined) {
-            payload[key] = data[key as keyof Partial<RoomMemberData>];
-          }
-        }
+        const payload = Object.fromEntries(
+          Object.entries(data).filter(([, value]) => value !== undefined)
+        );
 
         const response = await fetch(
           `${backendUri}/api/v1/auth/update-profile-data`,

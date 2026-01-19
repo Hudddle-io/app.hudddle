@@ -10,8 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import CancelButton from "@/components/shared/cancel-button"; // Assuming this is a generic confirmation button
-import { Check, X } from "lucide-react"; // Icons for accept/decline
+import { X } from "lucide-react";
 
 interface Friend {
   id: string; // The ID of the pending request or the sender's user ID
@@ -27,24 +26,20 @@ interface Friend {
 
 interface PendingProps {
   pending: Friend;
-  onAccept: (senderEmail: string) => void; // Callback for accepting, expects sender's email
-  onDecline: (requestId: string) => void; // Callback for declining, expects request ID
+  onAccept: (senderEmail: string) => Promise<void>; // Callback for accepting
+  onDecline: (requestId: string) => Promise<void>; // Callback for declining, expects request ID
 }
 
-const PendingCard: React.FC<PendingProps> = ({
-  pending,
-  onAccept,
-  onDecline,
-}) => {
-  const [isAccepting, setIsAccepting] = useState(false);
+const PendingCard: React.FC<PendingProps> = ({ pending, onAccept, onDecline }) => {
   const [isDeclining, setIsDeclining] = useState(false);
+  const [isAccepting, setIsAccepting] = useState(false);
 
-  const handleAcceptClick = async () => {
-    setIsAccepting(true);
-    // Use pending.sender_email if available, otherwise fallback to pending.email
-    await onAccept(pending.sender_email || pending.email || "");
-    setIsAccepting(false);
-  };
+  const displayName =
+    pending.first_name && pending.last_name
+      ? `${pending.first_name} ${pending.last_name}`
+      : pending.sender_email || pending.email || "";
+
+  const displayEmail = pending.sender_email || pending.email || "";
 
   const handleDeclineClick = async () => {
     setIsDeclining(true);
@@ -52,11 +47,18 @@ const PendingCard: React.FC<PendingProps> = ({
     setIsDeclining(false);
   };
 
+  const handleAcceptClick = async () => {
+    setIsAccepting(true);
+    await onAccept(pending.sender_email || pending.email || "");
+    setIsAccepting(false);
+  };
+
   return (
     <Card className="rounded-none shadow-none bg-transparent py-4 border-x-0 border-0 hover:bg-custom-whitesmoke px-0 items-center grid grid-cols-9">
-      <CardContent className="col-span-6 flex justify-between items-center p-0">
+      <CardContent className="col-span-7 flex justify-between items-center p-0">
         <div className="space-y-1 p-0 w-full pb-5 hover:border-b-custom-purple border-b-[1px] border-b-slate-300">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 rounded-full border border-slate-300 shrink-0" />
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
@@ -82,29 +84,31 @@ const PendingCard: React.FC<PendingProps> = ({
               </Tooltip>
             </TooltipProvider>
             <CardTitle className="text-slate-600 text-lg p-0">
-              {pending.sender_email}
+              {displayName}
             </CardTitle>
-            <p className="text-xs text-yellow-600 ml-5 italic">Pending</p>
+            <p className="text-xs text-muted-foreground ml-3">Pending</p>
           </div>
+          {displayEmail && (
+            <p className="text-sm text-muted-foreground">{displayEmail}</p>
+          )}
         </div>
       </CardContent>
-      <div className="col-span-3 flex items-center justify-end p-0 gap-2">
+      <div className="col-span-2 flex items-center justify-end gap-2 p-0">
         <Button
-          className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md"
+          className="bg-primary-hudddle hover:bg-primary-hudddle/90 text-white px-4"
           onClick={handleAcceptClick}
-          disabled={isAccepting || isDeclining}
+          disabled={isAccepting}
         >
-          {isAccepting ? "Accepting..." : <Check size={18} />}
+          {isAccepting ? "Accepting..." : "Accept"}
         </Button>
         <Button
-          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md"
+          className="bg-red-500 hover:bg-red-600 text-white px-4"
           onClick={handleDeclineClick}
-          disabled={isAccepting || isDeclining}
+          disabled={isDeclining}
         >
-          {isDeclining ? "Declining..." : <X size={18} />}
+          {isDeclining ? "Canceling..." : "Cancel invite"}
+          {!isDeclining && <X size={16} className="ml-2" />}
         </Button>
-        {/* You might keep CancelButton for other actions if needed, but for accept/decline, direct buttons are better */}
-        {/* <CancelButton notificationType="delete">Yes, delete</CancelButton> */}
       </div>
     </Card>
   );

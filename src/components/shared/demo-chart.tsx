@@ -72,7 +72,7 @@ export default function WeeklyChart({ historyData = [] }: WeeklyChartProps) {
   };
 
   return (
-    <Card className="bg-transparent shadow-none ring-0 border-0">
+    <Card className="bg-transparent shadow-none ring-0 border-0 w-full">
       <CardHeader>
         <div className="flex items-center justify-between w-full">
           <div>
@@ -85,7 +85,7 @@ export default function WeeklyChart({ historyData = [] }: WeeklyChartProps) {
       </CardHeader>
       <CardContent>
         <ChartContainer
-          className="aspect-auto h-[160px] w-[600px]" // Maintained width for consistency
+          className="aspect-auto h-[160px] w-full"
           config={chartConfig}
         >
           {chartData.length > 0 ? (
@@ -129,6 +129,9 @@ export default function WeeklyChart({ historyData = [] }: WeeklyChartProps) {
                 fillOpacity={0.2}
                 stroke="#956fd6"
                 strokeWidth={2}
+                isAnimationActive
+                animationDuration={700}
+                animationEasing="ease-in-out"
               />
             </AreaChart>
           ) : (

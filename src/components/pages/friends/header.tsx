@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 import SuggestionBox from "@/components/basics/suggestion-box"; // Make sure path is correct
+import { useNotification } from "@/components/shared/notification-cards";
 
 interface FriendsHeaderProps {
   searchPage?: boolean;
@@ -26,6 +27,7 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const router = useRouter();
   const { toast } = useToast();
+  const { showNotification, NotificationComponent } = useNotification();
 
   const sendFriendRequest = async () => {
     if (searchId === "" || !emailRegex.test(searchId)) {
@@ -38,9 +40,6 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({
     }
 
     try {
-      const storedUser = localStorage.getItem("user");
-      if (!storedUser) throw new Error("User not logged in.");
-
       const token = localStorage.getItem("token");
       if (!token) throw new Error("Authorization token missing.");
 
@@ -58,10 +57,56 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({
         }
       );
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        throw new Error(data.detail || "Failed to send friend request.");
+        const detail =
+          (data as any)?.detail ||
+          (data as any)?.message ||
+          (data as any)?.error ||
+          "Failed to send friend request.";
+
+        // If the recipient doesn't exist, show an invite modal instead of an auth error.
+        if (
+          response.status === 404 ||
+          /not found|does not exist|doesn't exist|no user/i.test(String(detail))
+        ) {
+          showNotification({ type: "copyLink" });
+          return;
+        }
+
+        // Only treat actual auth failures as "not logged in" situations.
+        if (response.status === 401 || response.status === 403) {
+          throw new Error("Authorization failed. Please log in again.");
+        }
+
+        throw new Error(String(detail));
+      }
+
+      // Some backends return success with is_new_user=true (invitation flow).
+      // In that case we want to show the invite modal with a copyable link.
+      const status = (data as any)?.status;
+      const isNewUser = Boolean((data as any)?.is_new_user);
+      const inviteUrlFromBackend =
+        (data as any)?.invite_url ||
+        (data as any)?.inviteUrl ||
+        (data as any)?.invite_link ||
+        (data as any)?.inviteLink ||
+        (data as any)?.invitation_link ||
+        (data as any)?.invitationLink ||
+        (data as any)?.link;
+
+      if (isNewUser || status === "invitation_sent") {
+        const fallbackInviteUrl = `${
+          window.location.origin
+        }/auth/sign-up?email=${encodeURIComponent(searchId)}`;
+        showNotification({
+          type: "copyLink",
+          inviteUrl: inviteUrlFromBackend || fallbackInviteUrl,
+        });
+        setSearchId("");
+        onFriendRequestSent?.();
+        return;
       }
 
       toast({
@@ -86,13 +131,15 @@ const FriendsHeader: React.FC<FriendsHeaderProps> = ({
 
   return (
     <div className="flex justify-between items-center">
-      <div className="flex items-center gap-10 w-full">
+      <NotificationComponent />
+      <div className="flex items-center gap-8 w-full">
         <h1 className="text-3xl text-custom-semiBlack font-semibold">
           Friends
         </h1>
         {/* SuggestionBox is now responsible for its own input field */}
         {!searchPage && (
           <SuggestionBox
+            className="max-w-none w-[360px]"
             value={searchId} // Pass the current searchId to SuggestionBox
             onValueChange={setSearchId} // New prop: callback to update searchId
             onSuggestionSelect={handleSuggestionSelect} // Existing prop
