@@ -118,7 +118,7 @@ const SignIn = () => {
         variant: "destructive",
       });
       localStorage.removeItem("token");
-      router.push("/auth/Sign-in");
+      router.push("/auth/sign-in");
     }
   };
 

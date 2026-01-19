@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     title: "App.Hudddle | Sign-in",
     description:
       "Sign in to your App.Hudddle account to access your projects, collaborate with your team, and manage your tasks.",
-    url: "https://app-hudddle.vercel.app/auth/Sign-in", // Replace with your actual domain
+    url: "https://app-hudddle.vercel.app/auth/sign-in", // Replace with your actual domain
     siteName: "App.Hudddle",
     images: [
       {
@@ -59,17 +59,17 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <StoreProvider>
-      <html lang="en">
-        <body
-          className={`${inriasans.className} ${inriasans.variable} relative`}
-        >
+    <html lang="en">
+      <body
+        className={`${inriasans.className} ${inriasans.variable} relative`}
+      >
+        <StoreProvider>
           <PreventTabletAndMobileWrapper>
             {children}
             <Toaster />
           </PreventTabletAndMobileWrapper>
-        </body>
-      </html>
-    </StoreProvider>
+        </StoreProvider>
+      </body>
+    </html>
   );
 }
