@@ -663,7 +663,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           <div className="bg-white rounded-lg p-8 flex flex-col items-center gap-4">
             <Loader className="h-8 w-8 animate-spin text-[#956FD6]" />
             <p className="text-[#211451] font-semibold text-lg">
-              You're selecting {loadingMember}
+              You&apos;re selecting {loadingMember}
             </p>
           </div>
         </div>
