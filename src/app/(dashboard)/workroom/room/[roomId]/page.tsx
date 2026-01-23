@@ -649,6 +649,133 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
   // The button will now always attempt to send to the Electron app, and the fetch
   // error handling will indicate if the Electron app is not running.
 
+  const handleUseInRoom = async () => {
+    const workroomId = params.roomId;
+
+    // Array of common ports desktop apps might use
+    const portsToTry = [3001, 3000, 3002, 8080, 8081, 5000, 5001, 9000];
+
+    // Array of possible protocol schemes
+    const protocolSchemes = [
+      "hudddle-desktop://",
+      "hudddle://",
+      "huddledeskop:", // typo variation
+      "hudddle-app://",
+    ];
+
+    let connectionSuccessful = false;
+
+    // Helper function to try HTTP connection on a specific port
+    const tryHttpConnection = async (port: number): Promise<boolean> => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500); // 1.5 second timeout
+
+        // Try POST request with JSON body
+        const response = await fetch(
+          `http://localhost:${port}/api/connect-workroom`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ workroomId }),
+            signal: controller.signal,
+          }
+        );
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`✓ Connected via HTTP on port ${port}:`, data);
+          toast({
+            description:
+              data.message || "Successfully connected to desktop app!",
+            variant: "default",
+          });
+          return true;
+        }
+        return false;
+      } catch (error) {
+        // Port not available or app not responding
+        return false;
+      }
+    };
+
+    // Helper function to try protocol handler
+    const tryProtocolHandler = (scheme: string): void => {
+      try {
+        // Method 1: Create an invisible iframe (works better on Mac)
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.style.width = "0";
+        iframe.style.height = "0";
+        iframe.src = `${scheme}connect-workroom?workroomId=${encodeURIComponent(
+          workroomId
+        )}`;
+        document.body.appendChild(iframe);
+
+        // Clean up after a short delay
+        setTimeout(() => {
+          if (iframe.parentNode) {
+            document.body.removeChild(iframe);
+          }
+        }, 2000);
+
+        console.log(`✓ Tried protocol: ${scheme}`);
+      } catch (error) {
+        console.log(`✗ Protocol ${scheme} failed:`, error);
+      }
+    };
+
+    // STRATEGY 1: Try HTTP connections on common ports
+    console.log("🔍 Scanning for desktop app on common ports...");
+
+    for (const port of portsToTry) {
+      const success = await tryHttpConnection(port);
+      if (success) {
+        connectionSuccessful = true;
+        return; // Exit early if connection successful
+      }
+    }
+
+    // STRATEGY 2: Try protocol handlers (works without knowing the port)
+    console.log("🔍 Trying protocol handlers...");
+
+    for (const scheme of protocolSchemes) {
+      tryProtocolHandler(scheme);
+    }
+
+    if (!connectionSuccessful) {
+      toast({
+        description:
+          "Attempting to connect to desktop app... If the app doesn't open, please ensure it's installed and running.",
+        variant: "default",
+      });
+
+      // STRATEGY 3: Wait and retry HTTP connections (in case desktop app is starting)
+      setTimeout(async () => {
+        console.log("🔄 Retrying HTTP connections...");
+
+        for (const port of portsToTry) {
+          const success = await tryHttpConnection(port);
+          if (success) {
+            return; // Exit if retry successful
+          }
+        }
+
+        // If still not connected after retry, show warning
+        console.warn("⚠ Desktop app not detected after retry");
+        toast({
+          description:
+            "Could not connect to desktop app. Please ensure Hudddle Desktop is installed and running.",
+          variant: "destructive",
+        });
+      }, 3000); // Wait 3 seconds for desktop app to start
+    }
+  };
+
   const levelCategories: UserLevelCategory[] = [
     "Leader",
     "Workaholic",
@@ -749,13 +876,22 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          className="h-full rounded-[6px] text-[clamp(0.625rem,_0.1709vw,_0.75rem)]"
-          onClick={() => router.push("/workroom")}
-        >
-          Leave Workroom
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="h-full bg-[#956FD6] hover:bg-[#805AD5] text-white rounded-[6px] text-[clamp(0.625rem,_0.1709vw,_0.75rem)]"
+            onClick={handleUseInRoom}
+          >
+            Use in room
+          </Button>
+          <Button
+            variant="outline"
+            className="rounded-[6px] h-full text-[clamp(0.625rem,_0.1709vw,_0.75rem)]"
+            onClick={() => router.push("/workroom")}
+          >
+            Leave room
+          </Button>
+        </div>
       </header>
       {/* main */}
       <section className="flex-1">
@@ -958,7 +1094,7 @@ export default function RoomPage({ params }: { params: { roomId: string } }) {
                   <h3 className="text-[#211451] text-[clamp(0.875rem,_0.8066rem+0.3419vw,_1.125rem)] font-inria mb-2">
                     KPI Pulse Monitor
                   </h3>
-                  <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 w-full">
+                  <section className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4 w-full">
                     {(() => {
                       const memberBreakdown =
                         selectedMember?.kpi_summary?.kpi_breakdown;

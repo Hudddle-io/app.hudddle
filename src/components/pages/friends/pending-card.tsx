@@ -30,7 +30,11 @@ interface PendingProps {
   onDecline: (requestId: string) => Promise<void>; // Callback for declining, expects request ID
 }
 
-const PendingCard: React.FC<PendingProps> = ({ pending, onAccept, onDecline }) => {
+const PendingCard: React.FC<PendingProps> = ({
+  pending,
+  onAccept,
+  onDecline,
+}) => {
   const [isDeclining, setIsDeclining] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
 
