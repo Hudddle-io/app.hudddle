@@ -60,7 +60,7 @@ export function MetricChart({ kpiName, weight, percentage }: MetricChartProps) {
         {/* Centering content */}
         <ChartContainer
           config={chartConfig}
-          className="aspect-square max-h-[160px] w-[160px] mx-auto" // Adjusted size for the inner chart
+          className="aspect-square w-full max-w-[160px] mx-auto min-w-[100px]" // Adjusted size for the inner chart
         >
           <PieChart>
             <ChartTooltip
@@ -71,8 +71,8 @@ export function MetricChart({ kpiName, weight, percentage }: MetricChartProps) {
               data={chartData}
               dataKey="value" // Use 'value' as the data key
               nameKey="name" // Use 'name' for the segments
-              innerRadius={60}
-              outerRadius={80} // Increased outer radius slightly for thicker ring
+              innerRadius="75%"
+              outerRadius="90%" // Increased outer radius slightly for thicker ring
               strokeWidth={0} // No stroke for a cleaner look
               startAngle={90}
               endAngle={-270}
@@ -89,17 +89,10 @@ export function MetricChart({ kpiName, weight, percentage }: MetricChartProps) {
                       >
                         <tspan
                           x={viewBox.cx}
-                          y={(viewBox.cy ?? 0) - 10} // Adjusted Y position for percentage
+                          y={(viewBox.cy ?? 0)} // Centered Y position for percentage
                           className="fill-[#211451] text-3xl font-bold" // Darker text for percentage, larger font
                         >
                           {safePercentage.toFixed(0)}%
-                        </tspan>
-                        <tspan
-                          x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 15} // Adjusted Y position for KPI name
-                          className="fill-[#999999] text-base" // Lighter gray text for KPI name, slightly larger
-                        >
-                          {/* {kpiName} */}
                         </tspan>
                       </text>
                     );

@@ -733,10 +733,10 @@ const WorkroomPage = (props: Props) => {
                         </span>
                       </div>
                     </header>
-                    <footer className="w-full flex items-center justify-between">
-                      <div className="flex items-center">
+                    <footer className="w-full flex items-center justify-between gap-4">
+                      <div className="flex items-center min-w-0">
                         {workroom.members && workroom.members.length > 0 && (
-                          <div className="flex items-center -space-x-2 mr-2">
+                          <div className="flex items-center -space-x-2 mr-2 flex-shrink-0">
                             {workroom.members.slice(0, 4).map((member, idx) => (
                               <div
                                 key={idx}
@@ -756,19 +756,19 @@ const WorkroomPage = (props: Props) => {
                             ))}
                           </div>
                         )}
-                        <p className="text-sm text-[#999999]">
+                        <p className="text-sm text-[#999999] truncate">
                           {workroom.members.length > 0
                             ? `${workroom.members.length} people in this workroom`
                             : "No one is in this workroom"}
                         </p>
-                        <NavigationLink
-                          href={`/workroom/room/${workroom.id}`}
-                          variant={"outline"}
-                          className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none ml-2"
-                        >
-                          Open Workroom
-                        </NavigationLink>
                       </div>
+                      <NavigationLink
+                        href={`/workroom/room/${workroom.id}`}
+                        variant={"outline"}
+                        className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none shrink-0"
+                      >
+                        Open Workroom
+                      </NavigationLink>
                     </footer>
                   </div>
                 ))}
@@ -805,10 +805,10 @@ const WorkroomPage = (props: Props) => {
                         </span>
                       </div>
                     </header>
-                    <footer className="w-full flex items-center justify-between">
-                      <div className="flex items-center">
+                    <footer className="w-full flex items-center justify-between gap-4">
+                      <div className="flex items-center min-w-0">
                         {workroom.members && workroom.members.length > 0 && (
-                          <div className="flex items-center -space-x-2 mr-2">
+                          <div className="flex items-center -space-x-2 mr-2 flex-shrink-0">
                             {workroom.members.slice(0, 4).map((member, idx) => (
                               <div
                                 key={idx}
@@ -828,19 +828,19 @@ const WorkroomPage = (props: Props) => {
                             ))}
                           </div>
                         )}
-                        <p className="text-sm text-[#999999]">
+                        <p className="text-sm text-[#999999] truncate">
                           {workroom.members.length > 0
                             ? `${workroom.members.length} people in this workroom`
                             : "No one is in this workroom"}
                         </p>
-                        <NavigationLink
-                          href={`/workroom/room/${workroom.id}`}
-                          variant={"outline"}
-                          className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none ml-2"
-                        >
-                          Open Workroom
-                        </NavigationLink>
                       </div>
+                      <NavigationLink
+                        href={`/workroom/room/${workroom.id}`}
+                        variant={"outline"}
+                        className="h-7 text-sm rounded-[6px] ring-[#211451] shadow-none shrink-0"
+                      >
+                        Open Workroom
+                      </NavigationLink>
                     </footer>
                   </div>
                 ))}
