@@ -9,6 +9,7 @@ import { auth, googleProvider } from "../../../../config/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
+import { getFriendlyErrorMessage } from "@/lib/error";
 import { backendUri } from "@/lib/config";
 import Google from "../../../../public/assets/google.svg";
 import huddleLogo from "../../../../public/assets/images/huddle-logo.png";
@@ -68,14 +69,12 @@ const SignIn = () => {
       await handleAuthSuccessAndRedirect(backendAccessToken);
     } catch (err: any) {
       console.error("Google sign-in process failed:", err);
-      setError(
-        err.message || "Failed to sign in with Google. Please try again."
+      const friendly = await getFriendlyErrorMessage(
+        err,
+        "Failed to sign in with Google. Please try again."
       );
-      toast({
-        description:
-          err.message || "Failed to sign in with Google. Please try again.",
-        variant: "destructive",
-      });
+      setError(friendly);
+      toast({ description: friendly, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -111,12 +110,12 @@ const SignIn = () => {
       });
     } catch (meError: any) {
       console.error("Error during post-login user data fetch:", meError);
-      setError(meError.message || "An error occurred during login process.");
-      toast({
-        description:
-          meError.message || "An error occurred after login. Please try again.",
-        variant: "destructive",
-      });
+      const friendly = await getFriendlyErrorMessage(
+        meError,
+        "An error occurred after login. Please try again."
+      );
+      setError(friendly);
+      toast({ description: friendly, variant: "destructive" });
       localStorage.removeItem("token");
       router.push("/auth/sign-in");
     }
@@ -157,12 +156,12 @@ const SignIn = () => {
       localStorage.setItem("token", accessToken);
       await handleAuthSuccessAndRedirect(accessToken);
     } catch (err: any) {
-      setError(err.message);
-      toast({
-        description:
-          err.message || "An unexpected error occurred during login.",
-        variant: "destructive",
-      });
+      const friendly = await getFriendlyErrorMessage(
+        err,
+        "An unexpected error occurred during login."
+      );
+      setError(friendly);
+      toast({ description: friendly, variant: "destructive" });
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
+import { getFriendlyErrorMessage } from "@/lib/error";
 import { backendUri } from "@/lib/config";
 import huddleLogo from "../../../../public/assets/images/huddle-logo.png";
 
@@ -53,10 +54,14 @@ const ForgotPassword = () => {
         router.push("/auth/sign-in");
       }, 3000);
     } catch (err: any) {
-      setError(err.message || "An error occurred. Please try again.");
+      const friendly = await getFriendlyErrorMessage(
+        err,
+        "Failed to send password reset email. Please try again."
+      );
+      setError(friendly);
       toast({
         title: "Error",
-        description: err.message || "Failed to send password reset email.",
+        description: friendly,
         variant: "destructive",
       });
     } finally {

@@ -9,6 +9,7 @@ import { auth, googleProvider } from "../../../../config/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
+import { getFriendlyErrorMessage } from "@/lib/error";
 import { backendUri } from "@/lib/config";
 import Google from "../../../../public/assets/google.svg";
 import huddleLogo from "../../../../public/assets/images/huddle-logo.png";
@@ -47,13 +48,12 @@ const SignUp = () => {
       router.push(destination);
     } catch (meError: any) {
       console.error("Error during post-auth user data fetch:", meError);
-      setError(meError.message || "An error occurred during sign up.");
-      toast({
-        description:
-          meError.message ||
-          "An error occurred after sign up. Please try again.",
-        variant: "destructive",
-      });
+      const friendly = await getFriendlyErrorMessage(
+        meError,
+        "An error occurred after sign up. Please try again."
+      );
+      setError(friendly);
+      toast({ description: friendly, variant: "destructive" });
       localStorage.removeItem("token");
       router.push("/auth/sign-in");
     }
@@ -101,15 +101,13 @@ const SignUp = () => {
 
       await handleAuthSuccessAndRedirect(backendAccessToken);
     } catch (err: any) {
-      console.error(err);
-      setError(
-        err.message || "Failed to sign up with Google. Please try again."
-      );
-      toast({
-        description:
-          err.message || "Failed to sign up with Google. Please try again.",
-        variant: "destructive",
-      });
+        console.error(err);
+        const friendly = await getFriendlyErrorMessage(
+          err,
+          "Failed to sign up with Google. Please try again."
+        );
+        setError(friendly);
+        toast({ description: friendly, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -147,13 +145,12 @@ const SignUp = () => {
       });
       router.push("/auth/sign-in");
     } catch (err: any) {
-      toast({
-        description:
-          err.message ||
-          "Failed to authenticate. Please check your credentials.",
-        variant: "destructive",
-      });
-      setError(err.message);
+        const friendly = await getFriendlyErrorMessage(
+          err,
+          "Failed to create account. Please check your credentials."
+        );
+        toast({ description: friendly, variant: "destructive" });
+        setError(friendly);
     } finally {
       setLoading(false);
     }
